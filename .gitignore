@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design reference directories
+/ai_medical_companion_landing_page/
+/ai_transcription_dashboard/
+/document_editor_&_template_mapper/
+/premium_template_library/

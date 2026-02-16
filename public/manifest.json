@@ -1,0 +1,26 @@
+{
+  "name": "MediScribe AI - Medisinsk Dokumentasjon",
+  "short_name": "MediScribe",
+  "description": "AI-drevet medisinsk dokumentasjon for norske helsepersonell",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0066CC",
+  "orientation": "portrait-primary",
+  "lang": "nb-NO",
+  "categories": ["medical", "healthcare", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

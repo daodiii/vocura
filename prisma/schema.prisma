@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      String   @default("lege")
+  hprNumber String?  @map("hpr_number")
+  address   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  patients       Patient[]
+  recordings     Recording[]
+  journalEntries JournalEntry[]
+  formSubmissions FormSubmission[]
+  templates      Template[]
+
+  @@map("users")
+}
+
+model Patient {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  birthDate   DateTime? @map("birth_date")
+  nationalId  String?  @unique @map("national_id")
+  gender      String?
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user            User             @relation(fields: [userId], references: [id])
+  recordings      Recording[]
+  journalEntries  JournalEntry[]
+  formSubmissions FormSubmission[]
+
+  @@map("patients")
+}
+
+model Recording {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  patientId  String?  @map("patient_id")
+  filename   String
+  duration   Int      @default(0)
+  fileSize   Int      @default(0) @map("file_size")
+  mimeType   String   @default("audio/webm") @map("mime_type")
+  source     String   @default("dashboard")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User        @relation(fields: [userId], references: [id])
+  patient    Patient?    @relation(fields: [patientId], references: [id])
+  transcript Transcript?
+
+  @@map("recordings")
+}
+
+model Transcript {
+  id          String   @id @default(uuid())
+  recordingId String   @unique @map("recording_id")
+  text        String
+  language    String   @default("no")
+  wordCount   Int      @default(0) @map("word_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  recording Recording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+
+  @@map("transcripts")
+}
+
+model JournalEntry {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  patientId      String?  @map("patient_id")
+  patientName    String?  @map("patient_name")
+  title          String
+  content        String
+  template       String?
+  status         String   @default("draft")
+  diagnosisCodes Json?    @map("diagnosis_codes")
+  recordingId    String?  @map("recording_id")
+  contentHash    String?  @map("content_hash")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user    User     @relation(fields: [userId], references: [id])
+  patient Patient? @relation(fields: [patientId], references: [id])
+
+  @@map("journal_entries")
+}
+
+model FormSubmission {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  patientId  String?  @map("patient_id")
+  formType   String   @map("form_type")
+  data       Json
+  status     String   @default("draft")
+  score      Int?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user    User     @relation(fields: [userId], references: [id])
+  patient Patient? @relation(fields: [patientId], references: [id])
+
+  @@map("form_submissions")
+}
+
+model Template {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  name       String
+  profession String
+  content    String
+  category   String   @default("general")
+  isDefault  Boolean  @default(false) @map("is_default")
+  isFavorite Boolean  @default(false) @map("is_favorite")
+  usageCount Int      @default(0) @map("usage_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("templates")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  action      String
+  changes     Json?
+  contentHash String?  @map("content_hash")
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("audit_logs")
+}
