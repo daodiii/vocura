@@ -139,3 +139,12 @@ export const labInterpretSchema = z.object({
   rawText: z.string().min(1, 'Laboratorieverdier er påkrevd').max(10_000),
   mode: z.enum(['paste', 'fetch']).default('paste'),
 });
+
+// --- Felleskatalogen Chat ---
+export const felleskatalovenChatSchema = z.object({
+  message: z.string().min(1, 'Melding er påkrevd').max(2000),
+  history: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string().max(5000),
+  })).max(20).optional().default([]),
+});
