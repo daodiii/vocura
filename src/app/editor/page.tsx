@@ -8,7 +8,7 @@ import type { Editor as TiptapEditor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
-import { FileText, Save, CheckCircle, Download, User, PenLine, PlusCircle, Printer, Mic, Shield, Lock, Bold, Italic, UnderlineIcon, List, ListOrdered, Heading2, Undo2, Redo2, Type, Sparkles, Copy, Check, Clock, Tag, Loader2 } from 'lucide-react';
+import { FileText, Save, CheckCircle, Download, User, PenLine, PlusCircle, Printer, Mic, Shield, Lock, Bold, Italic, UnderlineIcon, List, ListOrdered, Heading2, Undo2, Redo2, Type, Sparkles, Copy, Check, Clock, Tag, Loader2, Bot, X, Send, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
 import Toast from '@/components/Toast';
@@ -43,59 +43,59 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
     if (!editor) return null;
 
     return (
-        <div className="flex items-center gap-1 p-2 border-b border-[var(--glass-border)] glass-header flex-wrap">
+        <div className="flex items-center gap-1 p-2 border-b border-[rgba(255,255,255,0.06)] bg-[#111111]/80 flex-wrap">
             <button
                 onClick={() => editor.chain().focus().toggleBold().run()}
-                className={cn("p-2 rounded-md hover:bg-[var(--glass-hover)] transition-colors cursor-pointer", editor.isActive('bold') && "bg-[var(--primary-subtle)] text-[var(--primary-light)]")}
+                className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('bold') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Fet (Ctrl+B)"
             >
                 <Bold className="w-4 h-4" />
             </button>
             <button
                 onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={cn("p-2 rounded-md hover:bg-[var(--glass-hover)] transition-colors cursor-pointer", editor.isActive('italic') && "bg-[var(--primary-subtle)] text-[var(--primary-light)]")}
+                className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('italic') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Kursiv (Ctrl+I)"
             >
                 <Italic className="w-4 h-4" />
             </button>
             <button
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
-                className={cn("p-2 rounded-md hover:bg-[var(--glass-hover)] transition-colors cursor-pointer", editor.isActive('underline') && "bg-[var(--primary-subtle)] text-[var(--primary-light)]")}
+                className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('underline') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Understreking (Ctrl+U)"
             >
                 <UnderlineIcon className="w-4 h-4" />
             </button>
 
-            <div className="w-px h-6 bg-[var(--glass-border)] mx-1" />
+            <div className="w-px h-6 bg-[rgba(255,255,255,0.06)] mx-1" />
 
             <button
                 onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={cn("p-2 rounded-md hover:bg-[var(--glass-hover)] transition-colors cursor-pointer", editor.isActive('heading', { level: 2 }) && "bg-[var(--primary-subtle)] text-[var(--primary-light)]")}
+                className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('heading', { level: 2 }) && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Overskrift"
             >
                 <Heading2 className="w-4 h-4" />
             </button>
             <button
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={cn("p-2 rounded-md hover:bg-[var(--glass-hover)] transition-colors cursor-pointer", editor.isActive('bulletList') && "bg-[var(--primary-subtle)] text-[var(--primary-light)]")}
+                className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('bulletList') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Punktliste"
             >
                 <List className="w-4 h-4" />
             </button>
             <button
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={cn("p-2 rounded-md hover:bg-[var(--glass-hover)] transition-colors cursor-pointer", editor.isActive('orderedList') && "bg-[var(--primary-subtle)] text-[var(--primary-light)]")}
+                className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('orderedList') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Nummerert liste"
             >
                 <ListOrdered className="w-4 h-4" />
             </button>
 
-            <div className="w-px h-6 bg-[var(--glass-border)] mx-1" />
+            <div className="w-px h-6 bg-[rgba(255,255,255,0.06)] mx-1" />
 
             <button
                 onClick={() => editor.chain().focus().undo().run()}
                 disabled={!editor.can().undo()}
-                className="p-2 rounded-md hover:bg-[var(--glass-hover)] transition-colors disabled:opacity-30 cursor-pointer"
+                className="p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 disabled:opacity-30 cursor-pointer"
                 title="Angre (Ctrl+Z)"
             >
                 <Undo2 className="w-4 h-4" />
@@ -103,7 +103,7 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
             <button
                 onClick={() => editor.chain().focus().redo().run()}
                 disabled={!editor.can().redo()}
-                className="p-2 rounded-md hover:bg-[var(--glass-hover)] transition-colors disabled:opacity-30 cursor-pointer"
+                className="p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 disabled:opacity-30 cursor-pointer"
                 title="Gjenta (Ctrl+Shift+Z)"
             >
                 <Redo2 className="w-4 h-4" />
@@ -111,10 +111,10 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
 
             <div className="flex-1" />
 
-            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+            <div className="flex items-center gap-2 text-xs text-white">
                 <Type className="w-3.5 h-3.5" />
                 <span>{editor.storage.characterCount?.characters?.() || editor.getText().length} tegn</span>
-                <span className="text-[var(--glass-border)]">|</span>
+                <span className="text-[rgba(255,255,255,0.06)]">|</span>
                 <span>{editor.storage.characterCount?.words?.() || editor.getText().split(/\s+/).filter(Boolean).length} ord</span>
             </div>
         </div>
@@ -158,6 +158,12 @@ function EditorContent_() {
     const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
     const isInitialLoadRef = useRef(true);
 
+    // FK panel state
+    const [fkPanelOpen, setFkPanelOpen] = useState(false);
+    const [fkInput, setFkInput] = useState('');
+    const [fkMessages, setFkMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; sources?: Array<{ drugName: string; section: string; url: string }> }>>([]);
+    const [fkLoading, setFkLoading] = useState(false);
+
     // Workflow toast state
     const [showSaveToast, setShowSaveToast] = useState(false);
     const [showApproveToast, setShowApproveToast] = useState(false);
@@ -177,7 +183,7 @@ function EditorContent_() {
         content: '',
         editorProps: {
             attributes: {
-                class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] px-6 py-4 text-[var(--text-secondary)] leading-relaxed',
+                class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] px-6 py-4 text-white leading-relaxed',
             },
         },
     });
@@ -358,7 +364,7 @@ function EditorContent_() {
                 setSaved(true);
                 setHasUnsavedChanges(false);
                 setAutoSaveStatus('idle');
-                localStorage.removeItem('mediscribe_editor_backup');
+                localStorage.removeItem('vocura_editor_backup');
                 setTimeout(() => setSaved(false), 2000);
                 setShowSaveToast(true);
             }
@@ -469,7 +475,7 @@ function EditorContent_() {
                     patientName,
                     timestamp: Date.now(),
                 };
-                localStorage.setItem('mediscribe_editor_backup', JSON.stringify(backup));
+                localStorage.setItem('vocura_editor_backup', JSON.stringify(backup));
             } catch { /* localStorage full or unavailable */ }
 
             // Debounced API auto-save (30 seconds idle)
@@ -510,7 +516,7 @@ function EditorContent_() {
                         if (!journalEntryId) setJournalEntryId(data.id);
                         setHasUnsavedChanges(false);
                         setAutoSaveStatus('saved');
-                        localStorage.removeItem('mediscribe_editor_backup');
+                        localStorage.removeItem('vocura_editor_backup');
                         setTimeout(() => setAutoSaveStatus('idle'), 3000);
                     }
                 } catch {
@@ -529,7 +535,7 @@ function EditorContent_() {
     useEffect(() => {
         if (!editor || entryId || loadedFromApi) return;
         try {
-            const raw = localStorage.getItem('mediscribe_editor_backup');
+            const raw = localStorage.getItem('vocura_editor_backup');
             if (raw) {
                 const backup = JSON.parse(raw);
                 // Only restore if less than 24 hours old
@@ -571,6 +577,31 @@ function EditorContent_() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleSave, handleApprove]);
 
+    const sendFkMessage = async (text: string) => {
+        if (!text.trim() || fkLoading) return;
+        const history = fkMessages.map((m) => ({ role: m.role, content: m.content }));
+        setFkMessages((prev) => [...prev, { role: 'user', content: text }]);
+        setFkInput('');
+        setFkLoading(true);
+        try {
+            const res = await fetch('/api/felleskatalogen/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text, history }),
+            });
+            const data = await res.json();
+            setFkMessages((prev) => [...prev, {
+                role: 'assistant',
+                content: res.ok ? data.answer : (data.error || 'Noe gikk galt.'),
+                sources: res.ok ? data.sources : undefined,
+            }]);
+        } catch {
+            setFkMessages((prev) => [...prev, { role: 'assistant', content: 'Nettverksfeil.' }]);
+        } finally {
+            setFkLoading(false);
+        }
+    };
+
     const handleCopy = useCallback(() => {
         if (editor) {
             navigator.clipboard.writeText(editor.getText());
@@ -597,29 +628,42 @@ function EditorContent_() {
     const transcriptWordCount = transcriptParam ? transcriptParam.split(/\s+/).filter(Boolean).length : 0;
 
     return (
-        <div className="flex flex-col h-screen bg-[var(--bg-deep)] overflow-hidden">
+        <div className="flex flex-col h-screen bg-[#0A0A0A] overflow-hidden">
             {/* App Header */}
             <AppHeader />
 
             {/* Editor Action Bar */}
-            <div className="h-12 flex items-center justify-between px-6 border-b border-[var(--glass-border)] glass-header shrink-0">
-                <div className="trust-badge">
+            <div className="h-12 flex items-center justify-between px-6 border-b border-[rgba(255,255,255,0.06)] bg-[#111111]/80 shrink-0">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[rgba(16,185,129,0.08)] text-[#10B981] text-xs font-medium">
                     <Lock className="w-3.5 h-3.5" />
                     <span className="text-[11px] font-semibold">Sikker kanal</span>
                 </div>
 
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setFkPanelOpen((o) => !o)}
+                        className={cn(
+                            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors',
+                            fkPanelOpen
+                                ? 'bg-[rgba(94,106,210,0.15)] text-[var(--accent-primary)]'
+                                : 'text-[rgba(255,255,255,0.6)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                        )}
+                        title="Felleskatalogen (legemiddelassistent)"
+                    >
+                        <Bot className="w-3.5 h-3.5" />
+                        FK
+                    </button>
                     <div aria-live="polite" aria-atomic="true">
                         {hasUnsavedChanges && autoSaveStatus === 'idle' && (
-                            <span className="text-[11px] text-[var(--warning)] font-medium mr-1">Ulagrede endringer</span>
+                            <span className="text-[11px] text-[#F59E0B] font-medium mr-1">Ulagrede endringer</span>
                         )}
                         {autoSaveStatus === 'saving' && (
-                            <span className="text-[11px] text-[var(--text-muted)] font-medium mr-1 flex items-center gap-1">
+                            <span className="text-[11px] text-white font-medium mr-1 flex items-center gap-1">
                                 <Loader2 className="w-3 h-3 animate-spin" /> Autolagrer...
                             </span>
                         )}
                         {autoSaveStatus === 'saved' && (
-                            <span className="text-[11px] text-[var(--success)] font-medium mr-1 flex items-center gap-1">
+                            <span className="text-[11px] text-[#10B981] font-medium mr-1 flex items-center gap-1">
                                 <Check className="w-3 h-3" /> Autolagret
                             </span>
                         )}
@@ -627,13 +671,13 @@ function EditorContent_() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="glass-btn-ghost text-xs flex items-center gap-1.5 !py-2 disabled:opacity-50 cursor-pointer"
+                        className="text-white hover:text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                         title="Lagre utkast (Ctrl+S)"
                     >
                         {saving ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : saved ? (
-                            <Check className="w-3.5 h-3.5 text-[var(--success)]" />
+                            <Check className="w-3.5 h-3.5 text-[#10B981]" />
                         ) : (
                             <Save className="w-3.5 h-3.5" />
                         )}
@@ -643,8 +687,10 @@ function EditorContent_() {
                         onClick={handleApprove}
                         disabled={saving}
                         className={cn(
-                            "text-xs !py-2 !px-4 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer",
-                            approved ? "bg-[var(--success)] text-white rounded-lg font-semibold" : "glass-btn-primary"
+                            "text-xs py-2 px-4 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer rounded-lg font-medium transition-colors duration-150",
+                            approved
+                                ? "bg-[#10B981] text-white font-semibold"
+                                : "bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white"
                         )}
                         title="Godkjenn (Ctrl+Enter)"
                     >
@@ -653,7 +699,7 @@ function EditorContent_() {
                     </button>
                     <button
                         onClick={handleCopy}
-                        className="glass-btn-secondary text-xs !py-2 !px-4 flex items-center gap-1.5 cursor-pointer"
+                        className="border border-[rgba(255,255,255,0.06)] text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
                         title="Kopier tekst"
                     >
                         {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -661,7 +707,7 @@ function EditorContent_() {
                     </button>
                     <button
                         onClick={handleExport}
-                        className="glass-btn-secondary text-xs !py-2 !px-4 flex items-center gap-1.5 cursor-pointer"
+                        className="border border-[rgba(255,255,255,0.06)] text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
                     >
                         <Download className="w-3.5 h-3.5" /> Eksport (EPJ)
                     </button>
@@ -671,22 +717,22 @@ function EditorContent_() {
             {/* Main Layout */}
             <main className="flex flex-1 w-full overflow-hidden">
                 {/* Sidebar - Templates */}
-                <aside className="w-60 flex flex-col glass-sidebar shrink-0">
+                <aside className="w-60 flex flex-col bg-[#111111] border-r border-[rgba(255,255,255,0.06)] shrink-0">
                     <div className="p-5">
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-4">Maler ({professionLabel})</h3>
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-white mb-4">Maler ({professionLabel})</h3>
                         <div className="space-y-1">
                             {availableTemplates.map((template) => (
                                 <button
                                     key={template}
                                     onClick={() => handleTemplateChange(template)}
                                     className={cn(
-                                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-sm cursor-pointer",
+                                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 text-sm cursor-pointer border-l-2",
                                         activeTemplate === template
-                                            ? "bg-[var(--primary-subtle)] text-[var(--primary-light)] font-semibold border-l-3 border-[var(--primary)]"
-                                            : "text-[var(--text-secondary)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-primary)]"
+                                            ? "bg-[rgba(94,106,210,0.08)] text-[#7B89DB] font-semibold border-[#5E6AD2] shadow-[inset_2px_0_8px_rgba(94,106,210,0.2)]"
+                                            : "text-white hover:bg-[rgba(255,255,255,0.05)] hover:text-white border-transparent hover:border-white hover:shadow-[inset_2px_0_8px_rgba(255,255,255,0.12)]"
                                     )}
                                 >
-                                    <FileText className={cn("w-4 h-4 shrink-0", activeTemplate === template ? "text-[var(--primary-light)]" : "text-[var(--text-muted)]")} />
+                                    <FileText className={cn("w-4 h-4 shrink-0", activeTemplate === template ? "text-[#7B89DB]" : "text-white")} />
                                     <span className="truncate">{template}</span>
                                 </button>
                             ))}
@@ -696,12 +742,12 @@ function EditorContent_() {
                     {/* Diagnosis Code Suggestions */}
                     <div className="px-5 pb-5">
                         <div className="flex items-center gap-2 mb-3">
-                            <Sparkles className="w-3.5 h-3.5 text-[var(--warning)]" />
-                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">AI-foreslåtte koder</h3>
+                            <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
+                            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">AI-foreslåtte koder</h3>
                             <button
                                 onClick={fetchSuggestedCodes}
                                 disabled={loadingCodes}
-                                className="ml-auto text-[10px] px-2 py-0.5 rounded glass-btn text-[var(--text-secondary)] !p-1 !px-2 transition-colors disabled:opacity-50 cursor-pointer"
+                                className="ml-auto text-[10px] px-2 py-0.5 rounded text-white hover:text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 disabled:opacity-50 cursor-pointer"
                                 title="Foreslå koder basert på innhold"
                             >
                                 {loadingCodes ? 'Laster...' : 'Foreslå koder'}
@@ -710,12 +756,12 @@ function EditorContent_() {
                         <div className="space-y-1.5" aria-live="polite" aria-atomic="true">
                             {loadingCodes && suggestedCodes.length === 0 && (
                                 <div className="flex items-center justify-center py-4" role="status">
-                                    <Loader2 className="w-5 h-5 animate-spin text-[var(--text-muted)]" />
+                                    <Loader2 className="w-5 h-5 animate-spin text-white" />
                                     <span className="sr-only">Laster kodeforslag...</span>
                                 </div>
                             )}
                             {!loadingCodes && suggestedCodes.length === 0 && (
-                                <p className="text-[11px] text-[var(--text-muted)] italic py-2">
+                                <p className="text-[11px] text-white italic py-2">
                                     Skriv journalnotat for å få kodeforslag
                                 </p>
                             )}
@@ -724,73 +770,83 @@ function EditorContent_() {
                                     key={item.code}
                                     onClick={() => toggleCode(item.code)}
                                     className={cn(
-                                        "w-full text-left p-2.5 rounded-lg border transition-all text-xs cursor-pointer",
+                                        "w-full text-left p-2.5 rounded-lg border transition-all duration-150 text-xs cursor-pointer",
                                         selectedCodes.includes(item.code)
-                                            ? "bg-[var(--primary-subtle)] border-[var(--primary)] text-[var(--primary-light)]"
-                                            : "glass-card-static text-[var(--text-secondary)] hover:border-[var(--primary)]"
+                                            ? "bg-[rgba(94,106,210,0.08)] border-[#5E6AD2] text-[#7B89DB]"
+                                            : "bg-[#191919] border-[rgba(255,255,255,0.06)] text-white hover:border-[#5E6AD2]"
                                     )}
                                 >
                                     <div className="flex items-center justify-between mb-0.5">
                                         <span className="font-mono font-semibold">{item.code}</span>
                                         <div className="flex items-center gap-1.5">
                                             {item.confidence != null && (
-                                                <span className="text-[10px] text-[var(--text-muted)]">
-                                                    {Math.round(item.confidence * 100)}%
-                                                </span>
+                                                <>
+                                                    <div className="w-12 h-1 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+                                                        <div
+                                                            className="h-full rounded-full bg-[#5E6AD2]"
+                                                            style={{ width: `${Math.round(item.confidence * 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-[10px] text-white">
+                                                        {Math.round(item.confidence * 100)}%
+                                                    </span>
+                                                </>
                                             )}
                                             <span className={cn(
-                                                "glass-badge text-[10px] !px-1.5 !py-0.5",
-                                                item.system === 'ICPC-2' ? "glass-badge-primary" : "glass-badge-warning"
+                                                "inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-medium",
+                                                item.system === 'ICPC-2'
+                                                    ? "bg-[rgba(94,106,210,0.1)] text-[#7B89DB]"
+                                                    : "bg-[rgba(245,158,11,0.1)] text-[#F59E0B]"
                                             )}>
                                                 {item.system}
                                             </span>
                                         </div>
                                     </div>
-                                    <span className="text-[11px] text-[var(--text-muted)]">{item.label}</span>
+                                    <span className="text-[11px] text-white">{item.label}</span>
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    <div className="mt-auto p-5 border-t border-[var(--glass-border)]">
-                        <div className="p-3 rounded-lg glass-card-static">
-                            <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">Systemstatus</p>
+                    <div className="mt-auto p-5 border-t border-[rgba(255,255,255,0.06)]">
+                        <div className="p-3 rounded-lg bg-[#191919] border border-[rgba(255,255,255,0.06)]">
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-white mb-1.5">Systemstatus</p>
                             <div className="flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-[var(--glass-bg)] rounded-full overflow-hidden">
-                                    <div className="w-[98%] h-full bg-[var(--success)] rounded-full"></div>
+                                <div className="flex-1 h-1.5 bg-[rgba(255,255,255,0.03)] rounded-full overflow-hidden">
+                                    <div className="w-[98%] h-full bg-[#10B981] rounded-full"></div>
                                 </div>
-                                <span className="text-[11px] font-semibold text-[var(--success)]">Klar</span>
+                                <span className="text-[11px] font-semibold text-[#10B981]">Klar</span>
                             </div>
                         </div>
                     </div>
                 </aside>
 
                 {/* Dictation Panel */}
-                <section className="flex flex-col w-[32%] min-w-[280px] glass-sidebar shrink-0 animate-fade-in">
-                    <div className="p-5 border-b border-[var(--glass-border)] flex justify-between items-center">
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Innspilt diktering</h3>
+                <section className="flex flex-col w-[32%] min-w-[280px] bg-[#111111] border-r border-[rgba(255,255,255,0.06)] shrink-0 animate-fade-in">
+                    <div className="p-5 border-b border-[rgba(255,255,255,0.06)] flex justify-between items-center">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-white">Innspilt diktering</h3>
                         {transcriptParam && (
-                            <span className="text-[11px] font-mono text-[var(--text-muted)]">TRANSKRIPSJON</span>
+                            <span className="text-[11px] font-mono text-white">TRANSKRIPSJON</span>
                         )}
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-6">
                         {transcriptParam ? (
                             <>
-                                <div className="p-4 glass-card-static rounded-xl">
-                                    <p className="text-sm leading-relaxed text-[var(--text-secondary)] border-l-3 border-[var(--primary)] pl-4">
+                                <div className="p-4 bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl">
+                                    <p className="text-sm leading-relaxed text-white border-l-3 border-[#5E6AD2] pl-4">
                                         {transcriptParam}
                                     </p>
                                     <div className="flex gap-2 mt-4">
-                                        <span className="glass-badge glass-badge-primary">Ord: {transcriptWordCount}</span>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-[rgba(94,106,210,0.1)] text-[#7B89DB]">Ord: {transcriptWordCount}</span>
                                         {patientName && (
-                                            <span className="glass-badge glass-badge-primary">Pasient: {patientName}</span>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-[rgba(94,106,210,0.1)] text-[#7B89DB]">Pasient: {patientName}</span>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Time saved indicator */}
-                                <div className="mt-4 p-3 trust-badge !block !rounded-lg">
+                                <div className="mt-4 p-3 rounded-lg bg-[rgba(16,185,129,0.08)] text-[#10B981]">
                                     <div className="flex items-center gap-2">
                                         <Clock className="w-4 h-4" />
                                         <span className="text-xs font-semibold">Tid spart: ~{Math.max(1, Math.round(transcriptWordCount * 0.2))} minutter</span>
@@ -803,7 +859,7 @@ function EditorContent_() {
                                     onClick={handleStructureNote}
                                     disabled={structuring}
                                     aria-live="polite"
-                                    className="mt-4 w-full glass-btn-primary flex items-center justify-center gap-2 !py-3 text-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                                    className="mt-4 w-full bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-3 transition-colors duration-150 flex items-center justify-center gap-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                                 >
                                     {structuring ? (
                                         <>
@@ -820,24 +876,24 @@ function EditorContent_() {
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <Mic className="w-10 h-10 text-[var(--text-muted)] mb-3" />
-                                <p className="text-sm text-[var(--text-muted)] font-medium">Ingen diktering tilknyttet</p>
-                                <p className="text-xs text-[var(--text-muted)] mt-1">Start en diktering fra dashbordet</p>
+                                <Mic className="w-10 h-10 text-white mb-3" />
+                                <p className="text-sm text-white font-medium">Ingen diktering tilknyttet</p>
+                                <p className="text-xs text-white mt-1">Start en diktering fra dashbordet</p>
                             </div>
                         )}
 
                         {/* Selected diagnosis codes */}
                         {selectedCodes.length > 0 && (
-                            <div className="mt-4 p-3 glass-card-static rounded-lg">
+                            <div className="mt-4 p-3 bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-lg">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Tag className="w-3.5 h-3.5 text-[var(--primary-light)]" />
-                                    <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Valgte diagnosekoder</span>
+                                    <Tag className="w-3.5 h-3.5 text-[#7B89DB]" />
+                                    <span className="text-xs font-semibold text-white uppercase tracking-wider">Valgte diagnosekoder</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {selectedCodes.map(code => {
                                         const codeInfo = suggestedCodes.find(c => c.code === code);
                                         return (
-                                            <span key={code} className="glass-badge glass-badge-primary">
+                                            <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-[rgba(94,106,210,0.1)] text-[#7B89DB]">
                                                 {code}
                                                 <button onClick={() => toggleCode(code)} className="ml-1 opacity-60 hover:opacity-100 cursor-pointer">&times;</button>
                                             </span>
@@ -852,22 +908,22 @@ function EditorContent_() {
 
                 {/* Editor Area */}
                 <section className="flex-1 flex flex-col overflow-hidden min-w-0 animate-fade-in stagger-1">
-                    <div className="p-8 pb-5 flex justify-between items-end border-b border-[var(--glass-border)]">
+                    <div className="p-8 pb-5 flex justify-between items-end border-b border-[rgba(255,255,255,0.06)]">
                         <div>
-                            <h2 className="text-3xl font-bold text-[var(--text-primary)]">Klinisk journal</h2>
-                            <div className="mt-2 flex items-center gap-3 text-sm text-[var(--text-secondary)]">
-                                <span className="font-medium text-[var(--primary-light)]">{activeTemplate}</span>
-                                <span className="w-1 h-1 rounded-full bg-[var(--text-muted)]" />
+                            <h2 className="text-3xl font-bold text-white">Klinisk journal</h2>
+                            <div className="mt-2 flex items-center gap-3 text-sm text-white">
+                                <span className="font-medium text-[#7B89DB]">{activeTemplate}</span>
+                                <span className="w-1 h-1 rounded-full bg-[#5C5C5C]" />
                                 <span>{professionLabel}</span>
                                 {patientName && (
                                     <>
-                                        <span className="w-1 h-1 rounded-full bg-[var(--text-muted)]" />
-                                        <span className="text-[var(--text-primary)] font-medium">{patientName}</span>
+                                        <span className="w-1 h-1 rounded-full bg-[#5C5C5C]" />
+                                        <span className="text-white font-medium">{patientName}</span>
                                     </>
                                 )}
                             </div>
                         </div>
-                        <div className="text-right text-sm text-[var(--text-muted)]">
+                        <div className="text-right text-sm text-white">
                             <p>Tidspunkt: Nå</p>
                             <p>Ansvarlig: {profile?.name || 'Lege'}</p>
                         </div>
@@ -875,16 +931,16 @@ function EditorContent_() {
 
                     {/* Transcript workflow banner */}
                     {showTranscriptBanner && transcriptParam && (
-                        <div className="px-8 py-3 bg-[var(--primary-subtle)] border-b border-[var(--primary)]/20 flex items-center justify-between">
+                        <div className="px-8 py-3 bg-[rgba(94,106,210,0.08)] border-b border-[rgba(94,106,210,0.2)] flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Mic className="w-4 h-4 text-[var(--primary-light)]" />
-                                <p className="text-sm text-[var(--text-secondary)]">
-                                    Du har et diktat klart. Klikk <strong>&quot;AI Strukturer journalnotat&quot;</strong> i sidepanelet for å strukturere det.
+                                <Mic className="w-4 h-4 text-[#7B89DB]" />
+                                <p className="text-sm text-white">
+                                    Du har et diktat klart. Klikk <strong className="text-white">&quot;AI Strukturer journalnotat&quot;</strong> i sidepanelet for å strukturere det.
                                 </p>
                             </div>
                             <button
                                 onClick={() => setShowTranscriptBanner(false)}
-                                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 cursor-pointer"
+                                className="text-white hover:text-white p-1 cursor-pointer transition-colors duration-150"
                                 aria-label="Lukk banner"
                             >
                                 ×
@@ -896,33 +952,117 @@ function EditorContent_() {
                     <MenuBar editor={editor} />
 
                     {/* Rich Text Editor */}
-                    <div className="flex-1 overflow-y-auto bg-[var(--surface-solid)]">
+                    <div className="flex-1 overflow-y-auto bg-[#111111]">
                         <div className="max-w-none">
                             <EditorContent editor={editor} />
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="px-8 py-4 border-t border-[var(--glass-border)] glass-header flex justify-between items-center">
+                    <div className="px-8 py-4 border-t border-[rgba(255,255,255,0.06)] bg-[#111111]/80 flex justify-between items-center">
                         <div className="flex items-center gap-6">
                             <div>
-                                <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] block">Digitalt fingeravtrykk</span>
-                                <span className="text-[11px] font-mono text-[var(--text-secondary)]">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-white block">Digitalt fingeravtrykk</span>
+                                <span className="text-[11px] font-mono text-white">
                                     {contentHash ? `SHA256: ${contentHash.slice(0, 4)}...${contentHash.slice(-4)}` : 'SHA256: beregner...'}
                                 </span>
                             </div>
-                            <div className="trust-badge">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[rgba(16,185,129,0.08)] text-[#10B981] text-xs font-medium">
                                 <Shield className="w-4 h-4" />
                                 <span className="text-[11px] font-semibold uppercase tracking-wider">GDPR-samsvar</span>
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => window.print()} className="glass-btn-ghost !p-2 rounded-lg cursor-pointer" title="Skriv ut">
+                            <button onClick={() => window.print()} className="text-white hover:text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg p-2 transition-colors duration-150 cursor-pointer" title="Skriv ut">
                                 <Printer className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
                 </section>
+
+                {/* Felleskatalogen Panel */}
+                {fkPanelOpen && (
+                    <div className="w-[380px] shrink-0 border-l border-[rgba(255,255,255,0.06)] flex flex-col bg-[#111111]">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.06)]">
+                            <div className="flex items-center gap-2">
+                                <Bot className="w-4 h-4 text-[#7B89DB]" />
+                                <span className="text-sm font-semibold text-white">Felleskatalogen</span>
+                            </div>
+                            <button
+                                onClick={() => setFkPanelOpen(false)}
+                                className="p-1 rounded-md text-[rgba(255,255,255,0.4)] hover:text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                            {fkMessages.length === 0 && (
+                                <p className="text-xs text-[rgba(255,255,255,0.4)] text-center mt-8">
+                                    Still spørsmål om legemidler i dette notatet
+                                </p>
+                            )}
+                            {fkMessages.map((msg, i) => (
+                                <div key={i} className={cn('text-sm', msg.role === 'user' ? 'text-right' : '')}>
+                                    {msg.role === 'user' ? (
+                                        <span className="inline-block px-3 py-2 rounded-xl bg-[#5E6AD2] text-white text-xs">
+                                            {msg.content}
+                                        </span>
+                                    ) : (
+                                        <div className="p-3 rounded-lg bg-[#191919] border border-[rgba(255,255,255,0.06)]">
+                                            <p className="text-xs text-white leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                                            {msg.sources && msg.sources.length > 0 && (
+                                                <div className="mt-2 pt-2 border-t border-[rgba(255,255,255,0.06)] flex flex-wrap gap-1">
+                                                    {msg.sources.map((s, j) => (
+                                                        <a
+                                                            key={j}
+                                                            href={s.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1 text-[10px] text-[rgba(255,255,255,0.4)] hover:text-[#7B89DB] transition-colors"
+                                                        >
+                                                            <ExternalLink className="w-2.5 h-2.5" />
+                                                            {s.drugName}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <button
+                                                onClick={() => {
+                                                    if (editor) {
+                                                        editor.chain().focus().insertContent(`\n\n${msg.content}`).run();
+                                                    }
+                                                }}
+                                                className="mt-2 text-[10px] text-[rgba(255,255,255,0.4)] hover:text-[#7B89DB] transition-colors"
+                                            >
+                                                Sett inn i notat
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {fkLoading && <Loader2 className="w-4 h-4 animate-spin text-[rgba(255,255,255,0.4)] mx-auto" />}
+                        </div>
+                        <div className="px-4 py-3 border-t border-[rgba(255,255,255,0.06)]">
+                            <div className="flex gap-2 items-end">
+                                <textarea
+                                    value={fkInput}
+                                    onChange={(e) => setFkInput(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFkMessage(fkInput); } }}
+                                    placeholder="Spør om et legemiddel..."
+                                    rows={1}
+                                    className="flex-1 bg-[#191919] rounded-lg px-3 py-2 text-xs text-white placeholder:text-[rgba(255,255,255,0.3)] border border-[rgba(255,255,255,0.06)] focus:outline-none focus:border-[#5E6AD2] resize-none"
+                                />
+                                <button
+                                    onClick={() => sendFkMessage(fkInput)}
+                                    disabled={fkLoading || !fkInput.trim()}
+                                    className="h-8 w-8 rounded-lg bg-[#5E6AD2] hover:bg-[#4F5ABF] flex items-center justify-center shrink-0 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <Send className="w-3.5 h-3.5 text-white" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
 
             {/* Workflow toasts */}
@@ -951,10 +1091,10 @@ function EditorContent_() {
 export default function Editor() {
     return (
         <Suspense fallback={
-            <div className="flex h-screen items-center justify-center bg-[var(--bg-deep)]">
+            <div className="flex h-screen items-center justify-center bg-[#0A0A0A]">
                 <div className="text-center">
-                    <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                    <p className="text-sm text-[var(--text-secondary)]">Laster editor...</p>
+                    <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-sm text-white">Laster editor...</p>
                 </div>
             </div>
         }>
