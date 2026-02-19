@@ -133,3 +133,9 @@ export const profileUpdateSchema = z.object({
     hprNumber: z.string().max(20).nullable().optional(),
     address: z.string().max(500).nullable().optional(),
 });
+
+// --- Lab ---
+export const labInterpretSchema = z.object({
+  rawText: z.string().min(1, 'Laboratorieverdier er påkrevd').max(10_000),
+  mode: z.enum(['paste', 'fetch']).default('paste'),
+});

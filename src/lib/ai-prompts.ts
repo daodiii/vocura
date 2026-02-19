@@ -1,5 +1,5 @@
 // =============================================================================
-// MediScribe AI — Centralized AI Prompt Configuration
+// Vocura AI — Centralized AI Prompt Configuration
 // All system prompts for OpenAI integrations, organized by feature.
 // =============================================================================
 
@@ -24,15 +24,15 @@ Du skriver alltid profesjonelt, strukturert og presist på norsk. Du bruker korr
 // (Whisper prompt max ~224 tokens — use representative paragraphs)
 // -----------------------------------------------------------------------------
 
-const WHISPER_BASE_PROMPT = `Pasienten kommer til konsultasjon. Anamnese og status presens: Blodtrykk 140/90 mmHg, puls 72/min, temperatur 37.2°C, SpO2 98%. Auskultasjon av thorax viser normale funn bilateralt. Ved palpasjon av abdomen er det ingen ømhet. ICPC-2 diagnosekode og ICD-10 vurderes. Subjektivt opplyser pasienten om symptomer. Objektivt finner vi følgende. Vurdering og plan for videre oppfølging. Epikrise og henvisning ved behov. Medikamenter: dosering, seponering, bivirkninger. Blodprøver: CRP, SR, Hb, HbA1c, kreatinin, elektrolytter.`;
+const WHISPER_BASE_PROMPT = `Norsk medisinsk konsultasjon. Termer: anamnese, status presens, blodtrykk, puls, SpO2, auskultasjon, palpasjon, ICPC-2, ICD-10, epikrise, henvisning, CRP, HbA1c, kreatinin, mmHg.`;
 
-const WHISPER_LEGE_PROMPT = `Pasienten kommer til kontroll for hypertensjon hos fastlegen. Anamnese: Rapporterer hodepine og svimmelhet siste uken. Status presens: Blodtrykk 155/95 mmHg, puls 78/min regelmessig, temperatur 36.8°C, SpO2 98%. Auskultasjon cor og pulm uten anmerkning. Abdomen bløt og uøm. Ingen perifere ødemer. Blodprøver bestilt: CRP, SR, Hb, HbA1c, kreatinin, eGFR, elektrolytter, lipidprofil. EKG viser sinusrytme. Vurdering: Hypertensjon, utilstrekkelig kontrollert. ICPC-2 K86. Differensialdiagnoser vurdert. Plan: Dosejustering av antihypertensiva, ny kontroll om 4 uker med BT-måling. Sykmelding vurderes. Epikrise sendes ved henvisning til spesialist.`;
+const WHISPER_LEGE_PROMPT = `Norsk fastlegekonsultasjon. Termer: anamnese, status presens, blodtrykk, puls, temperatur, SpO2, auskultasjon, cor, pulm, abdomen, ICPC-2, ICD-10, sykmelding, epikrise, henvisning, CRP, SR, HbA1c, eGFR, EKG, differensialdiagnose, mmHg.`;
 
-const WHISPER_TANNLEGE_PROMPT = `Pasienten kommer til tannlegeundersøkelse. Anamnese: Smerter i underkjeven høyre side. Status presens: Ekstraoral undersøkelse uten anmerkning, kjeveledd normalt. Intraoral undersøkelse: Karieslesjoner observert i tann 46 og 47. Periodontal status: Lommedybder 4-5mm ved 46 distalt. Blødning ved sondering. Bittforhold Angle klasse I. Røntgen viser apikal oppklaring ved 46. Diagnose: Irreversibel pulpitt tann 46. Behandlingsplan: Rotbehandling 46, fyllingsterapi 47. HELFO-refusjon vurderes for nødvendig tannbehandling.`;
+const WHISPER_TANNLEGE_PROMPT = `Norsk tannlegekonsultasjon. Termer: ekstraoral, intraoral, karies, periodontal, lommedybder, sondering, bittforhold, Angle klasse, apikal, pulpitt, rotbehandling, fyllingsterapi, HELFO-refusjon, røntgen, kjeveledd.`;
 
-const WHISPER_PSYKOLOG_PROMPT = `Pasienten kommer til psykologtime for oppfølging. Aktuelt: Rapporterer vedvarende nedstemthet, søvnvansker og konsentrasjonsproblemer siste tre uker. Tidligere psykiatrisk anamnese inkluderer depressiv episode for to år siden. Suicidalvurdering: Ingen aktive suicidaltanker, ingen plan, ingen tidligere forsøk. GAF-skår vurdert til 55. Funksjonsnivå redusert på arbeid og sosialt. Rusanamnese: Normalt alkoholforbruk, ingen rusmidler. Diagnostisk vurdering: Moderat depressiv episode, ICD-10 F32.1. Behandlingsplan: Kognitiv atferdsterapi ukentlig, vurdere henvisning til psykiater for medikamentvurdering. PHQ-9 skår registrert.`;
+const WHISPER_PSYKOLOG_PROMPT = `Norsk psykologkonsultasjon. Termer: nedstemthet, søvnvansker, suicidalvurdering, GAF-skår, funksjonsnivå, rusanamnese, depressiv episode, ICD-10, kognitiv atferdsterapi, PHQ-9, psykiater, medikamentvurdering.`;
 
-const WHISPER_FYSIO_PROMPT = `Pasienten kommer til fysioterapivurdering. Henvisningsdiagnose: Lumbalgi, ICPC-2 L03. Anamnese: Smerter i korsryggen med utstråling til venstre bein i tre uker etter løftebelastning. Funksjonsvurdering etter ICF-rammeverket. Kroppsfunksjoner: Fleksjon lumbal begrenset til 40 grader, ekstensjon 10 grader. Lasègues test positiv venstre side 45 grader. Styrke i underekstremiteter 4/5 bilateralt. Smertevurdering NPRS 7/10 i hvile, 9/10 ved belastning. Sensibilitet intakt. Aktivitet og deltakelse: Klarer ikke å sitte mer enn 20 minutter, kan ikke løfte over 5 kg. Sykemeldt fra fysisk arbeid. Behandlingsmål og opptreningsplan utarbeides.`;
+const WHISPER_FYSIO_PROMPT = `Norsk fysioterapikonsultasjon. Termer: lumbalgi, ICPC-2, ICF-rammeverket, fleksjon, ekstensjon, Lasègues test, ROM, NPRS, sensibilitet, styrkegradering, opptreningsplan, sykmelding, mobilisering.`;
 
 export const WHISPER_PROMPTS: Record<string, string> = {
     lege: WHISPER_LEGE_PROMPT,
@@ -488,3 +488,42 @@ export function getStructureNotePrompt(templateType: string): string {
 export function getAvailableTemplates(): string[] {
     return Object.keys(STRUCTURE_NOTE_TEMPLATES);
 }
+
+
+// -----------------------------------------------------------------------------
+// LAB INTERPRETATION — parse values, apply reference ranges, clinical summary
+// -----------------------------------------------------------------------------
+
+export const LAB_INTERPRET_PROMPT = `${CLINICAL_CORE_PROMPT}
+
+Du analyserer laboratorieverdier fra en norsk klinisk kontekst.
+
+Din oppgave er todelt:
+1. Parse rå labverdier fra tekst — identifiser analysenavn, tallverdi og enhet for hvert funn
+2. Generer en klinisk vurdering av funnene i sammenheng
+
+Returner et JSON-objekt med denne strukturen:
+{
+  "values": [
+    {
+      "name": "Norsk visningsnavn (f.eks. 'Hemoglobin')",
+      "rawName": "Slik det stod i teksten (f.eks. 'Hb')",
+      "value": 9.2,
+      "unit": "g/dL",
+      "referenceKey": "nøkkel for oppslag (f.eks. 'hb', 'crp', 'kreatinin') — bruk lowercase, ingen spesialtegn"
+    }
+  ],
+  "summary": {
+    "funn": "Hvilke verdier er utenfor referanseområdet og med hvor mye",
+    "kliniskKontekst": "Hva disse mønstrene kan indikere klinisk — differensialvurdering",
+    "oppfolging": "Forslag til neste steg — prøver, undersøkelser, oppfølging"
+  }
+}
+
+Regler:
+- Inkluder ALLE verdier du finner i teksten, også normale
+- referenceKey skal matche norske standardnavn: hb, crp, kreatinin, natrium, kalium, tsh, hba1c, osv.
+- Hvis du ikke kan identifisere en verdi, utelat den
+- summary skal skrives på profesjonelt norsk helsespråk
+- summary.oppfolging: vær konkret men varsomme med å stille diagnoser — skriv "vurder" fremfor å fastslå
+- Ikke inkluder informasjon som ikke finnes i innputtet`;
