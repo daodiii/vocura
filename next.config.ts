@@ -2,11 +2,11 @@ import type { NextConfig } from "next";
 
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co https://api.openai.com",
+  "connect-src 'self' https://*.supabase.co https://api.openai.com https://cdn.jsdelivr.net",
   "media-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
