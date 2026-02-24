@@ -9,7 +9,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import { FileText, Save, CheckCircle, Download, User, PenLine, PlusCircle, Printer, Mic, Shield, Lock, Bold, Italic, UnderlineIcon, List, ListOrdered, Heading2, Undo2, Redo2, Type, Sparkles, Copy, Check, Clock, Tag, Loader2, Bot, X, Send, ExternalLink } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, fetchWithTimeout } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
 import Toast from '@/components/Toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -125,19 +125,22 @@ function EditorContent_() {
     const { profile } = useUserProfile();
     const searchParams = useSearchParams();
     const professionParam = searchParams.get('profession') || 'default';
-    const entryId = searchParams.get('id');
     const transcriptParam = searchParams.get('transcript');
     const patientNameParam = searchParams.get('patientName');
 
     const [activeTemplate, setActiveTemplate] = useState('');
     const [saved, setSaved] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [approved, setApproved] = useState(false);
     const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
     const [copied, setCopied] = useState(false);
-    const [journalEntryId, setJournalEntryId] = useState<string | null>(entryId);
     const [patientName, setPatientName] = useState(patientNameParam || '');
-    const [loadedFromApi, setLoadedFromApi] = useState(false);
+
+    // EPJ connection state
+    const [isEPJConnected, setIsEPJConnected] = useState(false);
+    const [epjPushing, setEpjPushing] = useState(false);
+    const [epjPushSuccess, setEpjPushSuccess] = useState(false);
+    const [showEpjConfirmModal, setShowEpjConfirmModal] = useState(false);
+    const [epjResult, setEpjResult] = useState<{ epjNoteId?: string; epjUrl?: string } | null>(null);
 
     // AI suggested codes state
     const [suggestedCodes, setSuggestedCodes] = useState<Array<{ code: string; system: string; label: string; confidence: number }>>([]);
@@ -152,10 +155,8 @@ function EditorContent_() {
     // Debounce timer ref for auto-fetching codes
     const codesFetchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Auto-save state
+    // Unsaved changes state
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-    const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-    const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
     const isInitialLoadRef = useRef(true);
 
     // FK panel state
@@ -166,7 +167,6 @@ function EditorContent_() {
 
     // Workflow toast state
     const [showSaveToast, setShowSaveToast] = useState(false);
-    const [showApproveToast, setShowApproveToast] = useState(false);
     const [showTranscriptBanner, setShowTranscriptBanner] = useState(!!transcriptParam);
 
     const editor = useEditor({
@@ -188,41 +188,24 @@ function EditorContent_() {
         },
     });
 
-    // Load existing entry from API if id param is present
+    // Fetch EPJ connection status on mount
     useEffect(() => {
-        if (entryId && editor) {
-            fetch(`/api/journal/${entryId}`)
-                .then(res => res.ok ? res.json() : null)
-                .then(entry => {
-                    if (entry) {
-                        editor.commands.setContent(entry.content);
-                        setTimeout(() => editor.chain().focus('start').run(), 100);
-                        setActiveTemplate(entry.template || '');
-                        setSelectedCodes(entry.diagnosisCodes || []);
-                        setApproved(entry.status === 'approved');
-                        setPatientName(entry.patientName || '');
-                        setJournalEntryId(entry.id);
-                        setLoadedFromApi(true);
-                    }
-                })
-                .catch(err => {
-                    console.error('Failed to load journal entry:', err);
-                });
-        }
-    }, [entryId, editor]);
+        fetch('/api/user/epj-integration')
+            .then(res => res.ok ? res.json() : { isConnected: false })
+            .then(data => setIsEPJConnected(data.isConnected))
+            .catch(() => setIsEPJConnected(false));
+    }, []);
 
-    // Set default template from profession (only if not loaded from API)
+    // Set default template from profession
     useEffect(() => {
-        if (loadedFromApi) return;
         const templates = TEMPLATES[professionParam] || TEMPLATES['default'];
         if (templates.length > 0) {
             setActiveTemplate(templates[0]);
         }
-    }, [professionParam, loadedFromApi]);
+    }, [professionParam]);
 
-    // Load template content when template changes (only if not loaded from API)
+    // Load template content when template changes
     useEffect(() => {
-        if (loadedFromApi) return;
         if (editor && activeTemplate) {
             const content = TEMPLATE_CONTENT[activeTemplate];
             if (content) {
@@ -232,9 +215,9 @@ function EditorContent_() {
             }
             editor.chain().focus('start').run();
             setSaved(false);
-            setApproved(false);
+            setEpjPushSuccess(false);
         }
-    }, [activeTemplate, editor, loadedFromApi]);
+    }, [activeTemplate, editor]);
 
     // Compute content hash for digital fingerprint
     useEffect(() => {
@@ -279,7 +262,7 @@ function EditorContent_() {
         if (!editor || editor.getText().length < 20) return;
         setLoadingCodes(true);
         try {
-            const res = await fetch('/api/ai/suggest-codes', {
+            const res = await fetchWithTimeout('/api/ai/suggest-codes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: editor.getText(), profession: professionParam }),
@@ -300,7 +283,7 @@ function EditorContent_() {
         if (!editor || !transcriptParam) return;
         setStructuring(true);
         try {
-            const res = await fetch('/api/ai/structure-note', {
+            const res = await fetchWithTimeout('/api/ai/structure-note', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -316,7 +299,7 @@ function EditorContent_() {
                     editor.commands.setContent(data.content);
                     setTimeout(() => editor.chain().focus('end').run(), 100);
                     setSaved(false);
-                    setApproved(false);
+                    setEpjPushSuccess(false);
                 }
             }
         } catch (err) {
@@ -326,112 +309,74 @@ function EditorContent_() {
         }
     }, [editor, transcriptParam, activeTemplate, professionParam, patientName]);
 
-    // Real save handler
-    const handleSave = useCallback(async () => {
+    // Save handler — localStorage only
+    const handleSave = useCallback(() => {
         if (!editor) return;
-        setSaving(true);
         try {
-            const content = editor.getHTML();
-            const body = {
-                title: activeTemplate || 'Journalnotat',
-                content,
-                template: activeTemplate || null,
-                status: 'draft',
-                diagnosisCodes: selectedCodes,
-                patientName: patientNameParam || patientName || null,
+            const backup = {
+                content: editor.getHTML(),
+                template: activeTemplate,
+                patientName,
+                selectedCodes,
+                timestamp: Date.now(),
             };
+            localStorage.setItem('vocura_editor_backup', JSON.stringify(backup));
+            setSaved(true);
+            setHasUnsavedChanges(false);
+            setTimeout(() => setSaved(false), 2000);
+            setShowSaveToast(true);
+        } catch {
+            // localStorage full or unavailable
+        }
+    }, [editor, activeTemplate, patientName, selectedCodes]);
 
-            let res;
-            if (journalEntryId) {
-                // Update existing
-                res = await fetch(`/api/journal/${journalEntryId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
-                });
-            } else {
-                // Create new
-                res = await fetch('/api/journal', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
-                });
-            }
-
-            if (res.ok) {
-                const data = await res.json();
-                setJournalEntryId(data.id);
-                setSaved(true);
-                setHasUnsavedChanges(false);
-                setAutoSaveStatus('idle');
+    // Push to EPJ handler
+    const handlePushToEPJ = useCallback(async () => {
+        if (!editor) return;
+        setShowEpjConfirmModal(false);
+        setEpjPushing(true);
+        try {
+            const res = await fetchWithTimeout('/api/export/epj', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: activeTemplate || 'Journalnotat',
+                    content: editor.getHTML(),
+                    patientId: patientNameParam || patientName || 'ukjent',
+                    patientDisplayName: patientNameParam || patientName || '',
+                    diagnosisCodes: selectedCodes.length > 0
+                        ? suggestedCodes.filter(c => selectedCodes.includes(c.code)).map(c => ({
+                            code: c.code,
+                            system: c.system as 'ICPC-2' | 'ICD-10',
+                            label: c.label,
+                        }))
+                        : undefined,
+                    templateType: activeTemplate || undefined,
+                }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setEpjPushSuccess(true);
+                setEpjResult({ epjNoteId: data.epjNoteId, epjUrl: data.epjUrl });
                 localStorage.removeItem('vocura_editor_backup');
-                setTimeout(() => setSaved(false), 2000);
-                setShowSaveToast(true);
+                setHasUnsavedChanges(false);
+            } else {
+                setEpjResult(null);
+                alert(data.error || 'Kunne ikke sende til EPJ. Bruk PDF-eksport som alternativ.');
             }
         } catch (err) {
-            console.error('Save failed:', err);
+            console.error('EPJ push failed:', err);
+            alert('Nettverksfeil ved sending til EPJ. Prøv igjen eller bruk PDF-eksport.');
         } finally {
-            setSaving(false);
+            setEpjPushing(false);
         }
-    }, [editor, activeTemplate, selectedCodes, journalEntryId, patientNameParam, patientName]);
-
-    // Real approve handler
-    const handleApprove = useCallback(async () => {
-        if (!editor) return;
-        // Save first if not saved
-        if (!journalEntryId) {
-            await handleSave();
-        }
-        const currentId = journalEntryId;
-        if (currentId) {
-            const res = await fetch(`/api/journal/${currentId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'approved' }),
-            });
-            if (res.ok) {
-                setApproved(true);
-                setShowApproveToast(true);
-            }
-        } else {
-            // Save and approve in one go
-            setSaving(true);
-            try {
-                const content = editor.getHTML();
-                const body = {
-                    title: activeTemplate || 'Journalnotat',
-                    content,
-                    template: activeTemplate || null,
-                    status: 'approved',
-                    diagnosisCodes: selectedCodes,
-                    patientName: patientNameParam || patientName || null,
-                };
-                const res = await fetch('/api/journal', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setJournalEntryId(data.id);
-                    setApproved(true);
-                    setSaved(true);
-                    setTimeout(() => setSaved(false), 2000);
-                    setShowApproveToast(true);
-                }
-            } catch (err) {
-                console.error('Approve failed:', err);
-            } finally {
-                setSaving(false);
-            }
-        }
-    }, [editor, journalEntryId, activeTemplate, selectedCodes, patientNameParam, patientName, handleSave]);
+    }, [editor, activeTemplate, selectedCodes, suggestedCodes, patientNameParam, patientName]);
 
     // Export handler
     const handleExport = useCallback(async () => {
         if (!editor) return;
         try {
-            const res = await fetch('/api/export/pdf', {
+            const res = await fetchWithTimeout('/api/export/pdf', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -455,85 +400,36 @@ function EditorContent_() {
         }
     }, [editor, activeTemplate, profile]);
 
-    // Auto-save: backup to localStorage on every change, API save after 30s idle
+    // Backup to localStorage on every change
     useEffect(() => {
         if (!editor) return;
         const handleUpdate = () => {
-            // Skip the initial load / template set
             if (isInitialLoadRef.current) {
                 isInitialLoadRef.current = false;
                 return;
             }
             setHasUnsavedChanges(true);
-            setAutoSaveStatus('idle');
-
             // Backup to localStorage immediately
             try {
                 const backup = {
                     content: editor.getHTML(),
                     template: activeTemplate,
                     patientName,
+                    selectedCodes,
                     timestamp: Date.now(),
                 };
                 localStorage.setItem('vocura_editor_backup', JSON.stringify(backup));
             } catch { /* localStorage full or unavailable */ }
-
-            // Debounced API auto-save (30 seconds idle)
-            if (autoSaveTimerRef.current) {
-                clearTimeout(autoSaveTimerRef.current);
-            }
-            autoSaveTimerRef.current = setTimeout(async () => {
-                if (!editor || editor.getText().trim().length < 5) return;
-                setAutoSaveStatus('saving');
-                try {
-                    const content = editor.getHTML();
-                    const body = {
-                        title: activeTemplate || 'Journalnotat',
-                        content,
-                        template: activeTemplate || null,
-                        status: 'draft',
-                        diagnosisCodes: selectedCodes,
-                        patientName: patientNameParam || patientName || null,
-                    };
-
-                    let res;
-                    if (journalEntryId) {
-                        res = await fetch(`/api/journal/${journalEntryId}`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(body),
-                        });
-                    } else {
-                        res = await fetch('/api/journal', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(body),
-                        });
-                    }
-
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (!journalEntryId) setJournalEntryId(data.id);
-                        setHasUnsavedChanges(false);
-                        setAutoSaveStatus('saved');
-                        localStorage.removeItem('vocura_editor_backup');
-                        setTimeout(() => setAutoSaveStatus('idle'), 3000);
-                    }
-                } catch {
-                    setAutoSaveStatus('idle');
-                }
-            }, 30_000);
         };
         editor.on('update', handleUpdate);
         return () => {
             editor.off('update', handleUpdate);
-            if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
         };
-    }, [editor, activeTemplate, patientName, patientNameParam, selectedCodes, journalEntryId]);
+    }, [editor, activeTemplate, patientName, selectedCodes]);
 
     // Restore from localStorage backup on mount
     useEffect(() => {
-        if (!editor || entryId || loadedFromApi) return;
+        if (!editor) return;
         try {
             const raw = localStorage.getItem('vocura_editor_backup');
             if (raw) {
@@ -544,11 +440,12 @@ function EditorContent_() {
                     setTimeout(() => editor.chain().focus('end').run(), 100);
                     if (backup.template) setActiveTemplate(backup.template);
                     if (backup.patientName) setPatientName(backup.patientName);
+                    if (backup.selectedCodes) setSelectedCodes(backup.selectedCodes);
                     setHasUnsavedChanges(true);
                 }
             }
         } catch { /* ignore parse errors */ }
-    }, [editor, entryId, loadedFromApi]);
+    }, [editor]);
 
     // Warn on close with unsaved changes
     useEffect(() => {
@@ -570,12 +467,12 @@ function EditorContent_() {
             }
             if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
                 e.preventDefault();
-                handleApprove();
+                if (isEPJConnected) setShowEpjConfirmModal(true);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleSave, handleApprove]);
+    }, [handleSave, isEPJConnected]);
 
     const sendFkMessage = async (text: string) => {
         if (!text.trim() || fkLoading) return;
@@ -584,11 +481,11 @@ function EditorContent_() {
         setFkInput('');
         setFkLoading(true);
         try {
-            const res = await fetch('/api/felleskatalogen/chat', {
+            const res = await fetchWithTimeout('/api/felleskatalogen/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: text, history }),
-            });
+            }, 60000);
             const data = await res.json();
             setFkMessages((prev) => [...prev, {
                 role: 'assistant',
@@ -617,7 +514,19 @@ function EditorContent_() {
     };
 
     const handleTemplateChange = (template: string) => {
-        setLoadedFromApi(false);
+        // Backup current editor content to localStorage before switching templates
+        // to prevent data loss from rapid template switches
+        if (editor && editor.getText().trim().length > 0) {
+            try {
+                const backup = {
+                    content: editor.getHTML(),
+                    template: activeTemplate,
+                    patientName,
+                    timestamp: Date.now(),
+                };
+                localStorage.setItem('vocura_editor_backup', JSON.stringify(backup));
+            } catch { /* localStorage full or unavailable */ }
+        }
         setActiveTemplate(template);
     };
 
@@ -654,18 +563,8 @@ function EditorContent_() {
                         FK
                     </button>
                     <div aria-live="polite" aria-atomic="true">
-                        {hasUnsavedChanges && autoSaveStatus === 'idle' && (
+                        {hasUnsavedChanges && (
                             <span className="text-[11px] text-[#F59E0B] font-medium mr-1">Ulagrede endringer</span>
-                        )}
-                        {autoSaveStatus === 'saving' && (
-                            <span className="text-[11px] text-white font-medium mr-1 flex items-center gap-1">
-                                <Loader2 className="w-3 h-3 animate-spin" /> Autolagrer...
-                            </span>
-                        )}
-                        {autoSaveStatus === 'saved' && (
-                            <span className="text-[11px] text-[#10B981] font-medium mr-1 flex items-center gap-1">
-                                <Check className="w-3 h-3" /> Autolagret
-                            </span>
                         )}
                     </div>
                     <button
@@ -684,18 +583,24 @@ function EditorContent_() {
                         {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre utkast'}
                     </button>
                     <button
-                        onClick={handleApprove}
-                        disabled={saving}
+                        onClick={() => setShowEpjConfirmModal(true)}
+                        disabled={epjPushing || !isEPJConnected}
                         className={cn(
                             "text-xs py-2 px-4 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer rounded-lg font-medium transition-colors duration-150",
-                            approved
+                            epjPushSuccess
                                 ? "bg-[#10B981] text-white font-semibold"
                                 : "bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white"
                         )}
-                        title="Godkjenn (Ctrl+Enter)"
+                        title={isEPJConnected ? "Send til EPJ (Ctrl+Enter)" : "Koble til EPJ i Innstillinger"}
                     >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        {approved ? 'Godkjent' : 'Godkjenn'}
+                        {epjPushing ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : epjPushSuccess ? (
+                            <CheckCircle className="w-3.5 h-3.5" />
+                        ) : (
+                            <Send className="w-3.5 h-3.5" />
+                        )}
+                        {epjPushing ? 'Sender...' : epjPushSuccess ? 'Sendt til EPJ!' : 'Send til EPJ'}
                     </button>
                     <button
                         onClick={handleCopy}
@@ -709,7 +614,7 @@ function EditorContent_() {
                         onClick={handleExport}
                         className="border border-[rgba(255,255,255,0.06)] text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
                     >
-                        <Download className="w-3.5 h-3.5" /> Eksport (EPJ)
+                        <Download className="w-3.5 h-3.5" /> Eksport PDF
                     </button>
                 </div>
             </div>
@@ -929,6 +834,24 @@ function EditorContent_() {
                         </div>
                     </div>
 
+                    {/* EPJ success banner */}
+                    {epjPushSuccess && epjResult && (
+                        <div className="mx-6 mt-4 p-4 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.2)]">
+                            <div className="flex items-center gap-2 text-[#10B981]">
+                                <CheckCircle className="w-4 h-4" />
+                                <span className="text-sm font-semibold">Notat sendt til EPJ</span>
+                            </div>
+                            {epjResult.epjNoteId && (
+                                <p className="text-xs text-[rgba(255,255,255,0.5)] mt-1">Referanse: {epjResult.epjNoteId}</p>
+                            )}
+                            {epjResult.epjUrl && (
+                                <a href={epjResult.epjUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-[#5E6AD2] hover:underline mt-1 flex items-center gap-1">
+                                    <ExternalLink className="w-3 h-3" /> Åpne i EPJ
+                                </a>
+                            )}
+                        </div>
+                    )}
+
                     {/* Transcript workflow banner */}
                     {showTranscriptBanner && transcriptParam && (
                         <div className="px-8 py-3 bg-[rgba(94,106,210,0.08)] border-b border-[rgba(94,106,210,0.2)] flex items-center justify-between">
@@ -1065,23 +988,44 @@ function EditorContent_() {
                 )}
             </main>
 
+            {/* EPJ confirmation modal */}
+            {showEpjConfirmModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center" onClick={() => setShowEpjConfirmModal(false)}>
+                    <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-base font-semibold text-white mb-3">Send notat til EPJ</h3>
+                        <div className="space-y-2 text-sm text-[rgba(255,255,255,0.7)] mb-6">
+                            <p><strong className="text-white">Mal:</strong> {activeTemplate || 'Journalnotat'}</p>
+                            <p><strong className="text-white">Pasient:</strong> {patientName || patientNameParam || 'Ikke angitt'}</p>
+                            {selectedCodes.length > 0 && (
+                                <p><strong className="text-white">Koder:</strong> {selectedCodes.join(', ')}</p>
+                            )}
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowEpjConfirmModal(false)}
+                                className="flex-1 text-sm font-medium py-2 px-4 rounded-lg border border-[rgba(255,255,255,0.1)] text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors cursor-pointer"
+                            >
+                                Avbryt
+                            </button>
+                            <button
+                                onClick={handlePushToEPJ}
+                                className="flex-1 bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                                <Send className="w-3.5 h-3.5" />
+                                Bekreft og send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Workflow toasts */}
             {showSaveToast && (
                 <Toast
-                    message="Utkast lagret!"
+                    message="Utkast lagret lokalt!"
                     type="success"
-                    action={{ label: 'Se i journal', href: '/journal' }}
                     onDismiss={() => setShowSaveToast(false)}
                     autoDismissMs={3000}
-                />
-            )}
-            {showApproveToast && (
-                <Toast
-                    message="Notat godkjent og lagret!"
-                    type="success"
-                    action={{ label: 'Se i journal', href: '/journal' }}
-                    onDismiss={() => setShowApproveToast(false)}
-                    autoDismissMs={8000}
                 />
             )}
         </div>

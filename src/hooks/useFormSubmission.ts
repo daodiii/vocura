@@ -1,125 +1,92 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 interface UseFormSubmissionOptions {
     formType: string;
     patientId?: string;
 }
 
-interface FormSubmissionResult {
-    id: string;
-    formType: string;
-    data: Record<string, unknown>;
-    status: string;
-    score?: number;
-    createdAt: string;
-}
-
 export function useFormSubmission({ formType, patientId }: UseFormSubmissionOptions) {
-    const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
+    const [pushing, setPushing] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
+    const [pushed, setPushed] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [localDraft, setLocalDraft] = useState<Record<string, unknown> | null>(null);
 
-    const saveAsDraft = useCallback(async (data: Record<string, unknown>, score?: number) => {
+    const storageKey = `vocura_form_draft_${formType}`;
+
+    // Restore draft from localStorage on mount
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed.data && Date.now() - (parsed.timestamp || 0) < 24 * 60 * 60 * 1000) {
+                    setLocalDraft(parsed.data);
+                }
+            }
+        } catch { /* ignore */ }
+    }, [storageKey]);
+
+    const saveAsDraft = useCallback((data: Record<string, unknown>, _score?: number) => {
         setSaving(true);
         setError(null);
         try {
-            const body: Record<string, unknown> = {
-                formType,
-                data,
-                status: 'draft',
-            };
-            if (patientId) body.patientId = patientId;
-            if (score !== undefined) body.score = score;
-
-            let res;
-            if (submissionId) {
-                res = await fetch(`/api/forms/submissions/${submissionId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
-                });
-            } else {
-                res = await fetch('/api/forms/submissions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
-                });
-            }
-
-            if (res.ok) {
-                const result: FormSubmissionResult = await res.json();
-                setSubmissionId(result.id);
-                setSaved(true);
-                setTimeout(() => setSaved(false), 2000);
-                return result;
-            } else {
-                const errData = await res.json().catch(() => ({}));
-                setError(errData.error || 'Kunne ikke lagre skjema');
-                return null;
-            }
-        } catch (err) {
-            console.error('Save failed:', err);
-            setError('Nettverksfeil ved lagring');
-            return null;
+            localStorage.setItem(storageKey, JSON.stringify({ data, timestamp: Date.now() }));
+            setLocalDraft(data);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch {
+            setError('Kunne ikke lagre utkast lokalt');
         } finally {
             setSaving(false);
         }
-    }, [formType, patientId, submissionId]);
+    }, [storageKey]);
 
-    const submitForm = useCallback(async (data: Record<string, unknown>, score?: number) => {
-        setSubmitting(true);
+    const pushToEPJ = useCallback(async (data: Record<string, unknown>, title: string) => {
+        setPushing(true);
         setError(null);
         try {
-            const body: Record<string, unknown> = {
-                formType,
-                data,
-                status: 'submitted',
-            };
-            if (patientId) body.patientId = patientId;
-            if (score !== undefined) body.score = score;
+            const sections = Object.entries(data)
+                .filter(([, v]) => v !== '' && v !== null && v !== undefined)
+                .map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`)
+                .join('');
 
-            let res;
-            if (submissionId) {
-                res = await fetch(`/api/forms/submissions/${submissionId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...body, status: 'submitted' }),
-                });
-            } else {
-                res = await fetch('/api/forms/submissions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...body, status: 'submitted' }),
-                });
-            }
+            const res = await fetch('/api/export/epj', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    content: sections,
+                    patientId: patientId || 'ukjent',
+                    patientDisplayName: '',
+                    templateType: `form-${formType}`,
+                }),
+            });
 
-            if (res.ok) {
-                const result: FormSubmissionResult = await res.json();
-                setSubmissionId(result.id);
-                setSubmitted(true);
+            const result = await res.json();
+            if (result.success) {
+                setPushed(true);
+                localStorage.removeItem(storageKey);
+                setLocalDraft(null);
                 return result;
             } else {
-                const errData = await res.json().catch(() => ({}));
-                setError(errData.error || 'Kunne ikke sende inn skjema');
+                setError(result.error || 'Kunne ikke sende til EPJ');
                 return null;
             }
         } catch (err) {
-            console.error('Submit failed:', err);
-            setError('Nettverksfeil ved innsending');
+            console.error('EPJ push failed:', err);
+            setError('Nettverksfeil ved sending til EPJ');
             return null;
         } finally {
-            setSubmitting(false);
+            setPushing(false);
         }
-    }, [formType, patientId, submissionId]);
+    }, [formType, patientId, storageKey]);
 
     const exportPdf = useCallback(async (data: Record<string, unknown>, title: string, author: string) => {
         try {
-            // Build a simple HTML representation of the form data
             const sections = Object.entries(data)
                 .filter(([, v]) => v !== '' && v !== null && v !== undefined)
                 .map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`)
@@ -150,15 +117,28 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
         }
     }, [formType]);
 
+    const clearDraft = useCallback(() => {
+        localStorage.removeItem(storageKey);
+        setLocalDraft(null);
+    }, [storageKey]);
+
     return {
-        submissionId,
         saving,
-        submitting,
+        pushing,
         saved,
-        submitted,
+        pushed,
         error,
+        localDraft,
         saveAsDraft,
-        submitForm,
+        pushToEPJ,
         exportPdf,
+        clearDraft,
+        // Backwards-compatible aliases (to be removed when all forms are migrated)
+        submissionId: null as string | null,
+        submitting: pushing,
+        submitted: pushed,
+        submitForm: async (data: Record<string, unknown>, _score?: number) => {
+            return pushToEPJ(data, formType);
+        },
     };
 }

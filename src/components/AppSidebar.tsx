@@ -7,7 +7,6 @@ import {
     Activity,
     Mic,
     LayoutDashboard,
-    BookOpen,
     PenLine,
     ClipboardList,
     LayoutGrid,
@@ -18,6 +17,7 @@ import {
     Search,
     FlaskConical,
     Bot,
+    Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -31,7 +31,7 @@ const NAV_SECTIONS = [
         items: [
             { href: '/dashboard', label: 'Oversikt', icon: LayoutDashboard },
             { href: '/dictation', label: 'Diktering', icon: Mic },
-            { href: '/journal', label: 'Journal', icon: BookOpen },
+            { href: '/activity', label: 'EPJ-aktivitet', icon: Activity },
             { href: '/editor', label: 'Editor', icon: PenLine },
         ],
     },
@@ -225,6 +225,15 @@ export default function AppSidebar({ children }: { children?: React.ReactNode })
                             </p>
                         )}
                     </div>
+                    <Link
+                        href="/settings"
+                        onClick={handleNavClick}
+                        className="p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-overlay)] transition-colors cursor-pointer"
+                        aria-label="Innstillinger"
+                        title="Innstillinger"
+                    >
+                        <Settings className="w-3.5 h-3.5" />
+                    </Link>
                     <button
                         onClick={() => setShowLogoutConfirm(true)}
                         className="p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--color-error)] hover:bg-[var(--surface-overlay)] transition-colors cursor-pointer"
