@@ -137,8 +137,10 @@ function EditorContent_() {
 
     // EPJ connection state
     const [isEPJConnected, setIsEPJConnected] = useState(false);
+    const [epjSystem, setEpjSystem] = useState<string | null>(null);
     const [epjPushing, setEpjPushing] = useState(false);
     const [epjPushSuccess, setEpjPushSuccess] = useState(false);
+    const [epjError, setEpjError] = useState<string | null>(null);
     const [showEpjConfirmModal, setShowEpjConfirmModal] = useState(false);
     const [epjResult, setEpjResult] = useState<{ epjNoteId?: string; epjUrl?: string } | null>(null);
 
@@ -192,7 +194,10 @@ function EditorContent_() {
     useEffect(() => {
         fetch('/api/user/epj-integration')
             .then(res => res.ok ? res.json() : { isConnected: false })
-            .then(data => setIsEPJConnected(data.isConnected))
+            .then(data => {
+                setIsEPJConnected(data.isConnected);
+                if (data.epjSystem) setEpjSystem(data.epjSystem);
+            })
             .catch(() => setIsEPJConnected(false));
     }, []);
 
@@ -219,41 +224,26 @@ function EditorContent_() {
         }
     }, [activeTemplate, editor]);
 
-    // Compute content hash for digital fingerprint
+    // Compute content hash for digital fingerprint (debounced 1.5s)
+    const hashTimerRef = useRef<NodeJS.Timeout | null>(null);
     useEffect(() => {
         if (!editor) return;
-        const updateHash = async () => {
-            const text = editor.getHTML();
-            const msgUint8 = new TextEncoder().encode(text);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            setContentHash(hashHex);
+        const updateHash = () => {
+            if (hashTimerRef.current) clearTimeout(hashTimerRef.current);
+            hashTimerRef.current = setTimeout(async () => {
+                const text = editor.getHTML();
+                const msgUint8 = new TextEncoder().encode(text);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                setContentHash(hashHex);
+            }, 1500);
         };
         editor.on('update', updateHash);
         updateHash();
-        return () => { editor.off('update', updateHash); };
-    }, [editor]);
-
-    // Auto-fetch AI codes on content change (debounced, 5 seconds idle)
-    useEffect(() => {
-        if (!editor) return;
-        const handleUpdate = () => {
-            if (codesFetchTimerRef.current) {
-                clearTimeout(codesFetchTimerRef.current);
-            }
-            codesFetchTimerRef.current = setTimeout(() => {
-                if (editor.getText().length >= 20) {
-                    fetchSuggestedCodes();
-                }
-            }, 5000);
-        };
-        editor.on('update', handleUpdate);
         return () => {
-            editor.off('update', handleUpdate);
-            if (codesFetchTimerRef.current) {
-                clearTimeout(codesFetchTimerRef.current);
-            }
+            editor.off('update', updateHash);
+            if (hashTimerRef.current) clearTimeout(hashTimerRef.current);
         };
     }, [editor]);
 
@@ -277,6 +267,28 @@ function EditorContent_() {
             setLoadingCodes(false);
         }
     }, [editor, professionParam]);
+
+    // Auto-fetch AI codes on content change (debounced, 5 seconds idle)
+    useEffect(() => {
+        if (!editor) return;
+        const handleUpdate = () => {
+            if (codesFetchTimerRef.current) {
+                clearTimeout(codesFetchTimerRef.current);
+            }
+            codesFetchTimerRef.current = setTimeout(() => {
+                if (editor.getText().length >= 20) {
+                    fetchSuggestedCodes();
+                }
+            }, 5000);
+        };
+        editor.on('update', handleUpdate);
+        return () => {
+            editor.off('update', handleUpdate);
+            if (codesFetchTimerRef.current) {
+                clearTimeout(codesFetchTimerRef.current);
+            }
+        };
+    }, [editor, fetchSuggestedCodes]);
 
     // AI structure note from transcription
     const handleStructureNote = useCallback(async () => {
@@ -354,19 +366,26 @@ function EditorContent_() {
                     templateType: activeTemplate || undefined,
                 }),
             });
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                setEpjResult(null);
+                setEpjError(text || `Kunne ikke sende til EPJ (${res.status}). Bruk PDF-eksport som alternativ.`);
+                return;
+            }
             const data = await res.json();
             if (data.success) {
                 setEpjPushSuccess(true);
                 setEpjResult({ epjNoteId: data.epjNoteId, epjUrl: data.epjUrl });
                 localStorage.removeItem('vocura_editor_backup');
                 setHasUnsavedChanges(false);
+                setEpjError(null);
             } else {
                 setEpjResult(null);
-                alert(data.error || 'Kunne ikke sende til EPJ. Bruk PDF-eksport som alternativ.');
+                setEpjError(data.error || 'Kunne ikke sende til EPJ. Bruk PDF-eksport som alternativ.');
             }
         } catch (err) {
             console.error('EPJ push failed:', err);
-            alert('Nettverksfeil ved sending til EPJ. Prøv igjen eller bruk PDF-eksport.');
+            setEpjError('Nettverksfeil ved sending til EPJ. Prøv igjen eller bruk PDF-eksport.');
         } finally {
             setEpjPushing(false);
         }
@@ -400,7 +419,8 @@ function EditorContent_() {
         }
     }, [editor, activeTemplate, profile]);
 
-    // Backup to localStorage on every change
+    // Backup to localStorage on change (debounced 2s)
+    const backupTimerRef = useRef<NodeJS.Timeout | null>(null);
     useEffect(() => {
         if (!editor) return;
         const handleUpdate = () => {
@@ -409,25 +429,29 @@ function EditorContent_() {
                 return;
             }
             setHasUnsavedChanges(true);
-            // Backup to localStorage immediately
-            try {
-                const backup = {
-                    content: editor.getHTML(),
-                    template: activeTemplate,
-                    patientName,
-                    selectedCodes,
-                    timestamp: Date.now(),
-                };
-                localStorage.setItem('vocura_editor_backup', JSON.stringify(backup));
-            } catch { /* localStorage full or unavailable */ }
+            // Debounced backup to localStorage
+            if (backupTimerRef.current) clearTimeout(backupTimerRef.current);
+            backupTimerRef.current = setTimeout(() => {
+                try {
+                    const backup = {
+                        content: editor.getHTML(),
+                        template: activeTemplate,
+                        patientName,
+                        selectedCodes,
+                        timestamp: Date.now(),
+                    };
+                    localStorage.setItem('vocura_editor_backup', JSON.stringify(backup));
+                } catch { /* localStorage full or unavailable */ }
+            }, 2000);
         };
         editor.on('update', handleUpdate);
         return () => {
             editor.off('update', handleUpdate);
+            if (backupTimerRef.current) clearTimeout(backupTimerRef.current);
         };
     }, [editor, activeTemplate, patientName, selectedCodes]);
 
-    // Restore from localStorage backup on mount
+    // Restore from localStorage backup on mount (or clean up if expired)
     useEffect(() => {
         if (!editor) return;
         try {
@@ -442,6 +466,9 @@ function EditorContent_() {
                     if (backup.patientName) setPatientName(backup.patientName);
                     if (backup.selectedCodes) setSelectedCodes(backup.selectedCodes);
                     setHasUnsavedChanges(true);
+                } else {
+                    // Clean up expired backup to avoid lingering PHI
+                    localStorage.removeItem('vocura_editor_backup');
                 }
             }
         } catch { /* ignore parse errors */ }
@@ -795,15 +822,12 @@ function EditorContent_() {
                                     <span className="text-xs font-semibold text-white uppercase tracking-wider">Valgte diagnosekoder</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
-                                    {selectedCodes.map(code => {
-                                        const codeInfo = suggestedCodes.find(c => c.code === code);
-                                        return (
-                                            <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-[rgba(94,106,210,0.1)] text-[#7B89DB]">
-                                                {code}
-                                                <button onClick={() => toggleCode(code)} className="ml-1 opacity-60 hover:opacity-100 cursor-pointer">&times;</button>
-                                            </span>
-                                        );
-                                    })}
+                                    {selectedCodes.map(code => (
+                                        <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-[rgba(94,106,210,0.1)] text-[#7B89DB]">
+                                            {code}
+                                            <button onClick={() => toggleCode(code)} className="ml-1 opacity-60 hover:opacity-100 cursor-pointer">&times;</button>
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -994,6 +1018,9 @@ function EditorContent_() {
                     <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
                         <h3 className="text-base font-semibold text-white mb-3">Send notat til EPJ</h3>
                         <div className="space-y-2 text-sm text-[rgba(255,255,255,0.7)] mb-6">
+                            {epjSystem && (
+                                <p><strong className="text-white">EPJ-system:</strong> {epjSystem.toUpperCase()}</p>
+                            )}
                             <p><strong className="text-white">Mal:</strong> {activeTemplate || 'Journalnotat'}</p>
                             <p><strong className="text-white">Pasient:</strong> {patientName || patientNameParam || 'Ikke angitt'}</p>
                             {selectedCodes.length > 0 && (
@@ -1026,6 +1053,14 @@ function EditorContent_() {
                     type="success"
                     onDismiss={() => setShowSaveToast(false)}
                     autoDismissMs={3000}
+                />
+            )}
+            {epjError && (
+                <Toast
+                    message={epjError}
+                    type="error"
+                    onDismiss={() => setEpjError(null)}
+                    autoDismissMs={8000}
                 />
             )}
         </div>

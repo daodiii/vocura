@@ -2,6 +2,14 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
+function escapeHtml(str: string): string {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 interface UseFormSubmissionOptions {
     formType: string;
     patientId?: string;
@@ -51,7 +59,7 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
         try {
             const sections = Object.entries(data)
                 .filter(([, v]) => v !== '' && v !== null && v !== undefined)
-                .map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`)
+                .map(([key, value]) => `<p><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</p>`)
                 .join('');
 
             const res = await fetch('/api/export/epj', {
@@ -65,6 +73,12 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
                     templateType: `form-${formType}`,
                 }),
             });
+
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                setError(text || `EPJ-feil (${res.status})`);
+                return null;
+            }
 
             const result = await res.json();
             if (result.success) {
@@ -89,7 +103,7 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
         try {
             const sections = Object.entries(data)
                 .filter(([, v]) => v !== '' && v !== null && v !== undefined)
-                .map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`)
+                .map(([key, value]) => `<p><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</p>`)
                 .join('');
 
             const res = await fetch('/api/export/pdf', {

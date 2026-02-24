@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle, Info, X } from 'lucide-react';
+import { CheckCircle, Info, AlertCircle, X } from 'lucide-react';
 
 interface ToastProps {
     message: string;
-    type: 'success' | 'info';
+    type: 'success' | 'info' | 'error';
     action?: { label: string; href: string };
     onDismiss: () => void;
     autoDismissMs?: number;
@@ -28,9 +28,9 @@ export default function Toast({ message, type, action, onDismiss, autoDismissMs 
         setTimeout(onDismiss, 300);
     };
 
-    const Icon = type === 'success' ? CheckCircle : Info;
-    const iconColor = type === 'success' ? 'text-[var(--success)]' : 'text-[var(--primary)]';
-    const glowColor = type === 'success' ? 'glow-success' : 'glow-teal';
+    const Icon = type === 'success' ? CheckCircle : type === 'error' ? AlertCircle : Info;
+    const iconColor = type === 'success' ? 'text-[var(--color-success)]' : type === 'error' ? 'text-[var(--color-error)]' : 'text-[var(--accent-primary)]';
+    const borderColor = type === 'success' ? 'border-l-[#10B981]' : type === 'error' ? 'border-l-[#EF4444]' : 'border-l-[var(--accent-primary)]';
 
     return (
         <div
@@ -38,7 +38,7 @@ export default function Toast({ message, type, action, onDismiss, autoDismissMs 
             role="status"
             aria-live="polite"
         >
-            <div className={`glass-card-elevated p-4 ${glowColor}`}>
+            <div className={`bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-4 shadow-lg border-l-4 ${borderColor}`} style={{ boxShadow: 'var(--shadow-overlay)' }}>
                 <div className="flex items-start gap-3">
                     <Icon className={`w-5 h-5 ${iconColor} shrink-0 mt-0.5`} />
                     <div className="flex-1 min-w-0">
@@ -46,7 +46,7 @@ export default function Toast({ message, type, action, onDismiss, autoDismissMs 
                         {action && (
                             <Link
                                 href={action.href}
-                                className="inline-block mt-2 text-sm font-semibold text-[var(--primary-light)] hover:text-[var(--accent)] transition-colors"
+                                className="inline-block mt-2 text-sm font-semibold text-[var(--accent-secondary)] hover:text-[var(--accent-primary)] transition-colors"
                                 onClick={handleDismiss}
                             >
                                 {action.label} →
@@ -55,7 +55,7 @@ export default function Toast({ message, type, action, onDismiss, autoDismissMs 
                     </div>
                     <button
                         onClick={handleDismiss}
-                        className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.08)] transition-colors shrink-0 cursor-pointer"
+                        className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-bg)] transition-colors shrink-0 cursor-pointer"
                         aria-label="Lukk"
                     >
                         <X className="w-4 h-4" />
