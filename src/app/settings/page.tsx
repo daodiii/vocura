@@ -12,6 +12,7 @@ import {
     Trash2,
     X,
     ExternalLink,
+    Clock,
 } from 'lucide-react';
 import { cn, fetchWithTimeout } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
@@ -66,6 +67,12 @@ export default function SettingsPage() {
     // Delete data modal
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    // Retention settings state
+    const [retentionHours, setRetentionHours] = useState(48);
+    const [autoDeleteEnabled, setAutoDeleteEnabled] = useState(true);
+    const [retentionLoading, setRetentionLoading] = useState(true);
+    const [retentionSaving, setRetentionSaving] = useState(false);
+
     const fetchEpjStatus = useCallback(async () => {
         try {
             setEpjLoading(true);
@@ -90,6 +97,39 @@ export default function SettingsPage() {
     useEffect(() => {
         fetchEpjStatus();
     }, [fetchEpjStatus]);
+
+    useEffect(() => {
+        async function fetchRetention() {
+            try {
+                const res = await fetchWithTimeout('/api/retention/settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    setRetentionHours(data.textRetentionHours ?? 48);
+                    setAutoDeleteEnabled(data.autoDeleteEnabled ?? true);
+                }
+            } catch (err) {
+                console.error('Kunne ikke hente oppbevaringsinnstillinger:', err);
+            } finally {
+                setRetentionLoading(false);
+            }
+        }
+        fetchRetention();
+    }, []);
+
+    const handleSaveRetention = async () => {
+        setRetentionSaving(true);
+        try {
+            await fetchWithTimeout('/api/retention/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ textRetentionHours: retentionHours, autoDeleteEnabled }),
+            });
+        } catch (err) {
+            console.error('Kunne ikke lagre oppbevaringsinnstillinger:', err);
+        } finally {
+            setRetentionSaving(false);
+        }
+    };
 
     const handleTestConnection = async () => {
         setTestLoading(true);
@@ -384,7 +424,79 @@ export default function SettingsPage() {
                     </div>
                 </section>
 
-                {/* Section 3: Personvern */}
+                {/* Section 3: Dataoppbevaring */}
+                <section className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Clock className="w-4 h-4 text-[var(--accent-primary)]" />
+                        <h2 className="text-[14px] font-semibold text-[var(--text-primary)]">
+                            Dataoppbevaring
+                        </h2>
+                    </div>
+                    <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-6">
+                        {retentionLoading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="w-5 h-5 animate-spin text-[var(--text-muted)]" />
+                            </div>
+                        ) : (
+                            <div className="space-y-5">
+                                <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed">
+                                    Etter overføring til EPJ slettes notater automatisk fra Vocura. Vocura er et følgeverktøy, ikke et journalsystem.
+                                </p>
+                                <div>
+                                    <label className="text-[11px] font-medium tracking-wider text-[var(--text-muted)] uppercase block mb-1.5">
+                                        Oppbevaringstid etter EPJ-overføring
+                                    </label>
+                                    <select
+                                        value={retentionHours}
+                                        onChange={(e) => setRetentionHours(Number(e.target.value))}
+                                        className="w-full text-[13px] px-3 py-2 rounded-md border border-[var(--border-default)] bg-[var(--surface-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+                                    >
+                                        <option value={24}>24 timer</option>
+                                        <option value={48}>48 timer</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[13px] font-medium text-[var(--text-primary)]">
+                                            Automatisk sletting
+                                        </p>
+                                        <p className="text-[11px] text-[var(--text-muted)]">
+                                            Slett notater automatisk etter oppbevaringstiden
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setAutoDeleteEnabled(!autoDeleteEnabled)}
+                                        className={cn(
+                                            'relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer',
+                                            autoDeleteEnabled ? 'bg-[var(--accent-primary)]' : 'bg-[var(--surface-overlay)]'
+                                        )}
+                                    >
+                                        <span
+                                            className={cn(
+                                                'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                                                autoDeleteEnabled ? 'translate-x-6' : 'translate-x-1'
+                                            )}
+                                        />
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={handleSaveRetention}
+                                    disabled={retentionSaving}
+                                    className={cn(
+                                        'w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-md transition-colors cursor-pointer',
+                                        'bg-[var(--accent-primary)] hover:opacity-90 text-white',
+                                        'disabled:opacity-50 disabled:cursor-not-allowed'
+                                    )}
+                                >
+                                    {retentionSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                    Lagre innstillinger
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Section 4: Personvern */}
                 <section className="mb-8">
                     <div className="flex items-center gap-2 mb-4">
                         <Shield className="w-4 h-4 text-[var(--accent-primary)]" />
@@ -418,6 +530,13 @@ export default function SettingsPage() {
                                 >
                                     <ExternalLink className="w-3.5 h-3.5" />
                                     Vilkar for bruk
+                                </a>
+                                <a
+                                    href="/sikkerhet"
+                                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--accent-primary)] hover:underline"
+                                >
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    Sikkerhet og tillit
                                 </a>
                             </div>
 
