@@ -148,3 +148,31 @@ export const felleskatalovenChatSchema = z.object({
     content: z.string().max(5000),
   })).max(20).optional().default([]),
 });
+
+// --- EPJ Integration ---
+export const epjPushSchema = z.object({
+  title: z.string().min(1, 'Tittel er påkrevd').max(500),
+  content: z.string().min(1, 'Innhold er påkrevd').max(500_000),
+  patientId: z.string().min(1, 'Pasient-ID er påkrevd').max(200),
+  patientDisplayName: z.string().max(200).optional().default(''),
+  diagnosisCodes: z
+    .array(
+      z.object({
+        code: z.string().max(20),
+        system: z.enum(['ICPC-2', 'ICD-10']),
+        label: z.string().max(200),
+      })
+    )
+    .optional(),
+  encounterType: z.string().max(50).optional(),
+  templateType: z.string().max(100).optional(),
+});
+
+export const epjIntegrationSchema = z.object({
+  epjSystem: z.enum(['dips', 'eg-pasientsky', 'pridok'], {
+    error: 'Ugyldig EPJ-system. Bruk: dips, eg-pasientsky, eller pridok',
+  }),
+  clientId: z.string().min(1, 'Client ID er påkrevd').max(500),
+  clientSecret: z.string().min(1, 'Client Secret er påkrevd').max(500),
+  careUnitId: z.string().min(1, 'Care Unit ID er påkrevd').max(200),
+});
