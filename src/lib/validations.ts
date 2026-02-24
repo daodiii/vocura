@@ -103,3 +103,28 @@ export const epjIntegrationSchema = z.object({
   clientSecret: z.string().min(1, 'Client Secret er påkrevd').max(500),
   careUnitId: z.string().min(1, 'Care Unit ID er påkrevd').max(200),
 });
+
+// --- Retention ---
+export const retentionSettingsSchema = z.object({
+  textRetentionHours: z.number().int().min(1).max(168).default(48),
+  autoDeleteEnabled: z.boolean().default(true),
+});
+
+// --- Clinical Notes ---
+export const clinicalNoteCreateSchema = z.object({
+  patientId: z.string().max(200).optional(),
+  contentEncrypted: z.string().min(1, 'Kryptert innhold er påkrevd').max(5_000_000),
+  contentIv: z.string().max(100).optional(),
+  templateType: z.string().max(100).optional(),
+});
+
+export const clinicalNoteUpdateSchema = z.object({
+  contentEncrypted: z.string().min(1).max(5_000_000).optional(),
+  contentIv: z.string().max(100).optional(),
+  epjTransferred: z.boolean().optional(),
+});
+
+// --- Cleanup (cron) ---
+export const cleanupSchema = z.object({
+  secret: z.string().min(1, 'CRON_SECRET er påkrevd'),
+});
