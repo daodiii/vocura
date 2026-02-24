@@ -7,7 +7,7 @@ export class ManualExportAdapter implements EPJAdapter {
     return { ok: true };
   }
 
-  async searchPatients(): Promise<PatientContext[]> {
+  async searchPatients(_query: string): Promise<PatientContext[]> {
     return [];
   }
 
@@ -22,7 +22,11 @@ export class ManualExportAdapter implements EPJAdapter {
     };
   }
 
-  async pushFormDocument(): Promise<EPJPushResult> {
+  async pushFormDocument(
+    _formType: string,
+    _formData: Record<string, unknown>,
+    _patientId: string
+  ): Promise<EPJPushResult> {
     return {
       success: false,
       error: 'Ingen EPJ-tilkobling konfigurert. Bruk PDF-eksport.',
