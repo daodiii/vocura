@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Mic, Square, Loader2, Copy, PenLine, BookOpen, Trash2, ArrowRight, Clock, Type } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Mic, Square, Loader2, Copy, PenLine, Trash2, ArrowRight, Clock, Type } from 'lucide-react';
+import { cn, fetchWithTimeout } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
 
 export default function Dictation() {
@@ -12,7 +12,6 @@ export default function Dictation() {
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const [copied, setCopied] = useState(false);
-    const [recentRecordings, setRecentRecordings] = useState<any[]>([]);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -21,21 +20,6 @@ export default function Dictation() {
     const animationRef = useRef<number | null>(null);
     const [waveformBars, setWaveformBars] = useState<number[]>(new Array(30).fill(8));
 
-    // Load recent dictation recordings on mount
-    useEffect(() => {
-        async function loadRecent() {
-            try {
-                const res = await fetch('/api/recordings?source=dictation');
-                if (res.ok) {
-                    const data = await res.json();
-                    setRecentRecordings(data.slice(0, 5));
-                }
-            } catch {
-                // Silently fail if API is unavailable
-            }
-        }
-        loadRecent();
-    }, []);
 
     // Real waveform from audio analyser
     const updateWaveform = useCallback(() => {
@@ -85,10 +69,13 @@ export default function Dictation() {
             mediaRecorder.onstop = async () => {
                 if (timerRef.current) clearInterval(timerRef.current);
                 const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-                await handleTranscription(audioBlob);
-                // Close audio context after transcription
-                if (audioContextRef.current) {
-                    audioContextRef.current.close();
+                try {
+                    await handleTranscription(audioBlob);
+                } finally {
+                    // Always close audio context, even if transcription fails
+                    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+                        audioContextRef.current.close();
+                    }
                     audioContextRef.current = null;
                 }
             };
@@ -124,7 +111,7 @@ export default function Dictation() {
             const formData = new FormData();
             formData.append('file', audioBlob, 'recording.webm');
 
-            const response = await fetch('/api/transcribe', {
+            const response = await fetchWithTimeout('/api/transcribe', {
                 method: 'POST',
                 body: formData,
             });
@@ -132,35 +119,6 @@ export default function Dictation() {
 
             if (data.text) {
                 setTranscript(prev => prev ? prev + ' ' + data.text : data.text);
-
-                // Save recording + transcript to database
-                try {
-                    await fetch('/api/recordings', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            filename: 'dictation.webm',
-                            duration: recordingTime,
-                            fileSize: audioBlob.size,
-                            mimeType: 'audio/webm',
-                            source: 'dictation',
-                            transcript: {
-                                text: data.text,
-                                language: 'no',
-                                wordCount: data.text.split(/\s+/).filter(Boolean).length,
-                            },
-                        }),
-                    });
-
-                    // Refresh recent recordings after saving
-                    const recRes = await fetch('/api/recordings?source=dictation');
-                    if (recRes.ok) {
-                        const recordings = await recRes.json();
-                        setRecentRecordings(recordings.slice(0, 5));
-                    }
-                } catch (saveErr) {
-                    console.error('Failed to save recording:', saveErr);
-                }
             } else {
                 alert('Kunne ikke transkribere opptaket. Vennligst prøv igjen.');
             }
@@ -172,24 +130,8 @@ export default function Dictation() {
         }
     };
 
-    const saveToJournal = async () => {
-        try {
-            const res = await fetch('/api/journal', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: `Diktering ${new Date().toLocaleDateString('nb-NO')}`,
-                    content: `<p>${transcript}</p>`,
-                    template: 'Diktering',
-                    status: 'draft',
-                }),
-            });
-            if (res.ok) {
-                window.location.href = '/journal';
-            }
-        } catch (err) {
-            console.error('Failed to save to journal:', err);
-        }
+    const openInEditor = () => {
+        window.location.href = `/editor?transcript=${encodeURIComponent(transcript)}`;
     };
 
     const formatTime = (seconds: number) => {
@@ -218,165 +160,177 @@ export default function Dictation() {
     }, []);
 
     return (
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex h-screen overflow-hidden bg-[#0A0A0A]">
             <AppSidebar />
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto">
-            <div className="max-w-2xl mx-auto px-6 py-12">
-                <div className="text-center mb-10 animate-fade-in">
-                    <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
-                        AI-diktering
-                    </h1>
-                    <p className="text-[var(--text-muted)]">Snakk fritt — AI-en transkriberer og strukturerer teksten for deg.</p>
-                </div>
+            <main className="flex-1 overflow-y-auto bg-[#111111]">
+                <div className="max-w-2xl mx-auto px-6 py-16">
+                    {/* Page Header */}
+                    <div className="text-center mb-12">
+                        <h1 className="text-3xl font-bold text-[#EDEDED] mb-3 font-serif tracking-tight">
+                            AI-diktering
+                        </h1>
+                        <p className="text-[#5C5C5C] text-sm">
+                            Snakk fritt — AI-en transkriberer og strukturerer teksten for deg.
+                        </p>
+                    </div>
 
-                {/* Recording Area */}
-                <div className="glass-card-elevated p-10 flex flex-col items-center gap-8 mb-6 animate-slide-up stagger-1">
-                    {/* Waveform - Real audio data */}
-                    <div className="flex items-center justify-center gap-1.5 h-16 w-full">
-                        {waveformBars.map((height, i) => (
+                    {/* Recording Area */}
+                    <div
+                        className="relative bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-xl p-10 flex flex-col items-center gap-8 mb-6 transition-all duration-200"
+                    >
+                        {/* Violet radial glow when recording */}
+                        {isRecording && (
                             <div
-                                key={i}
-                                className={cn(
-                                    "w-1 rounded-full transition-all",
-                                    isRecording ? "bg-[var(--error)]" : "bg-[var(--glass-border)]"
-                                )}
+                                className="absolute inset-0 rounded-xl pointer-events-none"
                                 style={{
-                                    height: `${height}px`,
-                                    transition: isRecording ? 'height 50ms ease' : 'height 300ms ease',
-                                    background: isRecording
-                                        ? 'var(--error)'
-                                        : 'var(--glass-border)',
+                                    background: 'radial-gradient(ellipse at center, rgba(94,106,210,0.08) 0%, transparent 70%)',
                                 }}
                             />
-                        ))}
-                    </div>
-
-                    {/* Record Button */}
-                    <button
-                        onClick={isRecording ? stopRecording : startRecording}
-                        disabled={isTranscribing}
-                        className={cn(
-                            "relative flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer",
-                            isRecording
-                                ? "w-28 h-28 bg-[var(--error-subtle)] border-3 border-[var(--error)]"
-                                : "w-28 h-28 border-3 border-[var(--primary)] animate-pulse-glow",
-                            !isRecording && !isTranscribing && "hover:shadow-[0_0_30px_var(--primary-glow)]",
-                            isTranscribing && "opacity-50 cursor-not-allowed"
                         )}
-                        style={!isRecording ? { background: 'linear-gradient(135deg, rgba(8,145,178,0.15), rgba(34,211,238,0.1))' } : undefined}
-                    >
-                        {isRecording && (
-                            <div className="absolute inset-0 rounded-full border-3 border-[var(--error)] animate-pulse-ring" />
-                        )}
-                        {isTranscribing ? (
-                            <Loader2 className="w-10 h-10 text-[var(--primary-light)] animate-spin" />
-                        ) : isRecording ? (
-                            <Square className="w-9 h-9 text-[var(--error)] fill-current" />
-                        ) : (
-                            <Mic className="w-10 h-10 text-[var(--primary-light)]" />
-                        )}
-                    </button>
 
-                    {/* Status & Timer */}
-                    <div className="text-center" aria-live="polite" aria-atomic="true">
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">
-                            {isRecording ? "Tar opp..." : isTranscribing ? "Transkriberer..." : "Trykk for å starte diktering"}
-                        </p>
-                        {(isRecording || recordingTime > 0) && (
-                            <div className="flex items-center justify-center gap-4 mt-2 text-sm text-[var(--text-muted)]">
-                                <span className="flex items-center gap-1.5">
-                                    <Clock className="w-4 h-4" />
-                                    {formatTime(recordingTime)}
-                                </span>
-                                {wordCount > 0 && (
-                                    <span className="flex items-center gap-1.5">
-                                        <Type className="w-4 h-4" />
-                                        {wordCount} ord
-                                    </span>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Transcript Display */}
-                {transcript && (
-                    <div className="glass-card p-6 mb-6 animate-fade-in stagger-2">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-[var(--primary-light)] uppercase tracking-wider">Transkripsjon</h3>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={copyToClipboard}
-                                    className="glass-btn-ghost text-xs flex items-center gap-1.5 !py-1.5 cursor-pointer"
-                                >
-                                    <Copy className="w-3.5 h-3.5" />
-                                    {copied ? 'Kopiert!' : 'Kopier'}
-                                </button>
-                                <button
-                                    onClick={() => { setTranscript(''); setRecordingTime(0); }}
-                                    className="glass-btn-ghost text-xs flex items-center gap-1.5 !py-1.5 text-[var(--error)] hover:!text-[var(--error)] hover:!bg-[var(--error-subtle)] cursor-pointer"
-                                >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                    Tøm
-                                </button>
-                            </div>
-                        </div>
-                        <p className="text-[var(--text-secondary)] leading-relaxed text-lg">
-                            {transcript}
-                        </p>
-                    </div>
-                )}
-
-                {/* Quick Actions */}
-                {transcript && (
-                    <div className="grid grid-cols-2 gap-4 animate-fade-in stagger-3">
-                        <Link href={`/editor?transcript=${encodeURIComponent(transcript)}`} className="glass-card p-5 flex items-center gap-4 group cursor-pointer">
-                            <div className="w-10 h-10 bg-[var(--primary-subtle)] rounded-xl flex items-center justify-center group-hover:bg-[var(--primary)] transition-colors">
-                                <PenLine className="w-5 h-5 text-[var(--primary-light)] group-hover:text-white transition-colors" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm font-semibold text-[var(--text-primary)]">Send til Editor</p>
-                                <p className="text-xs text-[var(--text-muted)]">Rediger og formater dokumentet</p>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--primary-light)] transition-colors" />
-                        </Link>
-                        <button onClick={saveToJournal} className="glass-card p-5 flex items-center gap-4 group text-left cursor-pointer">
-                            <div className="w-10 h-10 bg-[var(--success-subtle)] rounded-xl flex items-center justify-center group-hover:bg-[var(--success)] transition-colors">
-                                <BookOpen className="w-5 h-5 text-[var(--success)] group-hover:text-white transition-colors" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm font-semibold text-[var(--text-primary)]">Lagre i Journal</p>
-                                <p className="text-xs text-[var(--text-muted)]">Arkiver som journaloppføring</p>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--success)] transition-colors" />
-                        </button>
-                    </div>
-                )}
-
-                {/* Recent Dictation Recordings */}
-                {recentRecordings.length > 0 && (
-                    <div className="mt-8 animate-fade-in stagger-4">
-                        <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3">Tidligere dikteringer</h3>
-                        <div className="space-y-2">
-                            {recentRecordings.map((rec) => (
-                                <div key={rec.id} className="glass-card p-4 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-[var(--text-secondary)] line-clamp-1">{rec.transcript?.text || 'Ingen transkripsjon'}</p>
-                                        <p className="text-xs text-[var(--text-muted)] mt-1">
-                                            {new Date(rec.createdAt).toLocaleDateString('nb-NO')} · {Math.round(rec.duration / 60)} min
-                                        </p>
-                                    </div>
-                                    <Link href={`/editor?transcript=${encodeURIComponent(rec.transcript?.text || '')}`} className="glass-btn-ghost text-xs cursor-pointer">
-                                        Åpne i editor
-                                    </Link>
-                                </div>
+                        {/* Waveform - Real audio data */}
+                        <div className="flex items-center justify-center gap-1.5 h-16 w-full relative z-10">
+                            {waveformBars.map((height, i) => (
+                                <div
+                                    key={i}
+                                    className="w-1 rounded-full"
+                                    style={{
+                                        height: `${height}px`,
+                                        transition: isRecording ? 'height 50ms ease' : 'height 300ms ease',
+                                        background: isRecording
+                                            ? '#EF4444'
+                                            : transcript && !isRecording && !isTranscribing
+                                                ? `linear-gradient(to top, #4F5ABF, #7B89DB)`
+                                                : 'rgba(255,255,255,0.06)',
+                                    }}
+                                />
                             ))}
                         </div>
+
+                        {/* Record Button */}
+                        <div className="relative z-10">
+                            {/* Glow ring behind button */}
+                            {!isRecording && !isTranscribing && (
+                                <div
+                                    className="absolute inset-[-16px] rounded-full pointer-events-none"
+                                    style={{
+                                        background: 'radial-gradient(ellipse at center, rgba(94,106,210,0.15) 0%, transparent 70%)',
+                                    }}
+                                />
+                            )}
+                            <button
+                                onClick={isRecording ? stopRecording : startRecording}
+                                disabled={isTranscribing}
+                                className={cn(
+                                    "relative flex items-center justify-center w-[112px] h-[112px] rounded-full transition-all duration-200 cursor-pointer",
+                                    isRecording
+                                        ? "bg-[rgba(239,68,68,0.1)] border-[3px] border-[#EF4444]"
+                                        : "border-[3px] border-[#5E6AD2] bg-[rgba(94,106,210,0.08)]",
+                                    !isRecording && !isTranscribing && "hover:bg-[rgba(94,106,210,0.15)] hover:shadow-[0_0_40px_rgba(94,106,210,0.2)]",
+                                    isTranscribing && "opacity-50 cursor-not-allowed border-[3px] border-[#5E6AD2] bg-[rgba(94,106,210,0.05)]"
+                                )}
+                            >
+                                {/* Recording pulse ring */}
+                                {isRecording && (
+                                    <div className="absolute inset-0 rounded-full border-[3px] border-[#EF4444] animate-ping opacity-30" />
+                                )}
+                                {isTranscribing ? (
+                                    <Loader2 className="w-10 h-10 text-[#7B89DB] animate-spin" />
+                                ) : isRecording ? (
+                                    <Square className="w-9 h-9 text-[#EF4444] fill-current" />
+                                ) : (
+                                    <Mic className="w-10 h-10 text-[#7B89DB]" />
+                                )}
+                            </button>
+                        </div>
+
+                        {/* Status & Timer */}
+                        <div className="text-center relative z-10" aria-live="polite" aria-atomic="true">
+                            <p className="text-sm font-medium text-[#EDEDED]">
+                                {isRecording ? "Tar opp..." : isTranscribing ? "Transkriberer..." : "Trykk for å starte diktering"}
+                            </p>
+                            {(isRecording || recordingTime > 0) && (
+                                <div className="flex items-center justify-center gap-4 mt-2.5 text-sm text-[#5C5C5C]">
+                                    <span className="flex items-center gap-1.5">
+                                        <Clock className="w-4 h-4" />
+                                        {formatTime(recordingTime)}
+                                    </span>
+                                    {wordCount > 0 && (
+                                        <span className="flex items-center gap-1.5">
+                                            <Type className="w-4 h-4" />
+                                            {wordCount} ord
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                )}
-            </div>
+
+                    {/* Transcript Display */}
+                    {transcript && (
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6 mb-6 border-l-[3px] border-l-[#5E6AD2]">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xs font-semibold text-[#7B89DB] uppercase tracking-wider">
+                                    Transkripsjon
+                                </h3>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={copyToClipboard}
+                                        className="text-[#8B8B8B] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-1.5 text-xs flex items-center gap-1.5 transition-colors duration-150 cursor-pointer"
+                                    >
+                                        <Copy className="w-3.5 h-3.5" />
+                                        {copied ? 'Kopiert!' : 'Kopier'}
+                                    </button>
+                                    <button
+                                        onClick={() => { setTranscript(''); setRecordingTime(0); }}
+                                        className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] rounded-lg px-3 py-1.5 text-xs flex items-center gap-1.5 transition-colors duration-150 cursor-pointer"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        Tøm
+                                    </button>
+                                </div>
+                            </div>
+                            <p className="text-[#8B8B8B] leading-relaxed text-[15px]">
+                                {transcript}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Quick Actions */}
+                    {transcript && (
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <Link
+                                href={`/editor?transcript=${encodeURIComponent(transcript)}`}
+                                className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-5 flex items-center gap-4 group cursor-pointer hover:border-[rgba(94,106,210,0.3)] transition-all duration-200"
+                            >
+                                <div className="w-10 h-10 bg-[rgba(94,106,210,0.08)] rounded-xl flex items-center justify-center group-hover:bg-[#5E6AD2] transition-colors duration-200">
+                                    <PenLine className="w-5 h-5 text-[#7B89DB] group-hover:text-white transition-colors duration-200" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-[#EDEDED]">Send til Editor</p>
+                                    <p className="text-xs text-[#5C5C5C] mt-0.5">Rediger og formater dokumentet</p>
+                                </div>
+                                <ArrowRight className="w-4 h-4 text-[#5C5C5C] group-hover:text-[#7B89DB] transition-colors duration-200" />
+                            </Link>
+                            <button
+                                onClick={openInEditor}
+                                className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-5 flex items-center gap-4 group text-left cursor-pointer hover:border-[rgba(16,185,129,0.3)] transition-all duration-200"
+                            >
+                                <div className="w-10 h-10 bg-[rgba(16,185,129,0.08)] rounded-xl flex items-center justify-center group-hover:bg-[#10B981] transition-colors duration-200">
+                                    <PenLine className="w-5 h-5 text-[#10B981] group-hover:text-white transition-colors duration-200" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-[#EDEDED]">Rediger og send</p>
+                                    <p className="text-xs text-[#5C5C5C] mt-0.5">Formater og push til EPJ</p>
+                                </div>
+                                <ArrowRight className="w-4 h-4 text-[#5C5C5C] group-hover:text-[#10B981] transition-colors duration-200" />
+                            </button>
+                        </div>
+                    )}
+
+                </div>
             </main>
         </div>
     );
