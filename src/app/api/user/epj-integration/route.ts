@@ -159,6 +159,17 @@ export async function DELETE(req: Request) {
             );
         }
 
+        const existing = await prisma.epjIntegration.findUnique({
+            where: { userId: user.id },
+        });
+
+        if (!existing) {
+            return NextResponse.json(
+                { error: 'Ingen EPJ-integrasjon funnet' },
+                { status: 404 }
+            );
+        }
+
         await prisma.epjIntegration.delete({
             where: { userId: user.id },
         });
