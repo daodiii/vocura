@@ -2,10 +2,12 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Mic, Square, Loader2, FileText, Shield, ChevronRight, User, Zap, PenLine, Search, Calendar, Clock, TrendingUp, Keyboard, BookOpen, ClipboardList, Sparkles, Trash2, AlertTriangle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { Mic, Square, Loader2, FileText, Shield, ChevronRight, User, PenLine, Search, Clock, TrendingUp, Keyboard, Send, Plug, ClipboardList, Sparkles, Trash2, AlertTriangle, Lock } from 'lucide-react';
+import { cn, fetchWithTimeout } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
 import Toast from '@/components/Toast';
+import ConversationMockup from '@/components/ConversationMockup';
 import { useUserProfile } from '@/hooks/useUserProfile';
 
 // Consent audit log types
@@ -17,7 +19,7 @@ interface ConsentLogEntry {
 
 function getConsentLog(): ConsentLogEntry[] {
     try {
-        const log = localStorage.getItem('mediscribe_consent_log');
+        const log = localStorage.getItem('vocura_consent_log');
         return log ? JSON.parse(log) : [];
     } catch {
         return [];
@@ -31,7 +33,7 @@ function addConsentLogEntry(action: 'granted' | 'withdrawn') {
         timestamp: new Date().toISOString(),
         type: 'recording_consent',
     });
-    localStorage.setItem('mediscribe_consent_log', JSON.stringify(log));
+    localStorage.setItem('vocura_consent_log', JSON.stringify(log));
 }
 
 function getLastConsentState(): boolean {
@@ -40,7 +42,16 @@ function getLastConsentState(): boolean {
     return log[log.length - 1].action === 'granted';
 }
 
+// Generate a session ID
+function generateSessionId(): string {
+    const now = new Date();
+    const datePart = now.toISOString().slice(2, 10).replace(/-/g, '');
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `S-${datePart}-${rand}`;
+}
+
 export default function Dashboard() {
+    const router = useRouter();
     const { profile } = useUserProfile();
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState('');
@@ -56,6 +67,8 @@ export default function Dashboard() {
     const [stats, setStats] = useState({ todayRecordings: 0, todayMinutes: 0 });
     const [patientResults, setPatientResults] = useState<any[]>([]);
     const [showPatientDropdown, setShowPatientDropdown] = useState(false);
+    const [patientSearchError, setPatientSearchError] = useState('');
+    const [isEPJConnected, setIsEPJConnected] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
     const analyserRef = useRef<AnalyserNode | null>(null);
@@ -63,8 +76,9 @@ export default function Dashboard() {
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const patientSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const patientDropdownRef = useRef<HTMLDivElement | null>(null);
-    const [waveformBars, setWaveformBars] = useState<number[]>(new Array(24).fill(4));
+    const [waveformBars, setWaveformBars] = useState<number[]>(new Array(28).fill(4));
     const [showTranscriptToast, setShowTranscriptToast] = useState(false);
+    const [sessionId] = useState(() => generateSessionId());
 
     // Persist GDPR consent with audit trail in localStorage
     useEffect(() => {
@@ -74,26 +88,47 @@ export default function Dashboard() {
         }
     }, []);
 
-    // Fetch real stats on mount
+    // Idle waveform breathing animation
     useEffect(() => {
-        async function fetchStats() {
+        if (isRecording || transcript || isTranscribing) return;
+        const interval = setInterval(() => {
+            setWaveformBars(prev => prev.map((_, i) => {
+                return 4 + Math.sin(Date.now() / 800 + i * 0.5) * 3;
+            }));
+        }, 100);
+        return () => clearInterval(interval);
+    }, [isRecording, transcript, isTranscribing]);
+
+    // Load session stats from sessionStorage on mount
+    useEffect(() => {
+        try {
+            const stored = sessionStorage.getItem('vocura_session_stats');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                setStats({
+                    todayRecordings: parsed.todayRecordings || 0,
+                    todayMinutes: parsed.todayMinutes || 0,
+                });
+            }
+        } catch {
+            // Ignore parse errors
+        }
+    }, []);
+
+    // Check EPJ connection status on mount
+    useEffect(() => {
+        async function checkEPJConnection() {
             try {
-                const recRes = await fetch('/api/recordings');
-                if (recRes.ok) {
-                    const recordings = await recRes.json();
-                    const today = new Date().toDateString();
-                    const todayRecs = recordings.filter((r: any) => new Date(r.createdAt).toDateString() === today);
-                    const totalDuration = todayRecs.reduce((sum: number, r: any) => sum + (r.duration || 0), 0);
-                    setStats({
-                        todayRecordings: todayRecs.length,
-                        todayMinutes: Math.round(totalDuration / 60),
-                    });
+                const res = await fetchWithTimeout('/api/user/epj-integration');
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsEPJConnected(!!data.connected);
                 }
-            } catch (err) {
-                console.error('Failed to fetch stats:', err);
+            } catch {
+                setIsEPJConnected(false);
             }
         }
-        fetchStats();
+        checkEPJConnection();
     }, []);
 
     // Close patient dropdown when clicking outside
@@ -107,24 +142,34 @@ export default function Dashboard() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Patient search with debounce
+    // Patient search with debounce — EPJ search when connected, no API when not
     const searchPatients = useCallback(async (query: string) => {
         if (query.length < 2) {
             setPatientResults([]);
             setShowPatientDropdown(false);
+            setPatientSearchError('');
             return;
         }
+        // If EPJ is not connected, just use free-text input — no API search
+        if (!isEPJConnected) {
+            setPatientResults([]);
+            setShowPatientDropdown(false);
+            return;
+        }
+        setPatientSearchError('');
         try {
-            const res = await fetch(`/api/patients?search=${encodeURIComponent(query)}`);
+            const res = await fetchWithTimeout(`/api/import/patient-context?search=${encodeURIComponent(query)}`);
             if (res.ok) {
                 const data = await res.json();
-                setPatientResults(data);
+                setPatientResults(data.patients || []);
                 setShowPatientDropdown(true);
+            } else {
+                setPatientSearchError('Kunne ikke søke etter pasienter i EPJ. Prøv igjen.');
             }
         } catch {
-            // Silently fail on search errors
+            setPatientSearchError('EPJ-pasientsøk feilet. Sjekk nettverkstilkoblingen.');
         }
-    }, []);
+    }, [isEPJConnected]);
 
     const handlePatientNameChange = (value: string) => {
         setPatientName(value);
@@ -137,8 +182,8 @@ export default function Dashboard() {
     };
 
     const selectPatient = (patient: any) => {
-        setPatientId(patient.patientId || patient.id || '');
-        setPatientName(patient.name || '');
+        setPatientId(patient.epjPatientId || patient.patientId || patient.id || '');
+        setPatientName(patient.displayName || patient.name || '');
         setShowPatientDropdown(false);
         setPatientResults([]);
     };
@@ -146,24 +191,20 @@ export default function Dashboard() {
     const handleConsentChange = (checked: boolean) => {
         setConsentGiven(checked);
         addConsentLogEntry(checked ? 'granted' : 'withdrawn');
-        // Also keep sessionStorage for backward compatibility
-        sessionStorage.setItem('mediscribe_gdpr_consent', checked.toString());
+        sessionStorage.setItem('vocura_gdpr_consent', checked.toString());
     };
 
     // Delete all locally stored data (GDPR right to erasure)
     const handleDeleteAllData = () => {
-        // Clear all MediScribe localStorage entries
-        localStorage.removeItem('mediscribe_consent_log');
-        localStorage.removeItem('mediscribe_dark_mode');
-        // Clear sessionStorage
-        sessionStorage.removeItem('mediscribe_gdpr_consent');
-        // Reset state
+        localStorage.removeItem('vocura_consent_log');
+        localStorage.removeItem('vocura_dark_mode');
+        localStorage.removeItem('vocura_accent_theme');
+        sessionStorage.removeItem('vocura_gdpr_consent');
         setConsentGiven(false);
         setTranscript('');
         setPatientId('');
         setPatientName('');
         setShowDeleteConfirm(false);
-        // Reload to reset all in-memory state
         window.location.reload();
     };
 
@@ -174,7 +215,7 @@ export default function Dashboard() {
             analyserRef.current.getByteFrequencyData(dataArray);
 
             const bars = [];
-            const barCount = 24;
+            const barCount = 28;
             const step = Math.floor(dataArray.length / barCount);
             for (let i = 0; i < barCount; i++) {
                 const value = dataArray[i * step];
@@ -188,7 +229,6 @@ export default function Dashboard() {
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Ctrl+R to start/stop recording
             if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
                 e.preventDefault();
                 if (isRecording) {
@@ -197,12 +237,10 @@ export default function Dashboard() {
                     startRecording();
                 }
             }
-            // Ctrl+E to open editor (when transcript exists)
             if ((e.metaKey || e.ctrlKey) && e.key === 'e' && transcript) {
                 e.preventDefault();
-                window.location.href = `/editor?profession=${profession}&transcript=${encodeURIComponent(transcript)}&patientName=${encodeURIComponent(patientName)}&patientId=${encodeURIComponent(patientId)}`;
+                router.push(`/editor?profession=${profession}&transcript=${encodeURIComponent(transcript)}&patientName=${encodeURIComponent(patientName)}&patientId=${encodeURIComponent(patientId)}`);
             }
-            // ? to show shortcuts
             if (e.key === '?' && !e.metaKey && !e.ctrlKey && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
                 e.preventDefault();
                 setShowShortcuts(prev => !prev);
@@ -220,7 +258,6 @@ export default function Dashboard() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-            // Set up audio analyser for real waveform
             const audioContext = new AudioContext();
             const source = audioContext.createMediaStreamSource(stream);
             const analyser = audioContext.createAnalyser();
@@ -248,10 +285,8 @@ export default function Dashboard() {
             setIsRecording(true);
             setRecordingTime(0);
 
-            // Start waveform animation
             animationRef.current = requestAnimationFrame(updateWaveform);
 
-            // Start timer
             timerRef.current = setInterval(() => {
                 setRecordingTime(prev => prev + 1);
             }, 1000);
@@ -267,13 +302,11 @@ export default function Dashboard() {
             setIsRecording(false);
             mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
 
-            // Stop waveform animation
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
-            setWaveformBars(new Array(24).fill(4));
+            setWaveformBars(new Array(28).fill(4));
 
-            // Stop timer
             if (timerRef.current) {
                 clearInterval(timerRef.current);
             }
@@ -287,54 +320,38 @@ export default function Dashboard() {
             formData.append('file', audioBlob, 'recording.webm');
             formData.append('profession', profession);
 
-            const response = await fetch('/api/transcribe', {
+            const response = await fetchWithTimeout('/api/transcribe', {
                 method: 'POST',
                 body: formData,
             });
             const data = await response.json();
 
-            if (data.text) {
+            if (!response.ok) {
+                const errorMsg = data.error || 'Ukjent feil';
+                console.error(`Transcription API error [${response.status}]:`, errorMsg);
+                setTranscript('');
+                alert(`Transkribering feilet: ${errorMsg}`);
+            } else if (data.text) {
                 setTranscript(data.text);
                 setShowTranscriptToast(true);
 
-                // Save recording + transcript to database
+                // Update session stats in sessionStorage
                 try {
-                    await fetch('/api/recordings', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            filename: 'recording.webm',
-                            duration: recordingTime,
-                            fileSize: audioBlob.size,
-                            mimeType: 'audio/webm',
-                            source: 'dashboard',
-                            patientId: patientId || undefined,
-                            transcript: {
-                                text: data.text,
-                                language: 'no',
-                                wordCount: data.text.split(/\s+/).filter(Boolean).length,
-                            },
-                        }),
-                    });
-
-                    // Refresh stats after saving
-                    const recRes = await fetch('/api/recordings');
-                    if (recRes.ok) {
-                        const recordings = await recRes.json();
-                        const today = new Date().toDateString();
-                        const todayRecs = recordings.filter((r: any) => new Date(r.createdAt).toDateString() === today);
-                        const totalDuration = todayRecs.reduce((sum: number, r: any) => sum + (r.duration || 0), 0);
-                        setStats({
-                            todayRecordings: todayRecs.length,
-                            todayMinutes: Math.round(totalDuration / 60),
-                        });
-                    }
-                } catch (saveError) {
-                    console.error('Failed to save recording:', saveError);
+                    const stored = sessionStorage.getItem('vocura_session_stats');
+                    const current = stored ? JSON.parse(stored) : { todayRecordings: 0, todayMinutes: 0 };
+                    const updated = {
+                        todayRecordings: (current.todayRecordings || 0) + 1,
+                        todayMinutes: (current.todayMinutes || 0) + Math.round(recordingTime / 60),
+                    };
+                    sessionStorage.setItem('vocura_session_stats', JSON.stringify(updated));
+                    setStats(updated);
+                } catch {
+                    // Ignore sessionStorage errors
                 }
             } else {
+                console.error('Transcription returned empty text:', data);
                 setTranscript('');
-                alert('Kunne ikke transkribere opptaket. Vennligst prøv igjen.');
+                alert('Transkribering returnerte ingen tekst. Vennligst prøv igjen.');
             }
             setIsTranscribing(false);
         } catch (error) {
@@ -355,12 +372,12 @@ export default function Dashboard() {
         <div className="flex h-screen overflow-hidden">
             {/* Sidebar */}
             <AppSidebar>
-                <div className="pt-6 px-2">
-                    <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider block mb-2">Profesjon</label>
+                <div className="pt-4 px-1">
+                    <label className="text-[11px] font-medium text-[var(--text-muted)] tracking-wider block mb-1.5 px-1.5">Profesjon</label>
                     <select
                         value={profession}
                         onChange={(e) => setProfession(e.target.value)}
-                        className="glass-input !text-sm !py-2.5 cursor-pointer"
+                        className="w-full bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-md text-[var(--text-primary)] text-[13px] px-2.5 py-2 cursor-pointer focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
                     >
                         <option value="lege">Lege / Spesialist</option>
                         <option value="tannlege">Tannlege</option>
@@ -370,43 +387,43 @@ export default function Dashboard() {
                 </div>
 
                 {/* Time Saved Stats */}
-                <div className="pt-4 px-2">
-                    <div className="glass-card-static p-3">
+                <div className="pt-3 px-1">
+                    <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp className="w-4 h-4 text-[var(--primary-light)]" />
-                            <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Tid spart i dag</span>
+                            <TrendingUp className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+                            <span className="text-[11px] font-medium text-[var(--text-muted)] tracking-wider">Tid spart i dag</span>
                         </div>
-                        <p className="text-2xl font-bold text-[var(--primary-light)]">{stats.todayMinutes} min</p>
-                        <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{stats.todayRecordings} konsultasjoner dokumentert</p>
+                        <p className="text-xl font-semibold text-[var(--text-primary)]">{stats.todayMinutes} min</p>
+                        <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">{stats.todayRecordings} konsultasjoner dokumentert</p>
                     </div>
                 </div>
 
                 {/* GDPR Data Management */}
-                <div className="pt-4 px-2">
-                    <div className="glass-card-static p-3">
+                <div className="pt-3 px-1">
+                    <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-2">
-                            <Shield className="w-4 h-4 text-[var(--success)]" />
-                            <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Personvern</span>
+                            <Shield className="w-3.5 h-3.5 text-[var(--color-success)]" />
+                            <span className="text-[11px] font-medium text-[var(--text-muted)] tracking-wider">Personvern</span>
                         </div>
-                        <p className="text-[11px] text-[var(--text-muted)] mb-2">
+                        <p className="text-[11px] text-[var(--text-secondary)] mb-2">
                             Samtykke: {consentGiven ? (
-                                <span className="text-[var(--success)] font-semibold">Aktivt</span>
+                                <span className="text-[var(--color-success)] font-medium">Aktivt</span>
                             ) : (
-                                <span className="text-[var(--text-muted)] font-semibold">Ikke gitt</span>
+                                <span className="text-[var(--text-muted)] font-medium">Ikke gitt</span>
                             )}
                         </p>
                         {consentGiven && (
                             <button
                                 onClick={() => handleConsentChange(false)}
-                                className="text-[11px] text-[var(--warning)] hover:text-[var(--warning)] font-medium transition-colors cursor-pointer"
+                                className="text-[11px] text-[var(--color-warning)] hover:opacity-80 font-medium transition-colors cursor-pointer"
                             >
                                 Trekk tilbake samtykke
                             </button>
                         )}
-                        <div className="mt-2 pt-2 border-t border-[var(--glass-border)]">
+                        <div className="mt-2 pt-2 border-t border-[var(--border-default)]">
                             <button
                                 onClick={() => setShowDeleteConfirm(true)}
-                                className="flex items-center gap-1.5 text-[11px] text-[var(--error)] hover:text-[var(--error)] font-medium transition-colors cursor-pointer"
+                                className="flex items-center gap-1.5 text-[11px] text-[var(--color-error)] hover:opacity-80 font-medium transition-colors cursor-pointer"
                             >
                                 <Trash2 className="w-3 h-3" />
                                 Slett alle mine data
@@ -417,129 +434,161 @@ export default function Dashboard() {
             </AppSidebar>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden">
-                <header className="glass-header h-16 flex items-center justify-between px-8">
-                    <h2 className="text-xl font-semibold text-[var(--text-primary)]">Aktiv arbeidsøkt</h2>
-                    <div className="flex items-center gap-4">
+            <main className="flex-1 flex flex-col overflow-hidden bg-[var(--surface-deep)]">
+                {/* Session Header Bar */}
+                <header className="bg-[var(--surface-primary)]/80 backdrop-blur-sm border-b border-[var(--border-default)] h-12 flex items-center justify-between px-5 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-[var(--surface-overlay)]">
+                            <span className="text-[11px] font-mono text-[var(--text-secondary)] tracking-wide">{sessionId}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                            <span className={cn(
+                                "font-mono text-base tracking-wider",
+                                isRecording ? "text-[var(--color-error)]" : "text-[var(--text-primary)]"
+                            )}>
+                                {formatTime(recordingTime)}
+                            </span>
+                        </div>
+
+                        {isRecording && (
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[rgba(239,68,68,0.10)]">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-error)] opacity-75" />
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-error)]" />
+                                </span>
+                                <span className="text-[11px] font-medium text-[var(--color-error)] uppercase tracking-wider">REC</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowShortcuts(prev => !prev)}
-                            className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors cursor-pointer"
+                            className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer px-2 py-1 rounded-md hover:bg-[var(--surface-overlay)]"
                             title="Hurtigtaster (?)"
                         >
-                            <Keyboard className="w-4 h-4" />
+                            <Keyboard className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">Hurtigtaster</span>
                         </button>
-                        <div className="flex items-center gap-2">
-                            <Shield className="w-4 h-4 text-[var(--text-muted)]" />
-                            <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                        <div className="w-px h-3.5 bg-[var(--border-default)]" />
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[var(--surface-overlay)]">
+                            <Lock className="w-3 h-3 text-[var(--color-success)]" />
+                            <span className="text-[11px] font-medium text-[var(--text-primary)]">
                                 {profile ? profile.name : 'Demomodus'}
                             </span>
                         </div>
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-8">
-                    <div className="max-w-3xl mx-auto">
-                        {/* Patient Context Bar */}
-                        <div className="glass-card p-5 mb-6 animate-fade-in">
-                            <div className="flex items-center gap-2 mb-4">
-                                <User className="w-4 h-4 text-[var(--primary-light)]" />
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Pasientkontekst</h3>
-                            </div>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div>
-                                    <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Pasient-ID</label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            value={patientId}
-                                            onChange={(e) => setPatientId(e.target.value)}
-                                            placeholder="P-2024-0847"
-                                            className="glass-input !text-sm !py-2.5 !pr-10 font-mono"
-                                        />
-                                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-                                    </div>
+                <div className="flex-1 overflow-y-auto">
+                    <div className="max-w-3xl mx-auto px-6 py-8">
+                        {/* Patient Context - Inline bar */}
+                        <div className="flex flex-wrap items-end gap-4 pb-6 mb-8 border-b border-[var(--border-default)] animate-fade-in">
+                            <div className="flex items-center gap-2 mr-2 self-center">
+                                <User className="w-4 h-4 text-[var(--text-muted)]" />
+                                <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Pasient</span>
+                                <div className="flex items-center gap-1 ml-1" title={isEPJConnected ? 'EPJ tilkoblet' : 'EPJ ikke tilkoblet'}>
+                                    <Plug className={cn(
+                                        "w-3 h-3",
+                                        isEPJConnected ? "text-[var(--color-success)]" : "text-[var(--text-muted)]"
+                                    )} />
+                                    <span className={cn(
+                                        "inline-block w-2 h-2 rounded-full",
+                                        isEPJConnected ? "bg-[var(--color-success)]" : "bg-[var(--color-warning)]"
+                                    )} />
+                                    <span className="text-[10px] text-[var(--text-muted)]">
+                                        {isEPJConnected ? 'EPJ' : 'Fritekst'}
+                                    </span>
                                 </div>
-                                <div className="relative" ref={patientDropdownRef}>
-                                    <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Pasientnavn</label>
+                            </div>
+                            <div className="flex-1 min-w-[140px] max-w-[180px]">
+                                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider block mb-1">ID</label>
+                                <div className="relative">
                                     <input
                                         type="text"
-                                        value={patientName}
-                                        onChange={(e) => handlePatientNameChange(e.target.value)}
-                                        onFocus={() => { if (patientResults.length > 0) setShowPatientDropdown(true); }}
-                                        placeholder="Fornavn Etternavn"
-                                        className="glass-input !text-sm !py-2.5"
-                                        autoComplete="off"
+                                        value={patientId}
+                                        onChange={(e) => setPatientId(e.target.value)}
+                                        placeholder="P-2024-0847"
+                                        className="w-full bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-md text-[var(--text-primary)] text-sm px-3 py-2 pr-9 font-mono placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
                                     />
-                                    {showPatientDropdown && patientResults.length > 0 && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 glass-card-elevated z-20 max-h-48 overflow-y-auto">
-                                            {patientResults.map((patient: any, idx: number) => (
-                                                <button
-                                                    key={patient.id || idx}
-                                                    type="button"
-                                                    onClick={() => selectPatient(patient)}
-                                                    className="w-full text-left px-3 py-2.5 hover:bg-[var(--glass-hover)] transition-colors border-b border-[var(--glass-border)] last:border-b-0 cursor-pointer"
-                                                >
-                                                    <span className="text-sm font-medium text-[var(--text-primary)] block">{patient.name}</span>
-                                                    {patient.patientId && (
-                                                        <span className="text-[11px] text-[var(--text-muted)] font-mono">{patient.patientId}</span>
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Konsultasjonstype</label>
-                                    <select
-                                        value={encounterType}
-                                        onChange={(e) => setEncounterType(e.target.value)}
-                                        className="glass-input !text-sm !py-2.5 cursor-pointer"
-                                    >
-                                        <option value="kontroll">Kontroll</option>
-                                        <option value="nykonsultasjon">Ny konsultasjon</option>
-                                        <option value="akutt">Akutt</option>
-                                        <option value="oppfølging">Oppfølging</option>
-                                        <option value="prosedyre">Prosedyre</option>
-                                        <option value="telefonkonsultasjon">Telefonkonsultasjon</option>
-                                    </select>
+                                    <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-muted)]" />
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Session Header */}
-                        <div className="flex items-end justify-between mb-8 animate-fade-in stagger-1">
-                            <div>
-                                <p className="text-xs font-semibold text-[var(--primary-light)] uppercase tracking-wider mb-1">Nytt journalnotat</p>
-                                <h2 className="text-3xl font-bold text-[var(--text-primary)]">Diktering</h2>
-                                {patientId && (
-                                    <p className="text-sm text-[var(--text-muted)] mt-1">
-                                        Pasient: <span className="font-mono font-semibold text-[var(--text-secondary)]">{patientId}</span>
-                                        {patientName && <span> - {patientName}</span>}
+                            <div className="flex-1 min-w-[160px] max-w-[200px] relative" ref={patientDropdownRef}>
+                                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider block mb-1">Navn</label>
+                                <input
+                                    type="text"
+                                    value={patientName}
+                                    onChange={(e) => handlePatientNameChange(e.target.value)}
+                                    onFocus={() => { if (patientResults.length > 0) setShowPatientDropdown(true); }}
+                                    placeholder="Fornavn Etternavn"
+                                    className="w-full bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-md text-[var(--text-primary)] text-sm px-3 py-2 placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
+                                    autoComplete="off"
+                                />
+                                {showPatientDropdown && patientResults.length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg z-20 max-h-48 overflow-y-auto" style={{ boxShadow: 'var(--shadow-overlay)' }}>
+                                        {patientResults.map((patient: any, idx: number) => (
+                                            <button
+                                                key={patient.epjPatientId || patient.id || idx}
+                                                type="button"
+                                                onClick={() => selectPatient(patient)}
+                                                className="w-full text-left px-3 py-2 hover:bg-[var(--surface-overlay)] transition-colors border-b border-[var(--border-subtle)] last:border-b-0 cursor-pointer"
+                                            >
+                                                <span className="text-sm font-medium text-[var(--text-primary)] block">{patient.displayName || patient.name}</span>
+                                                <span className="text-[11px] text-[var(--text-muted)] font-mono">
+                                                    {patient.epjPatientId || patient.patientId}
+                                                    {patient.birthYear && ` \u00B7 f. ${patient.birthYear}`}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {patientSearchError && (
+                                    <p className="absolute top-full left-0 right-0 mt-1 text-[11px] text-[var(--color-error)] px-1">
+                                        {patientSearchError}
                                     </p>
                                 )}
+                            </div>
+                            <div className="flex-1 min-w-[150px] max-w-[180px]">
+                                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider block mb-1">Type</label>
+                                <select
+                                    value={encounterType}
+                                    onChange={(e) => setEncounterType(e.target.value)}
+                                    className="w-full bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-md text-[var(--text-primary)] text-sm px-3 py-2 cursor-pointer focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
+                                >
+                                    <option value="kontroll">Kontroll</option>
+                                    <option value="nykonsultasjon">Ny konsultasjon</option>
+                                    <option value="akutt">Akutt</option>
+                                    <option value="oppfolging">Oppfølging</option>
+                                    <option value="prosedyre">Prosedyre</option>
+                                    <option value="telefonkonsultasjon">Telefonkonsultasjon</option>
+                                </select>
                             </div>
                             {transcript && (
                                 <Link
                                     href={`/editor?profession=${profession}&transcript=${encodeURIComponent(transcript)}&patientName=${encodeURIComponent(patientName)}&patientId=${encodeURIComponent(patientId)}`}
-                                    className="glass-btn-primary text-sm !py-2.5 !px-5 inline-flex items-center gap-2 cursor-pointer"
+                                    className="bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-[13px] font-medium rounded-md px-4 py-2 inline-flex items-center gap-2 cursor-pointer transition-colors self-end"
                                 >
-                                    Åpne Editor
+                                    Åpne editor
                                     <ChevronRight className="w-4 h-4" />
                                 </Link>
                             )}
                         </div>
 
                         {/* Recording Interface */}
-                        <div className="glass-card-elevated p-12 flex flex-col items-center gap-10 animate-slide-up stagger-2">
+                        <div
+                            className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-10 flex flex-col items-center gap-8 animate-slide-up stagger-1 relative overflow-hidden"
+                        >
                             {/* Status Text */}
-                            <div className="text-center" aria-live="polite" aria-atomic="true">
-                                <h3 className="text-xl font-medium text-[var(--text-primary)] mb-1">
+                            <div className="text-center relative z-10" aria-live="polite" aria-atomic="true">
+                                <h3 className="text-base font-medium text-[var(--text-primary)] mb-1">
                                     {isRecording ? "Tar opp lyd..." : isTranscribing ? "Transkriberer tale..." : transcript ? "Diktering ferdig" : "Klar for diktering"}
                                 </h3>
-                                <p className="text-sm text-[var(--text-muted)]">
+                                <p className="text-sm text-[var(--text-secondary)]">
                                     {isRecording
-                                        ? `${formatTime(recordingTime)} - Trykk for å stoppe`
+                                        ? `${formatTime(recordingTime)} — Trykk for å stoppe`
                                         : isTranscribing
                                             ? "Vennligst vent"
                                             : transcript
@@ -548,118 +597,146 @@ export default function Dashboard() {
                                 </p>
                             </div>
 
-                            {/* Waveform - Real audio data */}
-                            <div className="flex items-center justify-center gap-1.5 h-24 w-full">
+                            {/* Waveform */}
+                            <div className="flex items-center justify-center gap-[3px] h-20 w-full max-w-md relative z-10">
                                 {waveformBars.map((height, i) => (
                                     <div
                                         key={i}
-                                        className={cn(
-                                            "w-1.5 rounded-full transition-all",
-                                            isRecording
-                                                ? "bg-[var(--error)]"
-                                                : transcript
-                                                    ? "bg-[var(--primary)]"
-                                                    : "bg-[var(--glass-border)]"
-                                        )}
+                                        className="w-[4px] rounded-full"
                                         style={{
                                             height: `${height}px`,
                                             transition: isRecording ? 'height 50ms ease' : 'height 300ms ease',
                                             background: isRecording
-                                                ? 'var(--error)'
+                                                ? `linear-gradient(to top, var(--waveform-from), var(--waveform-to))`
                                                 : transcript
-                                                    ? 'linear-gradient(to top, var(--primary), var(--primary-light))'
-                                                    : 'var(--glass-border)',
+                                                    ? `linear-gradient(to top, var(--waveform-idle-from), var(--waveform-idle-to))`
+                                                    : 'var(--border-default)',
+                                            opacity: isRecording ? (0.7 + (height / 80) * 0.3) : 0.6 + Math.sin(i * 0.5) * 0.4,
                                         }}
                                     />
                                 ))}
                             </div>
+
+                            {/* DR/PA Conversation Mockup */}
+                            <ConversationMockup isRecording={isRecording} recordingTime={recordingTime} />
 
                             {/* Mic Button */}
                             <button
                                 onClick={isRecording ? stopRecording : startRecording}
                                 disabled={isTranscribing}
                                 className={cn(
-                                    "relative flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer",
+                                    "relative flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer z-10",
                                     isRecording
-                                        ? "w-24 h-24 bg-[var(--error-subtle)] border-2 border-[var(--error)]"
-                                        : "w-24 h-24 border-2 border-[var(--primary)] animate-pulse-glow",
-                                    !isRecording && !isTranscribing && "hover:shadow-[0_0_30px_var(--primary-glow)]",
+                                        ? "w-16 h-16 bg-[rgba(239,68,68,0.08)] border-2 border-[var(--color-error)]"
+                                        : "w-16 h-16 border-2 border-[var(--border-strong)] hover:border-[var(--accent-primary)]",
                                     isTranscribing && "opacity-50 cursor-not-allowed"
                                 )}
-                                style={!isRecording ? { background: 'linear-gradient(135deg, rgba(8,145,178,0.15), rgba(34,211,238,0.1))' } : undefined}
                             >
                                 {isRecording && (
-                                    <div className="absolute inset-0 rounded-full border-2 border-[var(--error)] animate-pulse-ring" />
+                                    <div
+                                        className="absolute inset-0 rounded-full border border-[var(--color-error)]"
+                                        style={{
+                                            animation: 'pulse-ring 1.5s ease-out infinite',
+                                        }}
+                                    />
                                 )}
                                 {isTranscribing ? (
                                     <span role="status">
-                                        <Loader2 className="w-8 h-8 text-[var(--primary-light)] animate-spin" />
+                                        <Loader2 className="w-6 h-6 text-[var(--accent-primary)] animate-spin" />
                                         <span className="sr-only">Transkriberer tale...</span>
                                     </span>
                                 ) : isRecording ? (
-                                    <Square className="w-7 h-7 text-[var(--error)] fill-current" />
+                                    <Square className="w-5 h-5 text-[var(--color-error)] fill-current" />
                                 ) : (
-                                    <Mic className="w-8 h-8 text-[var(--primary-light)]" />
+                                    <Mic className="w-6 h-6 text-[var(--text-primary)]" />
                                 )}
                             </button>
 
-                            {/* GDPR Consent */}
+                            {/* GDPR Consent Toggle */}
                             {!isRecording && !transcript && (
-                                <label className="flex items-start gap-3 cursor-pointer max-w-md">
-                                    <input
-                                        type="checkbox"
-                                        checked={consentGiven}
-                                        onChange={(e) => handleConsentChange(e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[var(--glass-border)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0 accent-[var(--primary)] cursor-pointer"
-                                    />
-                                    <span className={cn("text-sm leading-relaxed", consentGiven ? "text-[var(--text-secondary)]" : "text-[var(--text-muted)]")}>
-                                        Jeg bekrefter at pasientdata behandles i henhold til personvernlovgivningen (GDPR)
-                                    </span>
-                                </label>
-                            )}
-
-                            {/* Transcript Display */}
-                            {transcript && (
-                                <div className="w-full glass-card-static p-6" aria-live="polite">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <FileText className="w-4 h-4 text-[var(--primary-light)]" />
-                                        <span className="text-xs font-semibold text-[var(--primary-light)] uppercase tracking-wider">Transkripsjon</span>
-                                        {recordingTime > 0 && (
-                                            <span className="text-[11px] text-[var(--text-muted)] ml-auto flex items-center gap-1">
-                                                <Clock className="w-3 h-3" /> {formatTime(recordingTime)}
-                                            </span>
+                                <div className="flex items-center gap-3 relative z-10">
+                                    <button
+                                        role="switch"
+                                        aria-checked={consentGiven}
+                                        onClick={() => handleConsentChange(!consentGiven)}
+                                        className={cn(
+                                            "relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--surface-elevated)]",
+                                            consentGiven ? "bg-[var(--accent-primary)]" : "bg-[var(--border-strong)]"
                                         )}
-                                    </div>
-                                    <p className="text-[var(--text-secondary)] leading-relaxed">{transcript}</p>
-
-                                    {/* Time saved indicator */}
-                                    <div className="mt-4 pt-4 border-t border-[var(--glass-border)] flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-[var(--success)]" />
-                                        <span className="text-xs font-semibold text-[var(--success)]">Estimert tid spart: ~8 minutter</span>
-                                    </div>
+                                    >
+                                        <span
+                                            className={cn(
+                                                "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200",
+                                                consentGiven ? "translate-x-4" : "translate-x-0"
+                                            )}
+                                        />
+                                    </button>
+                                    <span className="text-[13px] leading-relaxed max-w-sm text-[var(--text-secondary)]">
+                                        GDPR-samtykke for opptak og databehandling
+                                    </span>
+                                    {consentGiven && (
+                                        <Shield className="w-3.5 h-3.5 text-[var(--color-success)] shrink-0" />
+                                    )}
                                 </div>
                             )}
                         </div>
 
+                        {/* Transcript Display */}
+                        {transcript && (
+                            <div
+                                className="mt-6 bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-6 animate-fade-in stagger-2"
+                                aria-live="polite"
+                            >
+                                <div className="flex items-center gap-2 mb-3">
+                                    <FileText className="w-4 h-4 text-[var(--accent-primary)]" />
+                                    <span className="text-[11px] font-medium text-[var(--text-muted)] uppercase tracking-wider">Transkripsjon</span>
+                                    {recordingTime > 0 && (
+                                        <span className="text-[11px] text-[var(--text-muted)] ml-auto flex items-center gap-1 font-mono">
+                                            <Clock className="w-3 h-3" /> {formatTime(recordingTime)}
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-[var(--text-primary)] leading-relaxed text-[14px]">{transcript}</p>
+
+                                <div className="mt-4 pt-4 border-t border-[var(--border-default)] flex items-center gap-2">
+                                    <Clock className="w-3.5 h-3.5 text-[var(--color-success)]" />
+                                    <span className="text-xs font-medium text-[var(--color-success)]">Estimert tid spart: ~8 minutter</span>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Quick Actions */}
                         {transcript && (
-                            <div className="grid grid-cols-4 gap-4 mt-6 animate-fade-in stagger-3">
-                                <Link href={`/editor?profession=${profession}&transcript=${encodeURIComponent(transcript)}&patientName=${encodeURIComponent(patientName)}&patientId=${encodeURIComponent(patientId)}`} className="glass-card p-5 text-center group cursor-pointer">
-                                    <PenLine className="w-6 h-6 text-[var(--primary-light)] mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium text-[var(--text-primary)]">Rediger i Editor</span>
-                                    <span className="text-[10px] text-[var(--text-muted)] block mt-1">Ctrl+E</span>
+                            <div className="grid grid-cols-4 gap-3 mt-6 animate-fade-in stagger-3">
+                                <Link
+                                    href={`/editor?profession=${profession}&transcript=${encodeURIComponent(transcript)}&patientName=${encodeURIComponent(patientName)}&patientId=${encodeURIComponent(patientId)}`}
+                                    className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-4 text-center group cursor-pointer hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-all"
+                                >
+                                    <PenLine className="w-4 h-4 text-[var(--accent-secondary)] mx-auto mb-2" />
+                                    <span className="text-[13px] font-medium text-[var(--text-primary)] block">Rediger i Editor</span>
+                                    <span className="text-[10px] text-[var(--text-muted)] block mt-1 font-mono">Ctrl+E</span>
                                 </Link>
-                                <Link href="/journal" className="glass-card p-5 text-center group cursor-pointer">
-                                    <BookOpen className="w-6 h-6 text-[var(--success)] mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium text-[var(--text-primary)]">Lagre i Journal</span>
+                                <Link
+                                    href={`/editor?profession=${profession}&transcript=${encodeURIComponent(transcript)}&patientName=${encodeURIComponent(patientName)}&patientId=${encodeURIComponent(patientId)}&epj=true`}
+                                    className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-4 text-center group cursor-pointer hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-all"
+                                >
+                                    <Send className="w-4 h-4 text-[var(--color-success)] mx-auto mb-2" />
+                                    <span className="text-[13px] font-medium text-[var(--text-primary)] block">Send til EPJ</span>
+                                    <span className="text-[10px] text-[var(--text-muted)] block mt-1 font-mono">Ctrl+Enter</span>
                                 </Link>
-                                <Link href="/forms" className="glass-card p-5 text-center group cursor-pointer">
-                                    <ClipboardList className="w-6 h-6 text-[var(--warning)] mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium text-[var(--text-primary)]">Fyll ut skjema</span>
+                                <Link
+                                    href="/forms"
+                                    className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-4 text-center group cursor-pointer hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-all"
+                                >
+                                    <ClipboardList className="w-4 h-4 text-[var(--color-warning)] mx-auto mb-2" />
+                                    <span className="text-[13px] font-medium text-[var(--text-primary)] block">Fyll ut skjema</span>
                                 </Link>
-                                <Link href="/summary" className="glass-card p-5 text-center group cursor-pointer">
-                                    <Sparkles className="w-6 h-6 text-[var(--accent)] mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium text-[var(--text-primary)]">Pasientoppsummering</span>
+                                <Link
+                                    href="/summary"
+                                    className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-4 text-center group cursor-pointer hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-all"
+                                >
+                                    <Sparkles className="w-4 h-4 text-[var(--accent-primary)] mx-auto mb-2" />
+                                    <span className="text-[13px] font-medium text-[var(--text-primary)] block">Pasientoppsummering</span>
                                 </Link>
                             </div>
                         )}
@@ -669,41 +746,41 @@ export default function Dashboard() {
 
             {/* Delete Data Confirmation Modal */}
             {showDeleteConfirm && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center" onClick={() => setShowDeleteConfirm(false)}>
-                    <div className="glass-card-elevated p-6 max-w-sm w-full mx-4 animate-scale-in" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-[var(--overlay-bg)] z-50 flex items-center justify-center" onClick={() => setShowDeleteConfirm(false)}>
+                    <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-6 max-w-sm w-full mx-4 animate-scale-in" style={{ boxShadow: 'var(--shadow-overlay)' }} onClick={e => e.stopPropagation()}>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-[var(--error-subtle)] rounded-full flex items-center justify-center">
-                                <AlertTriangle className="w-5 h-5 text-[var(--error)]" />
+                            <div className="w-9 h-9 bg-[rgba(239,68,68,0.10)] rounded-full flex items-center justify-center">
+                                <AlertTriangle className="w-4 h-4 text-[var(--color-error)]" />
                             </div>
-                            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Slett alle data</h3>
+                            <h3 className="text-base font-semibold text-[var(--text-primary)]">Slett alle data</h3>
                         </div>
                         <p className="text-sm text-[var(--text-secondary)] mb-2">
                             Dette vil slette alle lokalt lagrede data, inkludert:
                         </p>
-                        <ul className="text-sm text-[var(--text-secondary)] mb-6 space-y-1">
+                        <ul className="text-sm text-[var(--text-secondary)] mb-6 space-y-1.5">
                             <li className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-[var(--error)] rounded-full shrink-0" />
+                                <span className="w-1 h-1 bg-[var(--color-error)] rounded-full shrink-0" />
                                 Samtykkelogg og samtykke-status
                             </li>
                             <li className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-[var(--error)] rounded-full shrink-0" />
+                                <span className="w-1 h-1 bg-[var(--color-error)] rounded-full shrink-0" />
                                 Innstillinger (mørk modus)
                             </li>
                             <li className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-[var(--error)] rounded-full shrink-0" />
+                                <span className="w-1 h-1 bg-[var(--color-error)] rounded-full shrink-0" />
                                 Aktiv transkripsjon og sesjondata
                             </li>
                         </ul>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowDeleteConfirm(false)}
-                                className="glass-btn-secondary flex-1 !text-sm !py-2.5 cursor-pointer"
+                                className="flex-1 border border-[var(--border-default)] text-[var(--text-primary)] hover:bg-[var(--surface-overlay)] text-sm font-medium py-2 px-4 rounded-md transition-colors cursor-pointer"
                             >
                                 Avbryt
                             </button>
                             <button
                                 onClick={handleDeleteAllData}
-                                className="flex-1 bg-[var(--error)] hover:bg-[var(--error)] text-white text-sm font-medium py-2.5 px-4 rounded-lg transition-colors cursor-pointer"
+                                className="flex-1 bg-[var(--color-error)] hover:bg-[#DC2626] text-white text-sm font-medium py-2 px-4 rounded-md transition-colors cursor-pointer"
                             >
                                 Slett alt
                             </button>
@@ -714,11 +791,11 @@ export default function Dashboard() {
 
             {/* Keyboard Shortcuts Modal */}
             {showShortcuts && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center" onClick={() => setShowShortcuts(false)}>
-                    <div className="glass-card-elevated p-6 max-w-sm w-full mx-4 animate-scale-in" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Hurtigtaster</h3>
-                            <button onClick={() => setShowShortcuts(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer">&times;</button>
+                <div className="fixed inset-0 bg-[var(--overlay-bg)] z-50 flex items-center justify-center" onClick={() => setShowShortcuts(false)}>
+                    <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-6 max-w-sm w-full mx-4 animate-scale-in" style={{ boxShadow: 'var(--shadow-overlay)' }} onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-5">
+                            <h3 className="text-base font-semibold text-[var(--text-primary)]">Hurtigtaster</h3>
+                            <button onClick={() => setShowShortcuts(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer text-xl leading-none">&times;</button>
                         </div>
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
@@ -734,7 +811,7 @@ export default function Dashboard() {
                                 <span className="kbd">Ctrl+S</span>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-[var(--text-secondary)]">Godkjenn dokument</span>
+                                <span className="text-sm text-[var(--text-secondary)]">Send til EPJ</span>
                                 <span className="kbd">Ctrl+Enter</span>
                             </div>
                             <div className="flex items-center justify-between">
@@ -752,13 +829,27 @@ export default function Dashboard() {
                     message="Transkribering fullført! Gå til editor for å strukturere notatet."
                     type="success"
                     action={{
-                        label: "Åpne i Editor",
+                        label: "Åpne i editor",
                         href: `/editor?profession=${profession}&transcript=${encodeURIComponent(transcript)}&patientName=${encodeURIComponent(patientName)}&patientId=${encodeURIComponent(patientId)}`
                     }}
                     onDismiss={() => setShowTranscriptToast(false)}
                     autoDismissMs={10000}
                 />
             )}
+
+            {/* Inline keyframes for pulse-ring animation */}
+            <style jsx>{`
+                @keyframes pulse-ring {
+                    0% {
+                        transform: scale(1);
+                        opacity: 0.6;
+                    }
+                    100% {
+                        transform: scale(1.4);
+                        opacity: 0;
+                    }
+                }
+            `}</style>
         </div>
     );
 }
