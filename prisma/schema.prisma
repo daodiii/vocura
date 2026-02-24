@@ -21,6 +21,7 @@ model User {
   journalEntries JournalEntry[]
   formSubmissions FormSubmission[]
   templates      Template[]
+  epjIntegration EpjIntegration?
 
   @@map("users")
 }
@@ -79,19 +80,20 @@ model Transcript {
 }
 
 model JournalEntry {
-  id             String   @id @default(uuid())
-  userId         String   @map("user_id")
-  patientId      String?  @map("patient_id")
-  patientName    String?  @map("patient_name")
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  patientId      String?   @map("patient_id")
+  patientName    String?   @map("patient_name")
   title          String
   content        String
   template       String?
-  status         String   @default("draft")
-  diagnosisCodes Json?    @map("diagnosis_codes")
-  recordingId    String?  @map("recording_id")
-  contentHash    String?  @map("content_hash")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  status         String    @default("draft")
+  diagnosisCodes Json?     @map("diagnosis_codes")
+  recordingId    String?   @map("recording_id")
+  contentHash    String?   @map("content_hash")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at") // Soft delete — requires migration: npx prisma migrate dev
 
   user    User     @relation(fields: [userId], references: [id])
   patient Patient? @relation(fields: [patientId], references: [id])
@@ -148,4 +150,22 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([userId])
   @@map("audit_logs")
+}
+
+model EpjIntegration {
+  id                    String    @id @default(uuid())
+  userId                String    @unique @map("user_id")
+  epjSystem             String    @map("epj_system")
+  careUnitId            String    @map("care_unit_id")
+  encryptedCredentials  String    @map("encrypted_credentials")
+  isActive              Boolean   @default(true) @map("is_active")
+  connectedAt           DateTime  @default(now()) @map("connected_at")
+  lastTestedAt          DateTime? @map("last_tested_at")
+  testOk                Boolean?  @map("test_ok")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("epj_integrations")
 }
