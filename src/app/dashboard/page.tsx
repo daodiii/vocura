@@ -122,7 +122,7 @@ export default function Dashboard() {
                 const res = await fetchWithTimeout('/api/user/epj-integration');
                 if (res.ok) {
                     const data = await res.json();
-                    setIsEPJConnected(!!data.connected);
+                    setIsEPJConnected(!!data.isConnected);
                 }
             } catch {
                 setIsEPJConnected(false);
