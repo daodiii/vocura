@@ -1,6 +1,6 @@
 {
-  "name": "MediScribe AI - Medisinsk Dokumentasjon",
-  "short_name": "MediScribe",
+  "name": "Vocura AI - Medisinsk Dokumentasjon",
+  "short_name": "Vocura",
   "description": "AI-drevet medisinsk dokumentasjon for norske helsepersonell",
   "start_url": "/dashboard",
   "display": "standalone",

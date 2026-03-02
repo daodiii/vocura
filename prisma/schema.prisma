@@ -12,12 +12,19 @@ model User {
   name      String
   role      String   @default("lege")
   hprNumber String?  @map("hpr_number")
-  address   String?
+  address        String?
+  identityLevel  String?  @map("identity_level")
+  authProvider   String?  @default("email") @map("auth_provider")
+  nationalIdHash String?  @unique @map("national_id_hash")
+  encryptionSalt String?  @map("encryption_salt")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  templates      Template[]
-  epjIntegration EpjIntegration?
+  templates         Template[]
+  epjIntegration    EpjIntegration?
+  auditLogs         AuditLog[]
+  clinicalNotes     ClinicalNote[]
+  retentionSettings RetentionSettings?
 
   @@map("users")
 }
@@ -51,6 +58,8 @@ model AuditLog {
   ipAddress   String?  @map("ip_address")
   createdAt   DateTime @default(now()) @map("created_at")
 
+  user User @relation(fields: [userId], references: [id])
+
   @@index([entityType, entityId])
   @@index([userId])
   @@map("audit_logs")
@@ -72,4 +81,38 @@ model EpjIntegration {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("epj_integrations")
+}
+
+model ClinicalNote {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  patientId        String?   @map("patient_id")
+  contentEncrypted String    @map("content_encrypted")
+  contentIv        String?   @map("content_iv")
+  templateType     String?   @map("template_type")
+  epjTransferred   Boolean   @default(false) @map("epj_transferred")
+  epjTransferredAt DateTime? @map("epj_transferred_at")
+  retentionHours   Int       @default(48) @map("retention_hours")
+  deleteAfter      DateTime? @map("delete_after")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([deleteAfter])
+  @@index([userId])
+  @@map("clinical_notes")
+}
+
+model RetentionSettings {
+  id                 String   @id @default(uuid())
+  userId             String   @unique @map("user_id")
+  textRetentionHours Int      @default(48) @map("text_retention_hours")
+  autoDeleteEnabled  Boolean  @default(true) @map("auto_delete_enabled")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("retention_settings")
 }

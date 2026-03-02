@@ -27,7 +27,7 @@ const TOOTH_STATUS = [
     { value: 'filling', label: 'Fylling', color: '#DDD7CE', border: '#7D7267' },
     { value: 'crown', label: 'Krone', color: '#FEF3C7', border: '#C8842B' },
     { value: 'missing', label: 'Mangler', color: '#FAEAE8', border: '#C44536' },
-    { value: 'rootcanal', label: 'Rotfylt', color: '#EDE9FE', border: '#7C3AED' },
+    { value: 'rootcanal', label: 'Rotfylt', color: '#EDE9FE', border: '#4F5ABF' },
     { value: 'implant', label: 'Implantat', color: '#CCFBF1', border: '#0D9488' },
 ];
 
@@ -154,11 +154,11 @@ export default function TannkartForm() {
                         <div className="w-16 h-16 bg-[#CCFBF1] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#0D9488]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Tannkart lagret
                         </h2>
                         <p className="text-[#7D7267] mb-2">Tannkartet og behandlingsplanen er lagret.</p>
-                        <p className="text-sm text-[var(--medical-gray-400)] mb-6">
+                        <p className="text-sm text-[#9E958C] mb-6">
                             Referanse: <span className="font-mono font-semibold text-[#0D9488]">{submissionId || referenceId}</span>
                         </p>
                         <div className="flex items-center justify-center gap-4">
@@ -218,7 +218,7 @@ export default function TannkartForm() {
                             <FileText className="w-5 h-5 text-[#0D9488]" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                         Tannkart og behandlingsplan
                     </h1>
                     <p className="text-[#7D7267] mt-1">Visuelt tannkart med behandlingsplanlegging</p>
@@ -230,7 +230,7 @@ export default function TannkartForm() {
                         {/* Dental Chart */}
                         <div className="card-base p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-semibold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                                <h2 className="text-lg font-semibold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                                     Tannkart
                                 </h2>
                             </div>
@@ -274,13 +274,13 @@ export default function TannkartForm() {
 
                         {/* Treatment Summary Table */}
                         <div className="card-base p-4">
-                            <h3 className="text-sm font-semibold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                            <h3 className="text-sm font-semibold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                                 Behandlingsoversikt ({teethWithTreatment.length} tenner)
                             </h3>
 
                             {teethWithTreatment.length === 0 ? (
-                                <p className="text-sm text-[var(--medical-gray-400)] text-center py-6">
-                                    Ingen behandlinger planlagt enn&aring;
+                                <p className="text-sm text-[#9E958C] text-center py-6">
+                                    Ingen behandlinger planlagt ennå
                                 </p>
                             ) : (
                                 <div className="overflow-x-auto">
@@ -341,13 +341,13 @@ export default function TannkartForm() {
 
                         {/* Cost Estimate */}
                         <div className="card-base p-4">
-                            <h3 className="text-sm font-semibold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                            <h3 className="text-sm font-semibold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                                 Kostnadsoverslag
                             </h3>
 
                             {Object.keys(treatmentCounts).length === 0 ? (
-                                <p className="text-sm text-[var(--medical-gray-400)] text-center py-4">
-                                    Legg til behandlinger for &aring; se kostnadsoverslag
+                                <p className="text-sm text-[#9E958C] text-center py-4">
+                                    Legg til behandlinger for å se kostnadsoverslag
                                 </p>
                             ) : (
                                 <div className="space-y-2">
@@ -379,7 +379,7 @@ export default function TannkartForm() {
                         <div className="card-base p-5">
                             <div className="flex items-center gap-2 mb-4">
                                 <User className="w-4 h-4 text-[#0D9488]" />
-                                <h3 className="text-sm font-semibold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                                <h3 className="text-sm font-semibold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                                     Pasientopplysninger
                                 </h3>
                             </div>
@@ -395,7 +395,7 @@ export default function TannkartForm() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">F&oslash;dselsnummer</label>
+                                    <label className="form-label form-required">Fødselsnummer</label>
                                     <input
                                         type="text"
                                         value={formData.patientFnr}
@@ -412,12 +412,12 @@ export default function TannkartForm() {
                         {selectedTooth && (
                             <div className="card-base p-5">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-sm font-semibold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                                    <h3 className="text-sm font-semibold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                                         Tann {selectedTooth}
                                     </h3>
                                     <button
                                         onClick={() => setSelectedTooth(null)}
-                                        className="text-[var(--medical-gray-400)] hover:text-[#5E5549] transition-colors text-xs"
+                                        className="text-[#9E958C] hover:text-[#5E5549] transition-colors text-xs"
                                     >
                                         Lukk
                                     </button>
@@ -539,7 +539,7 @@ export default function TannkartForm() {
                         <div className="card-base p-5">
                             <div className="flex items-center gap-2 mb-4">
                                 <Shield className="w-4 h-4 text-[#0D9488]" />
-                                <h3 className="text-sm font-semibold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                                <h3 className="text-sm font-semibold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                                     Forsikring
                                 </h3>
                             </div>
@@ -581,7 +581,7 @@ export default function TannkartForm() {
                         <div className="card-base p-5">
                             <div className="flex items-center gap-2 mb-4">
                                 <Info className="w-4 h-4 text-[#0D9488]" />
-                                <h3 className="text-sm font-semibold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                                <h3 className="text-sm font-semibold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                                     Samtykke
                                 </h3>
                             </div>
@@ -608,12 +608,12 @@ export default function TannkartForm() {
                                         value={formData.pasientSignatur}
                                         onChange={(e) => updateField('pasientSignatur', e.target.value)}
                                         className="input-field !text-sm"
-                                        style={{ fontFamily: "var(--font-serif), 'Georgia', serif", fontStyle: 'italic' }}
+                                        style={{ fontFamily: "'Georgia', serif", fontStyle: 'italic' }}
                                         placeholder="Skriv fullt navn som elektronisk signatur"
                                     />
                                 </div>
 
-                                <p className="text-xs text-[var(--medical-gray-400)]">
+                                <p className="text-xs text-[#9E958C]">
                                     Dato: {new Date().toLocaleDateString('nb-NO', { year: 'numeric', month: 'long', day: 'numeric' })}
                                 </p>
                             </div>

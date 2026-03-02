@@ -21,7 +21,7 @@ import {
     AlertTriangle,
     Loader2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
@@ -48,6 +48,7 @@ interface Milepel {
 export default function OpptreningsplanForm() {
     const { profile } = useUserProfile();
     const { submissionId, saving, submitting, saved, submitted, error, saveAsDraft, submitForm, exportPdf } = useFormSubmission({ formType: 'opptreningsplan' });
+    const [fnrError, setFnrError] = useState('');
     const [formData, setFormData] = useState({
         patientNavn: '',
         patientFnr: '',
@@ -79,7 +80,7 @@ export default function OpptreningsplanForm() {
 
     const addOvelse = () => {
         setOvelser(prev => [...prev, {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             navn: '',
             beskrivelse: '',
             sett: '',
@@ -101,7 +102,7 @@ export default function OpptreningsplanForm() {
 
     const addMilepel = () => {
         setMilepeler(prev => [...prev, {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             beskrivelse: '',
             maalDato: '',
             kriterier: '',
@@ -147,18 +148,18 @@ export default function OpptreningsplanForm() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="btn-ghost text-xs flex items-center gap-1.5 !py-2"
+                            className="text-[#5E5549] hover:text-[#1E1914] hover:bg-[rgba(0,0,0,0.04)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-xs flex items-center gap-1.5 !py-2"
                         >
                             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle className="w-3.5 h-3.5 text-[#3D8B6E]" /> : <Save className="w-3.5 h-3.5" />}
                             {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre utkast'}
                         </button>
-                        <button onClick={handleExportPdf} className="btn-secondary text-xs !py-2 !px-4 flex items-center gap-1.5">
+                        <button onClick={handleExportPdf} className="border border-[#DDD7CE] text-[#5E5549] hover:bg-[rgba(0,0,0,0.04)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs !py-2 !px-4 flex items-center gap-1.5">
                             <Download className="w-3.5 h-3.5" /> Last ned PDF
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={submitting}
-                            className="btn-primary text-xs !py-2 !px-4 flex items-center gap-1.5"
+                            disabled={submitting || !!fnrError}
+                            className="bg-[#4F5ABF] hover:bg-[#6D28D9] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150 text-xs !py-2 !px-4 flex items-center gap-1.5"
                         >
                             {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
                             {submitting ? 'Lagrer...' : 'Lagre opptreningsplan'}
@@ -175,29 +176,29 @@ export default function OpptreningsplanForm() {
                             <Activity className="w-5 h-5 text-[#0D9488]" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
                         Opptreningsplan
                     </h1>
                     <p className="text-[#7D7267] mt-1">Detaljert opptreningsplan med øvelser, mål og progresjon</p>
                 </div>
 
                 {submitted ? (
-                    <div className="card-base p-12 text-center">
+                    <div className="bg-white border border-[#DDD7CE] rounded-xl p-12 text-center">
                         <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
                             Opptreningsplan lagret
                         </h2>
                         <p className="text-[#7D7267] mb-6">Opptreningsplanen er lagret i pasientjournalen.</p>
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">
+                        <p className="text-sm font-mono text-[#7D7267] mb-8">
                             Referanse: {submissionId || `OPPT-${Math.random().toString(36).substr(2, 8).toUpperCase()}`}
                         </p>
                         <div className="flex items-center justify-center gap-4">
-                            <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
+                            <Link href="/forms" className="border border-[#DDD7CE] text-[#5E5549] hover:bg-[rgba(0,0,0,0.04)] rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
                             </Link>
-                            <Link href="/dashboard" className="btn-primary inline-flex items-center gap-2">
+                            <Link href="/dashboard" className="bg-[#4F5ABF] hover:bg-[#6D28D9] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
                                 Ny konsultasjon
                             </Link>
                         </div>
@@ -205,73 +206,75 @@ export default function OpptreningsplanForm() {
                 ) : (
                     <div className="space-y-6">
                         {/* Section 1: Pasientopplysninger */}
-                        <div className="form-section">
+                        <div className="bg-white border border-[#DDD7CE] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <User className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Pasientopplysninger</h2>
+                                <h2 className="text-sm font-semibold text-[#1E1914]">1. Pasientopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om pasienten</p>
+                            <p className="text-xs text-[#7D7267] mb-4 ml-6">Informasjon om pasienten</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
-                                    <label className="form-label form-required">Pasientnavn</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Pasientnavn <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.patientNavn}
                                         onChange={(e) => updateField('patientNavn', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                         placeholder="Fornavn Etternavn"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Fødselsnummer (11 siffer)</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Fødselsnummer (11 siffer) <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
-                                        className="input-field !text-sm font-mono"
+                                        onBlur={() => setFnrError(validateFnr(formData.patientFnr) || '')}
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
+                                    {fnrError && <p className="text-[#EF4444] text-xs mt-1">{fnrError}</p>}
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Vurderingsdato</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Vurderingsdato <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="date"
                                         value={formData.vurderingsDato}
                                         onChange={(e) => updateField('vurderingsDato', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Section 2: Diagnose og nåværende funksjonsnivå */}
-                        <div className="form-section">
+                        <div className="bg-white border border-[#DDD7CE] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <AlertCircle className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Diagnose og nåværende funksjonsnivå</h2>
+                                <h2 className="text-sm font-semibold text-[#1E1914]">2. Diagnose og nåværende funksjonsnivå</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Diagnose og funksjonsbeskrivelse</p>
+                            <p className="text-xs text-[#7D7267] mb-4 ml-6">Diagnose og funksjonsbeskrivelse</p>
 
                             <div className="grid grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label className="form-label form-required">Diagnose</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Diagnose <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.diagnose}
                                         onChange={(e) => updateField('diagnose', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                         placeholder="Hoveddiagnose"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Diagnosekode</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Diagnosekode <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.diagnoseKode}
                                         onChange={(e) => updateField('diagnoseKode', e.target.value)}
-                                        className="input-field !text-sm font-mono"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
                                         placeholder="L03 / M54.5"
                                     />
                                 </div>
@@ -279,40 +282,40 @@ export default function OpptreningsplanForm() {
                             </div>
 
                             <div>
-                                <label className="form-label form-required">Nåværende funksjonsnivå</label>
+                                <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Nåværende funksjonsnivå <span className="text-[#EF4444]">*</span></label>
                                 <textarea
                                     value={formData.naaverendeFunksjon}
                                     onChange={(e) => updateField('naaverendeFunksjon', e.target.value)}
-                                    className="input-field !text-sm min-h-[100px] resize-y"
+                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[100px] resize-y"
                                     placeholder="Beskriv pasientens nåværende funksjonsnivå..."
                                 />
                             </div>
                         </div>
 
                         {/* Section 3: Mål */}
-                        <div className="form-section">
+                        <div className="bg-white border border-[#DDD7CE] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <Target className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Mål</h2>
+                                <h2 className="text-sm font-semibold text-[#1E1914]">3. Mål</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Kortsiktige og langsiktige behandlingsmål</p>
+                            <p className="text-xs text-[#7D7267] mb-4 ml-6">Kortsiktige og langsiktige behandlingsmål</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label form-required">Kortsiktige mål (4-6 uker)</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Kortsiktige mål (4-6 uker) <span className="text-[#EF4444]">*</span></label>
                                     <textarea
                                         value={formData.kortsiktigeMaal}
                                         onChange={(e) => updateField('kortsiktigeMaal', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[80px] resize-y"
                                         placeholder="Beskriv kortsiktige mål for rehabiliteringen..."
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Langsiktige mål (3-6 måneder)</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Langsiktige mål (3-6 måneder) <span className="text-[#EF4444]">*</span></label>
                                     <textarea
                                         value={formData.langsiktigeMaal}
                                         onChange={(e) => updateField('langsiktigeMaal', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[80px] resize-y"
                                         placeholder="Beskriv langsiktige mål for rehabiliteringen..."
                                     />
                                 </div>
@@ -320,17 +323,17 @@ export default function OpptreningsplanForm() {
                         </div>
 
                         {/* Section 4: Øvelsesprogram */}
-                        <div className="form-section">
+                        <div className="bg-white border border-[#DDD7CE] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <Dumbbell className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Øvelsesprogram</h2>
+                                <h2 className="text-sm font-semibold text-[#1E1914]">4. Øvelsesprogram</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Øvelser med sett, repetisjoner og progresjonskriterier</p>
+                            <p className="text-xs text-[#7D7267] mb-4 ml-6">Øvelser med sett, repetisjoner og progresjonskriterier</p>
 
                             {ovelser.length === 0 ? (
                                 <div className="p-6 text-center rounded-lg border-2 border-dashed border-[#DDD7CE]">
-                                    <Info className="w-5 h-5 text-[var(--medical-gray-400)] mx-auto mb-2" />
-                                    <p className="text-sm text-[var(--medical-gray-400)]">
+                                    <Info className="w-5 h-5 text-[#7D7267] mx-auto mb-2" />
+                                    <p className="text-sm text-[#7D7267]">
                                         Ingen øvelser lagt til. Klikk knappen under for å legge til øvelser i programmet.
                                     </p>
                                 </div>
@@ -339,7 +342,7 @@ export default function OpptreningsplanForm() {
                                     {ovelser.map((ovelse, index) => (
                                         <div
                                             key={ovelse.id}
-                                            className="card-base p-4 mb-3 border-l-4 border-l-[#0D9488] relative"
+                                            className="bg-white border border-[#DDD7CE] rounded-xl p-4 mb-3 border-l-4 border-l-[#0D9488] relative"
                                         >
                                             {/* Exercise number badge & delete */}
                                             <div className="flex items-center justify-between mb-3">
@@ -348,7 +351,7 @@ export default function OpptreningsplanForm() {
                                                 </span>
                                                 <button
                                                     onClick={() => removeOvelse(ovelse.id)}
-                                                    className="p-1.5 rounded-lg text-[var(--medical-gray-400)] hover:text-[#C44536] hover:bg-[#FAEAE8] transition-colors"
+                                                    className="p-1.5 rounded-lg text-[#7D7267] hover:text-[#C44536] hover:bg-[#FAEAE8] transition-colors"
                                                     title="Fjern øvelse"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -358,21 +361,21 @@ export default function OpptreningsplanForm() {
                                             {/* Row 1: Name + Frequency */}
                                             <div className="grid grid-cols-2 gap-4 mb-3">
                                                 <div>
-                                                    <label className="form-label">Øvelsesnavn</label>
+                                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Øvelsesnavn</label>
                                                     <input
                                                         type="text"
                                                         value={ovelse.navn}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'navn', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                         placeholder="Øvelsesnavn"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="form-label">Frekvens</label>
+                                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Frekvens</label>
                                                     <select
                                                         value={ovelse.frekvens}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'frekvens', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                     >
                                                         <option value="">Velg...</option>
                                                         <option value="1x/uke">1x/uke</option>
@@ -388,32 +391,32 @@ export default function OpptreningsplanForm() {
                                             {/* Row 2: Sets, Reps, Intensity */}
                                             <div className="grid grid-cols-3 gap-4 mb-3">
                                                 <div>
-                                                    <label className="form-label">Antall sett</label>
+                                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Antall sett</label>
                                                     <input
                                                         type="text"
                                                         value={ovelse.sett}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'sett', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                         placeholder="Antall sett"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="form-label">Antall repetisjoner</label>
+                                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Antall repetisjoner</label>
                                                     <input
                                                         type="text"
                                                         value={ovelse.repetisjoner}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'repetisjoner', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                         placeholder="Antall repetisjoner"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="form-label">Intensitet/belastning</label>
+                                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Intensitet/belastning</label>
                                                     <input
                                                         type="text"
                                                         value={ovelse.intensitet}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'intensitet', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                         placeholder="Intensitet/belastning"
                                                     />
                                                 </div>
@@ -421,23 +424,23 @@ export default function OpptreningsplanForm() {
 
                                             {/* Description */}
                                             <div className="mb-3">
-                                                <label className="form-label">Beskrivelse og instruksjoner</label>
+                                                <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Beskrivelse og instruksjoner</label>
                                                 <textarea
                                                     value={ovelse.beskrivelse}
                                                     onChange={(e) => updateOvelse(ovelse.id, 'beskrivelse', e.target.value)}
-                                                    className="input-field !text-sm min-h-[40px] resize-y"
+                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[40px] resize-y"
                                                     placeholder="Beskrivelse og instruksjoner..."
                                                 />
                                             </div>
 
                                             {/* Progression criteria */}
                                             <div className="mb-3">
-                                                <label className="form-label">Progresjonskriterier</label>
+                                                <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Progresjonskriterier</label>
                                                 <input
                                                     type="text"
                                                     value={ovelse.progresjonskriterier}
                                                     onChange={(e) => updateOvelse(ovelse.id, 'progresjonskriterier', e.target.value)}
-                                                    className="input-field !text-sm"
+                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                     placeholder="Kriterier for progresjon, f.eks. øk med 2kg når 12 reps er oppnådd"
                                                 />
                                             </div>
@@ -459,7 +462,7 @@ export default function OpptreningsplanForm() {
 
                             <button
                                 onClick={addOvelse}
-                                className="btn-ghost text-sm flex items-center gap-2 mt-4 text-[#0D9488] hover:bg-[#CCFBF1]/50"
+                                className="text-[#5E5549] hover:text-[#1E1914] hover:bg-[rgba(0,0,0,0.04)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-sm flex items-center gap-2 mt-4 text-[#0D9488] hover:bg-[#CCFBF1]/50"
                             >
                                 <Plus className="w-4 h-4" />
                                 Legg til øvelse
@@ -467,29 +470,29 @@ export default function OpptreningsplanForm() {
                         </div>
 
                         {/* Section 5: Forholdsregler */}
-                        <div className="form-section">
+                        <div className="bg-white border border-[#DDD7CE] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <AlertTriangle className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Forholdsregler</h2>
+                                <h2 className="text-sm font-semibold text-[#1E1914]">5. Forholdsregler</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Kontraindikasjoner og forholdsregler under trening</p>
+                            <p className="text-xs text-[#7D7267] mb-4 ml-6">Kontraindikasjoner og forholdsregler under trening</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label">Kontraindikasjoner</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Kontraindikasjoner</label>
                                     <textarea
                                         value={formData.kontraindikasjoner}
                                         onChange={(e) => updateField('kontraindikasjoner', e.target.value)}
-                                        className="input-field !text-sm min-h-[60px] resize-y"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[60px] resize-y"
                                         placeholder="Kontraindikasjoner..."
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Forholdsregler under trening</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Forholdsregler under trening</label>
                                     <textarea
                                         value={formData.forholdsregler}
                                         onChange={(e) => updateField('forholdsregler', e.target.value)}
-                                        className="input-field !text-sm min-h-[60px] resize-y"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[60px] resize-y"
                                         placeholder="Forholdsregler under trening..."
                                     />
                                 </div>
@@ -497,18 +500,18 @@ export default function OpptreningsplanForm() {
                         </div>
 
                         {/* Section 6: Hjemmeøvelser */}
-                        <div className="form-section">
+                        <div className="bg-white border border-[#DDD7CE] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <ClipboardList className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Hjemmeøvelser</h2>
+                                <h2 className="text-sm font-semibold text-[#1E1914]">6. Hjemmeøvelser</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Automatisk generert fra øvelser markert som hjemmeøvelser</p>
+                            <p className="text-xs text-[#7D7267] mb-4 ml-6">Automatisk generert fra øvelser markert som hjemmeøvelser</p>
 
                             {hjemmeovelser.length === 0 ? (
                                 <div className="p-4 bg-[#F5F2ED] rounded-lg border border-[#DDD7CE]">
                                     <div className="flex items-start gap-3">
-                                        <Info className="w-4 h-4 text-[var(--medical-gray-400)] shrink-0 mt-0.5" />
-                                        <p className="text-sm text-[var(--medical-gray-400)]">
+                                        <Info className="w-4 h-4 text-[#7D7267] shrink-0 mt-0.5" />
+                                        <p className="text-sm text-[#7D7267]">
                                             Ingen øvelser er markert som hjemmeøvelser ennå. Merk øvelser i programmet ovenfor.
                                         </p>
                                     </div>
@@ -531,17 +534,17 @@ export default function OpptreningsplanForm() {
                         </div>
 
                         {/* Section 7: Progresjonsmilpæler */}
-                        <div className="form-section">
+                        <div className="bg-white border border-[#DDD7CE] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <Target className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Progresjonsmilpæler</h2>
+                                <h2 className="text-sm font-semibold text-[#1E1914]">7. Progresjonsmilpæler</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Milepæler for å spore progresjon</p>
+                            <p className="text-xs text-[#7D7267] mb-4 ml-6">Milepæler for å spore progresjon</p>
 
                             {milepeler.length === 0 ? (
                                 <div className="p-6 text-center rounded-lg border-2 border-dashed border-[#DDD7CE]">
-                                    <Info className="w-5 h-5 text-[var(--medical-gray-400)] mx-auto mb-2" />
-                                    <p className="text-sm text-[var(--medical-gray-400)]">
+                                    <Info className="w-5 h-5 text-[#7D7267] mx-auto mb-2" />
+                                    <p className="text-sm text-[#7D7267]">
                                         Ingen milepæler lagt til. Klikk knappen under for å legge til milepæler.
                                     </p>
                                 </div>
@@ -550,7 +553,7 @@ export default function OpptreningsplanForm() {
                                     {milepeler.map((milepel, index) => (
                                         <div
                                             key={milepel.id}
-                                            className="card-base p-4 mb-3 border-l-4 border-l-[#0D9488] relative"
+                                            className="bg-white border border-[#DDD7CE] rounded-xl p-4 mb-3 border-l-4 border-l-[#0D9488] relative"
                                         >
                                             <div className="flex items-center justify-between mb-3">
                                                 <span className="text-xs font-bold text-[#0D9488] bg-[#CCFBF1] px-2 py-0.5 rounded">
@@ -558,7 +561,7 @@ export default function OpptreningsplanForm() {
                                                 </span>
                                                 <button
                                                     onClick={() => removeMilepel(milepel.id)}
-                                                    className="p-1.5 rounded-lg text-[var(--medical-gray-400)] hover:text-[#C44536] hover:bg-[#FAEAE8] transition-colors"
+                                                    className="p-1.5 rounded-lg text-[#7D7267] hover:text-[#C44536] hover:bg-[#FAEAE8] transition-colors"
                                                     title="Fjern milepæl"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -567,33 +570,33 @@ export default function OpptreningsplanForm() {
 
                                             <div className="grid grid-cols-2 gap-4 mb-3">
                                                 <div>
-                                                    <label className="form-label">Milepælbeskrivelse</label>
+                                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Milepælbeskrivelse</label>
                                                     <input
                                                         type="text"
                                                         value={milepel.beskrivelse}
                                                         onChange={(e) => updateMilepel(milepel.id, 'beskrivelse', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                         placeholder="Milepælbeskrivelse"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="form-label">Måldato</label>
+                                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Måldato</label>
                                                     <input
                                                         type="date"
                                                         value={milepel.maalDato}
                                                         onChange={(e) => updateMilepel(milepel.id, 'maalDato', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                     />
                                                 </div>
                                             </div>
 
                                             <div>
-                                                <label className="form-label">Oppnåelseskriterier</label>
+                                                <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Oppnåelseskriterier</label>
                                                 <input
                                                     type="text"
                                                     value={milepel.kriterier}
                                                     onChange={(e) => updateMilepel(milepel.id, 'kriterier', e.target.value)}
-                                                    className="input-field !text-sm"
+                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                                     placeholder="Oppnåelseskriterier"
                                                 />
                                             </div>
@@ -604,7 +607,7 @@ export default function OpptreningsplanForm() {
 
                             <button
                                 onClick={addMilepel}
-                                className="btn-ghost text-sm flex items-center gap-2 mt-4 text-[#0D9488] hover:bg-[#CCFBF1]/50"
+                                className="text-[#5E5549] hover:text-[#1E1914] hover:bg-[rgba(0,0,0,0.04)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-sm flex items-center gap-2 mt-4 text-[#0D9488] hover:bg-[#CCFBF1]/50"
                             >
                                 <Plus className="w-4 h-4" />
                                 Legg til milepæl
@@ -612,40 +615,40 @@ export default function OpptreningsplanForm() {
                         </div>
 
                         {/* Section 8: Terapeutnotat */}
-                        <div className="form-section">
+                        <div className="bg-white border border-[#DDD7CE] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <User className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">8. Terapeutnotat</h2>
+                                <h2 className="text-sm font-semibold text-[#1E1914]">8. Terapeutnotat</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Re-evaluering og kliniske notater</p>
+                            <p className="text-xs text-[#7D7267] mb-4 ml-6">Re-evaluering og kliniske notater</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="form-label">Dato for re-evaluering</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Dato for re-evaluering</label>
                                     <input
                                         type="date"
                                         value={formData.revurderingsDato}
                                         onChange={(e) => updateField('revurderingsDato', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Terapeut</label>
+                                    <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Terapeut</label>
                                     <input
                                         type="text"
                                         value={formData.terapeutNavn}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
                                         readOnly
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="form-label">Kliniske notater og observasjoner</label>
+                                <label className="text-[#5E5549] text-sm font-medium block mb-1.5">Kliniske notater og observasjoner</label>
                                 <textarea
                                     value={formData.terapeutNotater}
                                     onChange={(e) => updateField('terapeutNotater', e.target.value)}
-                                    className="input-field !text-sm min-h-[80px] resize-y"
+                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[80px] resize-y"
                                     placeholder="Kliniske notater og observasjoner..."
                                 />
                             </div>
@@ -658,14 +661,14 @@ export default function OpptreningsplanForm() {
                                 <span className="text-xs font-semibold text-[#3D8B6E]">GDPR-kompatibel</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button onClick={handleSave} disabled={saving} className="btn-secondary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button onClick={handleSave} disabled={saving} className="border border-[#DDD7CE] text-[#5E5549] hover:bg-[rgba(0,0,0,0.04)] rounded-lg px-4 py-2 transition-colors duration-150 !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                     {saving ? 'Lagrer...' : 'Lagre utkast'}
                                 </button>
                                 <button
                                     onClick={handleSubmit}
-                                    disabled={submitting}
-                                    className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2"
+                                    disabled={submitting || !!fnrError}
+                                    className="bg-[#4F5ABF] hover:bg-[#6D28D9] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150 !py-2.5 !px-6 text-sm flex items-center gap-2"
                                 >
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Activity className="w-4 h-4" />}
                                     {submitting ? 'Lagrer...' : 'Lagre opptreningsplan'}

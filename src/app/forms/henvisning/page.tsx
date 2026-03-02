@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Send, AlertCircle, Info, FileText, Plus, Trash2, Paperclip, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
@@ -11,6 +11,7 @@ import { useFormSubmission } from '@/hooks/useFormSubmission';
 export default function HenvisningForm() {
     const { profile } = useUserProfile();
     const { submissionId, saving, submitting, saved, submitted, error, saveAsDraft, submitForm, exportPdf } = useFormSubmission({ formType: 'henvisning' });
+    const [fnrError, setFnrError] = useState('');
     const [formData, setFormData] = useState({
         // Referring doctor (read-only)
         legeNavn: '',
@@ -57,7 +58,13 @@ export default function HenvisningForm() {
     };
 
     const handleSubmit = () => {
-        submitForm(formData as unknown as Record<string, unknown>);
+        // Trim diagnosis codes and patient ID to avoid matching issues from trailing spaces
+        const trimmedData = {
+            ...formData,
+            patientFnr: formData.patientFnr.trim(),
+            diagnoseKode: formData.diagnoseKode.trim(),
+        };
+        submitForm(trimmedData as unknown as Record<string, unknown>);
     };
 
     const toggleFormaal = (item: string) => {
@@ -128,7 +135,7 @@ export default function HenvisningForm() {
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={submitting}
+                            disabled={submitting || !!fnrError}
                             className={cn(
                                 "text-xs !py-2 !px-4 flex items-center gap-1.5",
                                 submitted ? "bg-[#3D8B6E] text-white rounded-lg font-semibold" : "btn-primary"
@@ -149,7 +156,7 @@ export default function HenvisningForm() {
                             <Send className="w-5 h-5 text-[#A0714F]" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                         Henvisning til spesialist
                     </h1>
                     <p className="text-[#7D7267] mt-1">Henvisningsskjema fra fastlege til spesialisthelsetjenesten</p>
@@ -160,11 +167,11 @@ export default function HenvisningForm() {
                         <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Henvisning sendt
                         </h2>
                         <p className="text-[#7D7267] mb-6">Henvisningen er sendt til spesialisthelsetjenesten.</p>
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: HEN-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
+                        <p className="text-sm font-mono text-[#9E958C] mb-8">Referanse: HEN-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
                         <div className="flex items-center justify-center gap-4">
                             <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
@@ -182,7 +189,7 @@ export default function HenvisningForm() {
                                 <User className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Henvisende lege</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om henvisende behandler</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om henvisende behandler</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -230,7 +237,7 @@ export default function HenvisningForm() {
                                 <User className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Pasientopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om pasienten som henvises</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om pasienten som henvises</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -249,10 +256,12 @@ export default function HenvisningForm() {
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
+                                        onBlur={() => setFnrError(validateFnr(formData.patientFnr) || '')}
                                         className="input-field !text-sm font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
+                                    {fnrError && <p className="text-[#EF4444] text-xs mt-1">{fnrError}</p>}
                                 </div>
                                 <div>
                                     <label className="form-label">Adresse</label>
@@ -283,7 +292,7 @@ export default function HenvisningForm() {
                                 <AlertCircle className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Hastegrad</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Angi prioritet for henvisningen</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Angi prioritet for henvisningen</p>
 
                             <div className="space-y-3">
                                 <label className={cn(
@@ -308,16 +317,16 @@ export default function HenvisningForm() {
 
                                 <label className={cn(
                                     "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
-                                    formData.hastegrad === 'hpiority'
+                                    formData.hastegrad === 'haster'
                                         ? "border-[#C8842B] bg-[#FEF3C7]/30"
                                         : "border-[#DDD7CE] hover:border-[#A0714F]/30"
                                 )}>
                                     <input
                                         type="radio"
                                         name="hastegrad"
-                                        value="hpiority"
-                                        checked={formData.hastegrad === 'hpiority'}
-                                        onChange={() => updateField('hastegrad', 'hpiority')}
+                                        value="haster"
+                                        checked={formData.hastegrad === 'haster'}
+                                        onChange={() => updateField('hastegrad', 'haster')}
                                         className="mt-0.5 w-5 h-5 text-[#C8842B] focus:ring-[#C8842B]"
                                     />
                                     <div>
@@ -354,7 +363,7 @@ export default function HenvisningForm() {
                                 <Send className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Henvist til</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Spesialist eller institusjon det henvises til</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Spesialist eller institusjon det henvises til</p>
 
                             <div className="space-y-4">
                                 <div>
@@ -411,7 +420,7 @@ export default function HenvisningForm() {
                                 <FileText className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Klinisk informasjon</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Relevant medisinsk informasjon</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Relevant medisinsk informasjon</p>
 
                             {/* Diagnosis code system toggle */}
                             <div className="mb-4">
@@ -531,7 +540,7 @@ export default function HenvisningForm() {
                                 <Info className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Formål med henvisningen</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Hva ønskes utført av spesialisten</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Hva ønskes utført av spesialisten</p>
 
                             <div className="space-y-3 mb-4">
                                 {formaalOptions.map((option) => (
@@ -572,7 +581,7 @@ export default function HenvisningForm() {
                                 <Paperclip className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Vedlegg</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Legg til beskrivelse av vedlagte dokumenter</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Legg til beskrivelse av vedlagte dokumenter</p>
 
                             {/* Attachment list */}
                             {vedlegg.length > 0 && (
@@ -588,7 +597,7 @@ export default function HenvisningForm() {
                                             </div>
                                             <button
                                                 onClick={() => removeVedlegg(index)}
-                                                className="p-1 text-[var(--medical-gray-400)] hover:text-[#C44536] transition-colors rounded"
+                                                className="p-1 text-[#9E958C] hover:text-[#C44536] transition-colors rounded"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -619,7 +628,7 @@ export default function HenvisningForm() {
                                         "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                                         nyttVedlegg.trim()
                                             ? "bg-[#A0714F] text-white hover:bg-[#0052A3]"
-                                            : "bg-[#DDD7CE] text-[var(--medical-gray-400)] cursor-not-allowed"
+                                            : "bg-[#DDD7CE] text-[#9E958C] cursor-not-allowed"
                                     )}
                                 >
                                     <Plus className="w-4 h-4" />
@@ -646,7 +655,7 @@ export default function HenvisningForm() {
                                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                     {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre utkast'}
                                 </button>
-                                <button onClick={handleSubmit} disabled={submitting} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button onClick={handleSubmit} disabled={submitting || !!fnrError} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                     {submitting ? 'Sender...' : 'Send henvisning'}
                                 </button>

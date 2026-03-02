@@ -82,7 +82,7 @@ export default function HelfoTannlegeForm() {
         // Dentist
         tannlegeNavn: '',
         tannlegeHPR: '9876543',
-        praksisNavn: 'MediScribe Tannklinikk',
+        praksisNavn: 'Vocura Tannklinikk',
         orgNummer: '987654321',
         praksisAdresse: 'Storgata 1, 0182 Oslo',
         // Patient
@@ -184,7 +184,7 @@ export default function HelfoTannlegeForm() {
                                     ? "bg-[#3D8B6E] text-white rounded-lg font-semibold"
                                     : formData.bekreftelse
                                         ? "btn-primary"
-                                        : "bg-[#DDD7CE] text-[var(--medical-gray-400)] rounded-lg font-semibold cursor-not-allowed"
+                                        : "bg-[#DDD7CE] text-[#9E958C] rounded-lg font-semibold cursor-not-allowed"
                             )}
                         >
                             {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileCheck className="w-3.5 h-3.5" />}
@@ -199,13 +199,13 @@ export default function HelfoTannlegeForm() {
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 bg-[#EDE9FE] rounded-xl flex items-center justify-center">
-                            <Building2 className="w-5 h-5 text-[#7C3AED]" />
+                            <Building2 className="w-5 h-5 text-[#4F5ABF]" />
                         </div>
                         <div>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#EDE9FE] text-[#7C3AED] uppercase tracking-wider">HELFO</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#EDE9FE] text-[#4F5ABF] uppercase tracking-wider">HELFO</span>
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                         HELFO tannlegerefusjon
                     </h1>
                     <p className="text-[#7D7267] mt-1">Refusjonskrav for tannbehandling gjennom HELFO-ordningen</p>
@@ -216,11 +216,11 @@ export default function HelfoTannlegeForm() {
                         <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Refusjonskrav sendt til HELFO
                         </h2>
                         <p className="text-[#7D7267] mb-6">Kravet er sendt elektronisk og vil bli behandlet innen 5-10 virkedager.</p>
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: HELFO-TANN-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
+                        <p className="text-sm font-mono text-[#9E958C] mb-8">Referanse: HELFO-TANN-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
                         <div className="flex items-center justify-center gap-4">
                             <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
@@ -235,10 +235,10 @@ export default function HelfoTannlegeForm() {
                         {/* Section 1: Tannlegeinformasjon */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <User className="w-4 h-4 text-[#7C3AED]" />
+                                <User className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Tannlegeinformasjon</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Opplysninger om behandlende tannlege</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Opplysninger om behandlende tannlege</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
@@ -294,10 +294,10 @@ export default function HelfoTannlegeForm() {
                         {/* Section 2: Pasientopplysninger */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <User className="w-4 h-4 text-[#7C3AED]" />
+                                <User className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Pasientopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om pasienten</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om pasienten</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -311,7 +311,7 @@ export default function HelfoTannlegeForm() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">F&oslash;dselsnummer (11 siffer)</label>
+                                    <label className="form-label form-required">Fødselsnummer (11 siffer)</label>
                                     <input
                                         type="text"
                                         value={formData.patientFnr}
@@ -337,10 +337,10 @@ export default function HelfoTannlegeForm() {
                         {/* Section 3: Behandlingsdatoer */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Calendar className="w-4 h-4 text-[#7C3AED]" />
+                                <Calendar className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Behandlingsdatoer</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Periode for behandling</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Periode for behandling</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -367,10 +367,10 @@ export default function HelfoTannlegeForm() {
                         {/* Section 4: Diagnosekoder */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <AlertCircle className="w-4 h-4 text-[#7C3AED]" />
+                                <AlertCircle className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Diagnosekoder</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Tannmedisinske diagnosekoder</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Tannmedisinske diagnosekoder</p>
 
                             <div className="grid grid-cols-3 gap-4 mb-4">
                                 <div>
@@ -398,8 +398,8 @@ export default function HelfoTannlegeForm() {
                             {/* Quick code suggestions */}
                             <div className="p-3 bg-[#F5F3FF] rounded-lg border border-[#EDE9FE]">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Info className="w-3.5 h-3.5 text-[#7C3AED]" />
-                                    <span className="text-xs font-semibold text-[#7C3AED]">Vanlige tannmedisinske diagnosekoder</span>
+                                    <Info className="w-3.5 h-3.5 text-[#4F5ABF]" />
+                                    <span className="text-xs font-semibold text-[#4F5ABF]">Vanlige tannmedisinske diagnosekoder</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {tannDiagnoser.map((item) => (
@@ -412,8 +412,8 @@ export default function HelfoTannlegeForm() {
                                             className={cn(
                                                 "text-xs px-2.5 py-1 rounded-full border transition-all",
                                                 formData.diagnoseKode === item.code
-                                                    ? "bg-[#7C3AED] text-white border-[#7C3AED]"
-                                                    : "bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#7C3AED] hover:text-[#7C3AED]"
+                                                    ? "bg-[#4F5ABF] text-white border-[#4F5ABF]"
+                                                    : "bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#4F5ABF] hover:text-[#4F5ABF]"
                                             )}
                                         >
                                             <span className="font-mono font-semibold">{item.code}</span> {item.label}
@@ -426,16 +426,16 @@ export default function HelfoTannlegeForm() {
                         {/* Section 5: Takstkoder og bel\u00f8p */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Building2 className="w-4 h-4 text-[#7C3AED]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Takstkoder og bel&oslash;p</h2>
+                                <Building2 className="w-4 h-4 text-[#4F5ABF]" />
+                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Takstkoder og beløp</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Takster for utf&oslash;rt behandling</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Takster for utført behandling</p>
 
                             {/* Quick-select chips */}
                             <div className="p-3 bg-[#F5F3FF] rounded-lg border border-[#EDE9FE] mb-4">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Info className="w-3.5 h-3.5 text-[#7C3AED]" />
-                                    <span className="text-xs font-semibold text-[#7C3AED]">Hurtigvalg - vanlige takster</span>
+                                    <Info className="w-3.5 h-3.5 text-[#4F5ABF]" />
+                                    <span className="text-xs font-semibold text-[#4F5ABF]">Hurtigvalg - vanlige takster</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {vanligeTannTakster.map((takst) => (
@@ -461,7 +461,7 @@ export default function HelfoTannlegeForm() {
                                                     ]);
                                                 }
                                             }}
-                                            className="text-xs px-2.5 py-1 rounded-full border transition-all bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#7C3AED] hover:text-[#7C3AED]"
+                                            className="text-xs px-2.5 py-1 rounded-full border transition-all bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#4F5ABF] hover:text-[#4F5ABF]"
                                         >
                                             <span className="font-mono font-semibold">{takst.kode}</span> {takst.beskrivelse} ({takst.sats} kr)
                                         </button>
@@ -473,10 +473,10 @@ export default function HelfoTannlegeForm() {
                             <div className="border border-[#DDD7CE] rounded-lg overflow-hidden">
                                 {/* Table header */}
                                 <div className="grid grid-cols-[100px_1fr_80px_100px_48px] gap-2 px-4 py-2.5 bg-[#F5F3FF] border-b border-[#EDE9FE]">
-                                    <span className="text-xs font-semibold text-[#7C3AED]">Takst</span>
-                                    <span className="text-xs font-semibold text-[#7C3AED]">Beskrivelse</span>
-                                    <span className="text-xs font-semibold text-[#7C3AED] text-center">Antall</span>
-                                    <span className="text-xs font-semibold text-[#7C3AED] text-right">Sats (kr)</span>
+                                    <span className="text-xs font-semibold text-[#4F5ABF]">Takst</span>
+                                    <span className="text-xs font-semibold text-[#4F5ABF]">Beskrivelse</span>
+                                    <span className="text-xs font-semibold text-[#4F5ABF] text-center">Antall</span>
+                                    <span className="text-xs font-semibold text-[#4F5ABF] text-right">Sats (kr)</span>
                                     <span></span>
                                 </div>
 
@@ -524,7 +524,7 @@ export default function HelfoTannlegeForm() {
                                                 "p-1.5 rounded-lg transition-colors flex items-center justify-center",
                                                 takstRader.length === 1
                                                     ? "text-[#CBD2D9] cursor-not-allowed"
-                                                    : "text-[var(--medical-gray-400)] hover:text-[#C44536] hover:bg-[#FEF2F2]"
+                                                    : "text-[#9E958C] hover:text-[#C44536] hover:bg-[#FEF2F2]"
                                             )}
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -536,7 +536,7 @@ export default function HelfoTannlegeForm() {
                             {/* Add row button */}
                             <button
                                 onClick={addTakstRow}
-                                className="mt-3 text-xs font-medium text-[#7C3AED] hover:text-[#6D28D9] flex items-center gap-1.5 transition-colors"
+                                className="mt-3 text-xs font-medium text-[#4F5ABF] hover:text-[#6D28D9] flex items-center gap-1.5 transition-colors"
                             >
                                 <Plus className="w-3.5 h-3.5" />
                                 Legg til rad
@@ -544,8 +544,8 @@ export default function HelfoTannlegeForm() {
 
                             {/* Total */}
                             <div className="mt-4 p-4 bg-[#F5F3FF] rounded-lg border border-[#EDE9FE] flex items-center justify-between">
-                                <span className="text-sm font-semibold text-[#1E1914]">Totalt bel&oslash;p</span>
-                                <span className="text-xl font-bold text-[#7C3AED] font-mono">
+                                <span className="text-sm font-semibold text-[#1E1914]">Totalt beløp</span>
+                                <span className="text-xl font-bold text-[#4F5ABF] font-mono">
                                     {totalBeloep.toLocaleString('nb-NO')} kr
                                 </span>
                             </div>
@@ -554,37 +554,37 @@ export default function HelfoTannlegeForm() {
                         {/* Section 6: St\u00f8nadsordning */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Shield className="w-4 h-4 text-[#7C3AED]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. St&oslash;nadsordning</h2>
+                                <Shield className="w-4 h-4 text-[#4F5ABF]" />
+                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Stønadsordning</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Velg relevant st&oslash;nadspunkt for refusjonskravet</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Velg relevant stønadspunkt for refusjonskravet</p>
 
                             <div className="mb-4">
-                                <label className="form-label form-required">St&oslash;nadspunkt</label>
+                                <label className="form-label form-required">Stønadspunkt</label>
                                 <div className="relative">
                                     <select
                                         value={formData.stonadspunkt}
                                         onChange={(e) => updateField('stonadspunkt', e.target.value)}
                                         className="input-field !text-sm appearance-none pr-10"
                                     >
-                                        <option value="">Velg st&oslash;nadspunkt...</option>
+                                        <option value="">Velg stønadspunkt...</option>
                                         {stonadspunkter.map((sp) => (
                                             <option key={sp.value} value={sp.value}>
                                                 {sp.label}
                                             </option>
                                         ))}
                                     </select>
-                                    <ChevronDown className="w-4 h-4 text-[var(--medical-gray-400)] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <ChevronDown className="w-4 h-4 text-[#9E958C] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                 </div>
                             </div>
 
                             {formData.stonadspunkt && (
                                 <div className="p-4 bg-[#F5F3FF] rounded-lg border border-[#EDE9FE] mt-4">
                                     <div className="flex items-start gap-3">
-                                        <Info className="w-5 h-5 text-[#7C3AED] shrink-0 mt-0.5" />
+                                        <Info className="w-5 h-5 text-[#4F5ABF] shrink-0 mt-0.5" />
                                         <div>
                                             <p className="text-sm font-semibold text-[#1E1914] mb-1">Dokumentasjonskrav</p>
-                                            <p className="text-xs text-[#5E5549]">For valgt st&oslash;nadsordning kreves relevant dokumentasjon som bekrefter at vilk&aring;rene er oppfylt.</p>
+                                            <p className="text-xs text-[#5E5549]">For valgt stønadsordning kreves relevant dokumentasjon som bekrefter at vilkårene er oppfylt.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -604,10 +604,10 @@ export default function HelfoTannlegeForm() {
                         {/* Section 7: Dokumentasjon og erkl\u00e6ring */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <FileText className="w-4 h-4 text-[#7C3AED]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Dokumentasjon og erkl&aelig;ring</h2>
+                                <FileText className="w-4 h-4 text-[#4F5ABF]" />
+                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Dokumentasjon og erklæring</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Vedlagt dokumentasjon og bekreftelse</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Vedlagt dokumentasjon og bekreftelse</p>
 
                             {/* Documentation checkboxes */}
                             <div className="space-y-3 mb-6">
@@ -624,7 +624,7 @@ export default function HelfoTannlegeForm() {
                                             type="checkbox"
                                             checked={formData[dok.field as keyof typeof formData] as boolean}
                                             onChange={(e) => updateField(dok.field, e.target.checked)}
-                                            className="w-4 h-4 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                            className="w-4 h-4 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59] group-hover:text-[#1E1914] transition-colors">{dok.label}</span>
                                     </label>
@@ -634,29 +634,29 @@ export default function HelfoTannlegeForm() {
                             {/* Declaration */}
                             <div className="p-4 bg-[#F5F3FF] rounded-lg border border-[#EDE9FE] mb-4">
                                 <div className="flex items-start gap-3">
-                                    <Info className="w-5 h-5 text-[#7C3AED] shrink-0 mt-0.5" />
+                                    <Info className="w-5 h-5 text-[#4F5ABF] shrink-0 mt-0.5" />
                                     <p className="text-sm text-[#3E4C59]">
-                                        Undertegnede erkl&aelig;rer at opplysningene i dette refusjonskravet er korrekte og at behandlingen er utf&oslash;rt i henhold til gjeldende forskrifter og takster.
+                                        Undertegnede erklærer at opplysningene i dette refusjonskravet er korrekte og at behandlingen er utført i henhold til gjeldende forskrifter og takster.
                                     </p>
                                 </div>
                             </div>
 
                             <label className={cn(
                                 "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all mb-4",
-                                formData.bekreftelse ? "border-[#7C3AED] bg-[#F5F3FF]" : "border-[#DDD7CE] hover:border-[#7C3AED]/30"
+                                formData.bekreftelse ? "border-[#4F5ABF] bg-[#F5F3FF]" : "border-[#DDD7CE] hover:border-[#4F5ABF]/30"
                             )}>
                                 <input
                                     type="checkbox"
                                     checked={formData.bekreftelse}
                                     onChange={(e) => updateField('bekreftelse', e.target.checked)}
-                                    className="mt-0.5 w-5 h-5 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                    className="mt-0.5 w-5 h-5 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                 />
                                 <div>
                                     <span className="text-sm font-semibold text-[#1E1914] block">
                                         Jeg bekrefter at opplysningene er korrekte <span className="text-[#C44536]">*</span>
                                     </span>
                                     <span className="text-xs text-[#7D7267] mt-1 block">
-                                        Ved &aring; krysse av bekrefter du at refusjonskravet er i samsvar med gjeldende regelverk og at behandlingen er utf&oslash;rt som beskrevet.
+                                        Ved å krysse av bekrefter du at refusjonskravet er i samsvar med gjeldende regelverk og at behandlingen er utført som beskrevet.
                                     </span>
                                 </div>
                             </label>
@@ -708,7 +708,7 @@ export default function HelfoTannlegeForm() {
                                         "!py-2.5 !px-6 text-sm flex items-center gap-2",
                                         formData.bekreftelse
                                             ? "btn-primary"
-                                            : "bg-[#DDD7CE] text-[var(--medical-gray-400)] rounded-lg font-semibold cursor-not-allowed"
+                                            : "bg-[#DDD7CE] text-[#9E958C] rounded-lg font-semibold cursor-not-allowed"
                                     )}
                                 >
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCheck className="w-4 h-4" />}

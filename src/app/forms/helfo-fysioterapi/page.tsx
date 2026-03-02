@@ -48,7 +48,7 @@ export default function HELFOFysioterapiForm() {
         fysioterapeutNavn: '',
         fysioterapeutHPR: '9876543',
         driftstilskuddNr: 'DT-12345',
-        praksisNavn: 'MediScribe Fysioterapi',
+        praksisNavn: 'Vocura Fysioterapi',
         kommune: 'Oslo',
         orgNummer: '987654321',
         // Patient
@@ -164,8 +164,8 @@ export default function HELFOFysioterapiForm() {
                                 submitted
                                     ? "bg-[#3D8B6E] text-white"
                                     : formData.bekreftelse
-                                        ? "bg-[#7C3AED] text-white hover:bg-[#6D28D9]"
-                                        : "bg-[#DDD7CE] text-[var(--medical-gray-400)] cursor-not-allowed"
+                                        ? "bg-[#4F5ABF] text-white hover:bg-[#6D28D9]"
+                                        : "bg-[#DDD7CE] text-[#9E958C] cursor-not-allowed"
                             )}
                         >
                             {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileCheck className="w-3.5 h-3.5" />}
@@ -180,13 +180,13 @@ export default function HELFOFysioterapiForm() {
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 bg-[#EDE9FE] rounded-xl flex items-center justify-center">
-                            <Building2 className="w-5 h-5 text-[#7C3AED]" />
+                            <Building2 className="w-5 h-5 text-[#4F5ABF]" />
                         </div>
                         <div>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#EDE9FE] text-[#7C3AED] uppercase tracking-wider">HELFO</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#EDE9FE] text-[#4F5ABF] uppercase tracking-wider">HELFO</span>
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                         HELFO fysioterapirefusjon
                     </h1>
                     <p className="text-[#7D7267] mt-1">Refusjonskrav for fysioterapibehandling til HELFO</p>
@@ -197,11 +197,11 @@ export default function HELFOFysioterapiForm() {
                         <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Refusjonskrav sendt til HELFO
                         </h2>
                         <p className="text-[#7D7267] mb-6">Kravet er sendt elektronisk og vil bli behandlet innen 5-10 virkedager.</p>
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: HELFO-FYS-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
+                        <p className="text-sm font-mono text-[#9E958C] mb-8">Referanse: HELFO-FYS-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
                         <div className="flex items-center justify-center gap-4">
                             <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
@@ -216,10 +216,10 @@ export default function HELFOFysioterapiForm() {
                         {/* Section 1: Physiotherapist Information */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <User className="w-4 h-4 text-[#7C3AED]" />
+                                <User className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Fysioterapeutinformasjon</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om behandlende fysioterapeut</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om behandlende fysioterapeut</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -286,10 +286,10 @@ export default function HELFOFysioterapiForm() {
                         {/* Section 2: Patient Information */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <User className="w-4 h-4 text-[#7C3AED]" />
+                                <User className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Pasientopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om pasienten</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om pasienten</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -329,10 +329,10 @@ export default function HELFOFysioterapiForm() {
                         {/* Section 3: Treatment Period */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Calendar className="w-4 h-4 text-[#7C3AED]" />
+                                <Calendar className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Behandlingsperiode</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Periode for fysioterapibehandlingen</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Periode for fysioterapibehandlingen</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -370,10 +370,10 @@ export default function HELFOFysioterapiForm() {
                         {/* Section 4: Diagnosis Codes */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <AlertCircle className="w-4 h-4 text-[#7C3AED]" />
+                                <AlertCircle className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Diagnosekoder</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Medisinsk diagnose etter ICPC-2 eller ICD-10</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Medisinsk diagnose etter ICPC-2 eller ICD-10</p>
 
                             <div className="mb-4">
                                 <label className="form-label">Kodesystem</label>
@@ -385,7 +385,7 @@ export default function HELFOFysioterapiForm() {
                                             value="ICPC-2"
                                             checked={formData.kodesystem === 'ICPC-2'}
                                             onChange={() => updateField('kodesystem', 'ICPC-2')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59] font-medium">ICPC-2 (Fastlege)</span>
                                     </label>
@@ -396,7 +396,7 @@ export default function HELFOFysioterapiForm() {
                                             value="ICD-10"
                                             checked={formData.kodesystem === 'ICD-10'}
                                             onChange={() => updateField('kodesystem', 'ICD-10')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59] font-medium">ICD-10 (Spesialist)</span>
                                     </label>
@@ -429,8 +429,8 @@ export default function HELFOFysioterapiForm() {
                             {/* Quick code suggestions */}
                             <div className="p-3 bg-[#FAF5FF] rounded-lg border border-[#EDE9FE]">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Info className="w-3.5 h-3.5 text-[#7C3AED]" />
-                                    <span className="text-xs font-semibold text-[#7C3AED]">Vanlige ICPC-2-koder for fysioterapi</span>
+                                    <Info className="w-3.5 h-3.5 text-[#4F5ABF]" />
+                                    <span className="text-xs font-semibold text-[#4F5ABF]">Vanlige ICPC-2-koder for fysioterapi</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {commonCodes.map((item) => (
@@ -443,8 +443,8 @@ export default function HELFOFysioterapiForm() {
                                             className={cn(
                                                 "text-xs px-2.5 py-1 rounded-full border transition-all",
                                                 formData.diagnoseKode === item.code
-                                                    ? "bg-[#7C3AED] text-white border-[#7C3AED]"
-                                                    : "bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#7C3AED] hover:text-[#7C3AED]"
+                                                    ? "bg-[#4F5ABF] text-white border-[#4F5ABF]"
+                                                    : "bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#4F5ABF] hover:text-[#4F5ABF]"
                                             )}
                                         >
                                             <span className="font-mono font-semibold">{item.code}</span> {item.label}
@@ -457,16 +457,16 @@ export default function HELFOFysioterapiForm() {
                         {/* Section 5: Fee Codes and Amounts */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Building2 className="w-4 h-4 text-[#7C3AED]" />
+                                <Building2 className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Takstkoder og belop</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Velg takster og angi antall for refusjonskravet</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Velg takster og angi antall for refusjonskravet</p>
 
                             {/* Quick-select chips */}
                             <div className="p-3 bg-[#FAF5FF] rounded-lg border border-[#EDE9FE] mb-4">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Info className="w-3.5 h-3.5 text-[#7C3AED]" />
-                                    <span className="text-xs font-semibold text-[#7C3AED]">Hurtigvalg takster</span>
+                                    <Info className="w-3.5 h-3.5 text-[#4F5ABF]" />
+                                    <span className="text-xs font-semibold text-[#4F5ABF]">Hurtigvalg takster</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {fysioTakster.map((takst) => (
@@ -476,8 +476,8 @@ export default function HELFOFysioterapiForm() {
                                             className={cn(
                                                 "text-xs px-2.5 py-1 rounded-full border transition-all",
                                                 takstRader.some(r => r.kode === takst.kode)
-                                                    ? "bg-[#7C3AED] text-white border-[#7C3AED]"
-                                                    : "bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#7C3AED] hover:text-[#7C3AED]"
+                                                    ? "bg-[#4F5ABF] text-white border-[#4F5ABF]"
+                                                    : "bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#4F5ABF] hover:text-[#4F5ABF]"
                                             )}
                                         >
                                             <span className="font-mono font-semibold">{takst.kode}</span> {takst.beskrivelse} ({takst.sats} kr)
@@ -531,7 +531,7 @@ export default function HELFOFysioterapiForm() {
                                                 "p-1.5 rounded-lg transition-colors flex items-center justify-center",
                                                 takstRader.length <= 1
                                                     ? "text-[#CBD2D9] cursor-not-allowed"
-                                                    : "text-[var(--medical-gray-400)] hover:text-[#C44536] hover:bg-[#FAEAE8]"
+                                                    : "text-[#9E958C] hover:text-[#C44536] hover:bg-[#FAEAE8]"
                                             )}
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
@@ -543,7 +543,7 @@ export default function HELFOFysioterapiForm() {
                                 <div className="px-4 py-2 bg-[#F5F2ED]">
                                     <button
                                         onClick={addTakstRad}
-                                        className="text-xs text-[#7C3AED] hover:text-[#6D28D9] font-medium flex items-center gap-1.5 transition-colors"
+                                        className="text-xs text-[#4F5ABF] hover:text-[#6D28D9] font-medium flex items-center gap-1.5 transition-colors"
                                     >
                                         <Plus className="w-3.5 h-3.5" /> Legg til rad
                                     </button>
@@ -554,7 +554,7 @@ export default function HELFOFysioterapiForm() {
                             <div className="mt-4 flex justify-end">
                                 <div className="bg-[#FAF5FF] border border-[#EDE9FE] rounded-lg px-6 py-3 flex items-center gap-4">
                                     <span className="text-sm font-medium text-[#7D7267]">Totalt belop:</span>
-                                    <span className="text-xl font-bold text-[#7C3AED] font-mono">
+                                    <span className="text-xl font-bold text-[#4F5ABF] font-mono">
                                         {totalBeloep.toLocaleString('nb-NO')} kr
                                     </span>
                                 </div>
@@ -564,10 +564,10 @@ export default function HELFOFysioterapiForm() {
                         {/* Section 6: Municipal Operating Agreement */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Activity className="w-4 h-4 text-[#7C3AED]" />
+                                <Activity className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Kommunal driftsavtale</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om driftsavtale med kommunen</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om driftsavtale med kommunen</p>
 
                             <div className="mb-4">
                                 <label className="form-label form-required">Type driftsavtale</label>
@@ -608,7 +608,7 @@ export default function HELFOFysioterapiForm() {
 
                             <div className="mt-4 p-3 bg-[#FAF5FF] rounded-lg border border-[#EDE9FE]">
                                 <div className="flex items-start gap-2">
-                                    <Info className="w-3.5 h-3.5 text-[#7C3AED] mt-0.5 shrink-0" />
+                                    <Info className="w-3.5 h-3.5 text-[#4F5ABF] mt-0.5 shrink-0" />
                                     <p className="text-xs text-[#7D7267]">
                                         Fysioterapeuter med kommunal driftsavtale har rett til direkte oppgjor med HELFO for sine pasienter.
                                     </p>
@@ -619,10 +619,10 @@ export default function HELFOFysioterapiForm() {
                         {/* Section 7: Documentation and Declaration */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <FileText className="w-4 h-4 text-[#7C3AED]" />
+                                <FileText className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Dokumentasjon og erklaering</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Vedlagt dokumentasjon og bekreftelse</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Vedlagt dokumentasjon og bekreftelse</p>
 
                             {/* Checkboxes */}
                             <div className="space-y-3 mb-6">
@@ -632,7 +632,7 @@ export default function HELFOFysioterapiForm() {
                                         type="checkbox"
                                         checked={formData.journalnotat}
                                         onChange={(e) => updateField('journalnotat', e.target.checked)}
-                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                     />
                                     <span className="text-sm text-[#3E4C59] group-hover:text-[#1E1914]">Journalnotat</span>
                                 </label>
@@ -641,7 +641,7 @@ export default function HELFOFysioterapiForm() {
                                         type="checkbox"
                                         checked={formData.henvisning}
                                         onChange={(e) => updateField('henvisning', e.target.checked)}
-                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                     />
                                     <span className="text-sm text-[#3E4C59] group-hover:text-[#1E1914]">Henvisning fra lege</span>
                                 </label>
@@ -650,7 +650,7 @@ export default function HELFOFysioterapiForm() {
                                         type="checkbox"
                                         checked={formData.epikriser}
                                         onChange={(e) => updateField('epikriser', e.target.checked)}
-                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                     />
                                     <span className="text-sm text-[#3E4C59] group-hover:text-[#1E1914]">Epikriser</span>
                                 </label>
@@ -659,7 +659,7 @@ export default function HELFOFysioterapiForm() {
                                         type="checkbox"
                                         checked={formData.funksjonsrapport}
                                         onChange={(e) => updateField('funksjonsrapport', e.target.checked)}
-                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                     />
                                     <span className="text-sm text-[#3E4C59] group-hover:text-[#1E1914]">Funksjonsrapport</span>
                                 </label>
@@ -668,7 +668,7 @@ export default function HELFOFysioterapiForm() {
                                         type="checkbox"
                                         checked={formData.annenDok}
                                         onChange={(e) => updateField('annenDok', e.target.checked)}
-                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                     />
                                     <span className="text-sm text-[#3E4C59] group-hover:text-[#1E1914]">Annen dokumentasjon</span>
                                 </label>
@@ -686,9 +686,9 @@ export default function HELFOFysioterapiForm() {
                                         type="checkbox"
                                         checked={formData.bekreftelse}
                                         onChange={(e) => updateField('bekreftelse', e.target.checked)}
-                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                        className="w-4 h-4 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                     />
-                                    <span className="text-sm font-medium text-[#1E1914] group-hover:text-[#7C3AED]">
+                                    <span className="text-sm font-medium text-[#1E1914] group-hover:text-[#4F5ABF]">
                                         Jeg bekrefter at opplysningene er korrekte
                                     </span>
                                 </label>
@@ -741,8 +741,8 @@ export default function HELFOFysioterapiForm() {
                                     className={cn(
                                         "!py-2.5 !px-6 text-sm flex items-center gap-2 rounded-lg font-semibold transition-colors",
                                         formData.bekreftelse
-                                            ? "bg-[#7C3AED] text-white hover:bg-[#6D28D9]"
-                                            : "bg-[#DDD7CE] text-[var(--medical-gray-400)] cursor-not-allowed"
+                                            ? "bg-[#4F5ABF] text-white hover:bg-[#6D28D9]"
+                                            : "bg-[#DDD7CE] text-[#9E958C] cursor-not-allowed"
                                     )}
                                 >
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCheck className="w-4 h-4" />}

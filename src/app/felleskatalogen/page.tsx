@@ -10,7 +10,7 @@ import {
   Loader2,
   BookOpen,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, fetchWithTimeout } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
 
 interface Source {
@@ -105,11 +105,11 @@ export default function FelleskatalogenPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/felleskatalogen/chat', {
+      const res = await fetchWithTimeout('/api/felleskatalogen/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, history }),
-      });
+      }, 60000);
       const data = await res.json();
       if (res.ok) {
         setMessages((prev) => [...prev, { role: 'assistant', content: data.answer, sources: data.sources }]);

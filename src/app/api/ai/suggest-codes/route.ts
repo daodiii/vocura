@@ -38,10 +38,41 @@ export async function POST(req: Request) {
 
         const openai = new OpenAI();
 
+        const model = process.env.AI_MODEL_SUGGEST_CODES || 'gpt-4o';
+
         const completion = await openai.chat.completions.create({
-            model: 'gpt-5-mini',
+            model,
             temperature: 0.2,
-            response_format: { type: 'json_object' },
+            response_format: {
+                type: 'json_schema',
+                json_schema: {
+                    name: 'diagnosis_codes',
+                    strict: true,
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            codes: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        code: { type: 'string' },
+                                        system: { type: 'string', enum: ['ICPC-2', 'ICD-10'] },
+                                        label: { type: 'string' },
+                                        confidence: { type: 'number' },
+                                        reasoning: { type: 'string' },
+                                        isPrimary: { type: 'boolean' },
+                                    },
+                                    required: ['code', 'system', 'label', 'confidence', 'reasoning', 'isPrimary'],
+                                    additionalProperties: false,
+                                },
+                            },
+                        },
+                        required: ['codes'],
+                        additionalProperties: false,
+                    },
+                },
+            },
             messages: [
                 {
                     role: 'system',
@@ -63,7 +94,13 @@ export async function POST(req: Request) {
             );
         }
 
-        const result = JSON.parse(content);
+        let result;
+        try {
+            result = JSON.parse(content);
+        } catch {
+            console.error('Failed to parse AI response as JSON:', content);
+            return NextResponse.json({ codes: [], error: 'AI-tjenesten returnerte ugyldig format. Prøv igjen.' });
+        }
         const codes = result.codes || [];
 
         return NextResponse.json({ codes });

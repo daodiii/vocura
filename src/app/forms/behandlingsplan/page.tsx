@@ -69,7 +69,7 @@ export default function BehandlingsplanForm() {
 
     // Dynamic list management — Tiltak
     const addTiltak = () => {
-        setTiltak(prev => [...prev, { id: Date.now().toString(), navn: '', beskrivelse: '', frekvens: '', ansvarlig: '', startDato: '' }]);
+        setTiltak(prev => [...prev, { id: crypto.randomUUID(), navn: '', beskrivelse: '', frekvens: '', ansvarlig: '', startDato: '' }]);
     };
     const removeTiltak = (id: string) => {
         setTiltak(prev => prev.filter(t => t.id !== id));
@@ -80,7 +80,7 @@ export default function BehandlingsplanForm() {
 
     // Dynamic list management — Medikamenter
     const addMedikament = () => {
-        setMedikamenter(prev => [...prev, { id: Date.now().toString(), navn: '', dose: '', frekvens: '', varighet: '', notater: '' }]);
+        setMedikamenter(prev => [...prev, { id: crypto.randomUUID(), navn: '', dose: '', frekvens: '', varighet: '', notater: '' }]);
     };
     const removeMedikament = (id: string) => {
         setMedikamenter(prev => prev.filter(m => m.id !== id));
@@ -102,13 +102,13 @@ export default function BehandlingsplanForm() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[#0A0A0A]">
             <AppHeader />
 
             {/* Action Bar */}
-            <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
+            <div className="sticky top-14 z-40 bg-[#111111]/80 border-b border-[rgba(255,255,255,0.06)] backdrop-blur-sm">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
+                    <Link href="/forms" className="flex items-center gap-2 text-[#8B8B8B] hover:text-[#EDEDED] transition-colors">
                         <ArrowLeft className="w-4 h-4" />
                         <span className="text-sm font-medium">Tilbake til skjemaer</span>
                     </Link>
@@ -116,14 +116,14 @@ export default function BehandlingsplanForm() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="btn-ghost text-xs flex items-center gap-1.5 !py-2"
+                            className="text-[#8B8B8B] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-xs flex items-center gap-1.5 !py-2"
                         >
-                            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle className="w-3.5 h-3.5 text-[#3D8B6E]" /> : <Save className="w-3.5 h-3.5" />}
+                            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" /> : <Save className="w-3.5 h-3.5" />}
                             {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre utkast'}
                         </button>
                         <button
                             onClick={() => exportPdf(getAllFormData(), 'Behandlingsplan', 'Lege')}
-                            className="btn-secondary text-xs !py-2 !px-4 flex items-center gap-1.5"
+                            className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs !py-2 !px-4 flex items-center gap-1.5"
                         >
                             <Download className="w-3.5 h-3.5" /> Last ned PDF
                         </button>
@@ -132,7 +132,7 @@ export default function BehandlingsplanForm() {
                             disabled={submitting}
                             className={cn(
                                 "text-xs !py-2 !px-4 flex items-center gap-1.5",
-                                submitted ? "bg-[#3D8B6E] text-white rounded-lg font-semibold" : "btn-primary"
+                                submitted ? "bg-[#10B981] text-white rounded-lg font-semibold" : "bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150"
                             )}
                         >
                             {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Heart className="w-3.5 h-3.5" />}
@@ -146,32 +146,32 @@ export default function BehandlingsplanForm() {
                 {/* Form Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-[#FAEAE8] rounded-xl flex items-center justify-center">
-                            <Heart className="w-5 h-5 text-[#C44536]" />
+                        <div className="w-10 h-10 bg-[rgba(239,68,68,0.1)] rounded-xl flex items-center justify-center">
+                            <Heart className="w-5 h-5 text-[#EF4444]" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#EDEDED]" style={{ fontFamily: "'Georgia', serif" }}>
                         Behandlingsplan
                     </h1>
-                    <p className="text-[#7D7267] mt-1">Strukturert behandlingsplan med mål, tiltak og oppfølgingsplan</p>
+                    <p className="text-[#8B8B8B] mt-1">Strukturert behandlingsplan med mål, tiltak og oppfølgingsplan</p>
                 </div>
 
                 {submitted ? (
-                    <div className="card-base p-12 text-center">
-                        <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
+                    <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-12 text-center">
+                        <div className="w-16 h-16 bg-[rgba(16,185,129,0.1)] rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle className="w-8 h-8 text-[#10B981]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#EDEDED] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Behandlingsplan lagret
                         </h2>
-                        <p className="text-[#7D7267] mb-6">Behandlingsplanen er lagret i pasientjournalen.</p>
-                        {error && <p className="text-sm text-[#C44536] mb-4">{error}</p>}
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: BEH-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
+                        <p className="text-[#8B8B8B] mb-6">Behandlingsplanen er lagret i pasientjournalen.</p>
+                        {error && <p className="text-sm text-[#EF4444] mb-4">{error}</p>}
+                        <p className="text-sm font-mono text-[#5C5C5C] mb-8">Referanse: BEH-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
                         <div className="flex items-center justify-center gap-4">
-                            <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
+                            <Link href="/forms" className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
                             </Link>
-                            <Link href="/dashboard" className="btn-primary inline-flex items-center gap-2">
+                            <Link href="/dashboard" className="bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
                                 Ny konsultasjon
                             </Link>
                         </div>
@@ -179,42 +179,42 @@ export default function BehandlingsplanForm() {
                 ) : (
                     <div className="space-y-6">
                         {/* Section 1: Pasientopplysninger */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <User className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Pasientopplysninger</h2>
+                                <User className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">1. Pasientopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om pasienten</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Informasjon om pasienten</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
-                                    <label className="form-label form-required">Fullt navn</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Fullt navn <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.patientNavn}
                                         onChange={(e) => updateField('patientNavn', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Ola Nordmann"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Fødselsnummer (11 siffer)</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Fødselsnummer (11 siffer) <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
-                                        className="input-field !text-sm font-mono"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Telefon</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Telefon</label>
                                     <input
                                         type="tel"
                                         value={formData.patientTelefon}
                                         onChange={(e) => updateField('patientTelefon', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="412 34 567"
                                     />
                                 </div>
@@ -222,15 +222,15 @@ export default function BehandlingsplanForm() {
                         </div>
 
                         {/* Section 2: Diagnoseinformasjon */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <AlertCircle className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Diagnoseinformasjon</h2>
+                                <AlertCircle className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">2. Diagnoseinformasjon</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Medisinsk diagnose etter ICPC-2 eller ICD-10</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Medisinsk diagnose etter ICPC-2 eller ICD-10</p>
 
                             <div className="mb-4">
-                                <label className="form-label">Kodesystem</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Kodesystem</label>
                                 <div className="flex gap-4">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -239,9 +239,9 @@ export default function BehandlingsplanForm() {
                                             value="ICPC-2"
                                             checked={formData.kodesystem === 'ICPC-2'}
                                             onChange={() => updateField('kodesystem', 'ICPC-2')}
-                                            className="text-[#A0714F]"
+                                            className="text-[#5E6AD2]"
                                         />
-                                        <span className="text-sm text-[#3E4C59] font-medium">ICPC-2 (Fastlege)</span>
+                                        <span className="text-sm text-[#8B8B8B] font-medium">ICPC-2 (Fastlege)</span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -250,41 +250,41 @@ export default function BehandlingsplanForm() {
                                             value="ICD-10"
                                             checked={formData.kodesystem === 'ICD-10'}
                                             onChange={() => updateField('kodesystem', 'ICD-10')}
-                                            className="text-[#A0714F]"
+                                            className="text-[#5E6AD2]"
                                         />
-                                        <span className="text-sm text-[#3E4C59] font-medium">ICD-10 (Spesialist)</span>
+                                        <span className="text-sm text-[#8B8B8B] font-medium">ICD-10 (Spesialist)</span>
                                     </label>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label className="form-label form-required">Diagnosekode</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Diagnosekode <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.diagnoseKode}
                                         onChange={(e) => updateField('diagnoseKode', e.target.value)}
-                                        className="input-field !text-sm font-mono"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] font-mono"
                                         placeholder="L03"
                                     />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="form-label form-required">Diagnosebeskrivelse</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Diagnosebeskrivelse <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.diagnoseBeskrivelse}
                                         onChange={(e) => updateField('diagnoseBeskrivelse', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Korsryggsymptomer"
                                     />
                                 </div>
                             </div>
 
                             {/* Quick code suggestions */}
-                            <div className="p-3 bg-[#F5FAFF] rounded-lg border border-[#F5EDE6] mb-4">
+                            <div className="p-3 bg-[rgba(94,106,210,0.08)] rounded-lg border border-[rgba(94,106,210,0.15)] mb-4">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Info className="w-3.5 h-3.5 text-[#A0714F]" />
-                                    <span className="text-xs font-semibold text-[#A0714F]">Vanlige ICPC-2-koder for behandlingsplan</span>
+                                    <Info className="w-3.5 h-3.5 text-[#7B89DB]" />
+                                    <span className="text-xs font-semibold text-[#7B89DB]">Vanlige ICPC-2-koder for behandlingsplan</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {commonCodes.map((item) => (
@@ -297,8 +297,8 @@ export default function BehandlingsplanForm() {
                                             className={cn(
                                                 "text-xs px-2.5 py-1 rounded-full border transition-all",
                                                 formData.diagnoseKode === item.code
-                                                    ? "bg-[#A0714F] text-white border-[#A0714F]"
-                                                    : "bg-[#FFFDF9] text-[#5E5549] border-[#DDD7CE] hover:border-[#A0714F] hover:text-[#A0714F]"
+                                                    ? "bg-[#5E6AD2] text-white border-[#5E6AD2]"
+                                                    : "bg-[#111111] text-[#8B8B8B] border-[rgba(255,255,255,0.06)] hover:border-[#5E6AD2] hover:text-[#7B89DB]"
                                             )}
                                         >
                                             <span className="font-mono font-semibold">{item.code}</span> {item.label}
@@ -308,40 +308,40 @@ export default function BehandlingsplanForm() {
                             </div>
 
                             <div>
-                                <label className="form-label">Utdypende beskrivelse</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Utdypende beskrivelse</label>
                                 <textarea
                                     value={formData.diagnoseFritekst}
                                     onChange={(e) => updateField('diagnoseFritekst', e.target.value)}
-                                    className="input-field !text-sm min-h-[60px] resize-y"
+                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[60px] resize-y"
                                     placeholder="Utdypende beskrivelse av diagnose..."
                                 />
                             </div>
                         </div>
 
                         {/* Section 3: Behandlingsmal */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <Target className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Behandlingsm&aring;l</h2>
+                                <Target className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">3. Behandlingsmål</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Definerte mål for behandlingen</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Definerte mål for behandlingen</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label form-required">Kortsiktige mål (4-6 uker)</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Kortsiktige mål (4-6 uker) <span className="text-[#EF4444]">*</span></label>
                                     <textarea
                                         value={formData.kortsiktigeMaal}
                                         onChange={(e) => updateField('kortsiktigeMaal', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
                                         placeholder="Beskriv konkrete kortsiktige mål for behandlingen..."
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Langsiktige mål (3-6 måneder)</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Langsiktige mål (3-6 måneder) <span className="text-[#EF4444]">*</span></label>
                                     <textarea
                                         value={formData.langsiktigeMaal}
                                         onChange={(e) => updateField('langsiktigeMaal', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
                                         placeholder="Beskriv overordnede langsiktige mål for behandlingen..."
                                     />
                                 </div>
@@ -349,49 +349,49 @@ export default function BehandlingsplanForm() {
                         </div>
 
                         {/* Section 4: Planlagte tiltak */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <Heart className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Planlagte tiltak</h2>
+                                <Heart className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">4. Planlagte tiltak</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Intervensjoner og behandlingstiltak</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Intervensjoner og behandlingstiltak</p>
 
                             {tiltak.length === 0 ? (
-                                <p className="text-sm text-[var(--medical-gray-400)] italic text-center py-6">
-                                    Ingen tiltak lagt til enn&aring;. Klikk knappen under for &aring; legge til.
+                                <p className="text-sm text-[#5C5C5C] italic text-center py-6">
+                                    Ingen tiltak lagt til ennå. Klikk knappen under for å legge til.
                                 </p>
                             ) : (
                                 <div className="space-y-3">
                                     {tiltak.map((t, index) => (
-                                        <div key={t.id} className="card-base p-4 mb-3 relative">
+                                        <div key={t.id} className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-4 mb-3 relative">
                                             <button
                                                 onClick={() => removeTiltak(t.id)}
-                                                className="absolute top-3 right-3 p-1.5 rounded-lg text-[var(--medical-gray-400)] hover:text-[#C44536] hover:bg-[#FAEAE8] transition-colors"
+                                                className="absolute top-3 right-3 p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] transition-colors"
                                                 title="Fjern tiltak"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
 
-                                            <p className="text-xs font-semibold text-[var(--medical-gray-400)] uppercase tracking-wider mb-3">Tiltak {index + 1}</p>
+                                            <p className="text-xs font-semibold text-[#5C5C5C] uppercase tracking-wider mb-3">Tiltak {index + 1}</p>
 
                                             <div className="grid grid-cols-2 gap-4 mb-3">
                                                 <div>
-                                                    <label className="form-label">Navn på tiltak</label>
+                                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Navn på tiltak</label>
                                                     <input
                                                         type="text"
                                                         value={t.navn}
                                                         onChange={(e) => updateTiltak(t.id, 'navn', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                         placeholder="Navn på tiltak"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="form-label">Frekvens</label>
+                                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Frekvens</label>
                                                     <input
                                                         type="text"
                                                         value={t.frekvens}
                                                         onChange={(e) => updateTiltak(t.id, 'frekvens', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                         placeholder="Frekvens, f.eks. 2x/uke"
                                                     />
                                                 </div>
@@ -399,32 +399,32 @@ export default function BehandlingsplanForm() {
 
                                             <div className="grid grid-cols-2 gap-4 mb-3">
                                                 <div>
-                                                    <label className="form-label">Ansvarlig behandler</label>
+                                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Ansvarlig behandler</label>
                                                     <input
                                                         type="text"
                                                         value={t.ansvarlig}
                                                         onChange={(e) => updateTiltak(t.id, 'ansvarlig', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                         placeholder="Ansvarlig behandler"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="form-label">Startdato</label>
+                                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Startdato</label>
                                                     <input
                                                         type="date"
                                                         value={t.startDato}
                                                         onChange={(e) => updateTiltak(t.id, 'startDato', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                     />
                                                 </div>
                                             </div>
 
                                             <div>
-                                                <label className="form-label">Beskrivelse</label>
+                                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Beskrivelse</label>
                                                 <textarea
                                                     value={t.beskrivelse}
                                                     onChange={(e) => updateTiltak(t.id, 'beskrivelse', e.target.value)}
-                                                    className="input-field !text-sm min-h-[60px] resize-y"
+                                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[60px] resize-y"
                                                     placeholder="Beskrivelse av tiltaket..."
                                                 />
                                             </div>
@@ -435,7 +435,7 @@ export default function BehandlingsplanForm() {
 
                             <button
                                 onClick={addTiltak}
-                                className="mt-3 w-full py-2.5 rounded-lg border-2 border-dashed border-[#DDD7CE] text-sm font-medium text-[#5E5549] hover:border-[#A0714F] hover:text-[#A0714F] hover:bg-[#F5FAFF] transition-all flex items-center justify-center gap-2"
+                                className="mt-3 w-full py-2.5 rounded-lg border-2 border-dashed border-[rgba(255,255,255,0.06)] text-sm font-medium text-[#8B8B8B] hover:border-[#5E6AD2] hover:text-[#7B89DB] hover:bg-[rgba(94,106,210,0.08)] transition-all flex items-center justify-center gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Legg til tiltak
@@ -443,49 +443,49 @@ export default function BehandlingsplanForm() {
                         </div>
 
                         {/* Section 5: Medikamentplan */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <Pill className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Medikamentplan</h2>
+                                <Pill className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">5. Medikamentplan</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Oversikt over medikamentell behandling</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Oversikt over medikamentell behandling</p>
 
                             {medikamenter.length === 0 ? (
-                                <p className="text-sm text-[var(--medical-gray-400)] italic text-center py-6">
-                                    Ingen medikamenter lagt til enn&aring;. Klikk knappen under for &aring; legge til.
+                                <p className="text-sm text-[#5C5C5C] italic text-center py-6">
+                                    Ingen medikamenter lagt til ennå. Klikk knappen under for å legge til.
                                 </p>
                             ) : (
                                 <div className="space-y-3">
                                     {medikamenter.map((m, index) => (
-                                        <div key={m.id} className="card-base p-4 mb-3 relative">
+                                        <div key={m.id} className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-4 mb-3 relative">
                                             <button
                                                 onClick={() => removeMedikament(m.id)}
-                                                className="absolute top-3 right-3 p-1.5 rounded-lg text-[var(--medical-gray-400)] hover:text-[#C44536] hover:bg-[#FAEAE8] transition-colors"
+                                                className="absolute top-3 right-3 p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] transition-colors"
                                                 title="Fjern medikament"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
 
-                                            <p className="text-xs font-semibold text-[var(--medical-gray-400)] uppercase tracking-wider mb-3">Medikament {index + 1}</p>
+                                            <p className="text-xs font-semibold text-[#5C5C5C] uppercase tracking-wider mb-3">Medikament {index + 1}</p>
 
                                             <div className="grid grid-cols-2 gap-4 mb-3">
                                                 <div>
-                                                    <label className="form-label">Medikamentnavn</label>
+                                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Medikamentnavn</label>
                                                     <input
                                                         type="text"
                                                         value={m.navn}
                                                         onChange={(e) => updateMedikament(m.id, 'navn', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                         placeholder="Medikamentnavn"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="form-label">Dosering</label>
+                                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Dosering</label>
                                                     <input
                                                         type="text"
                                                         value={m.dose}
                                                         onChange={(e) => updateMedikament(m.id, 'dose', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                         placeholder="Dosering, f.eks. 500mg"
                                                     />
                                                 </div>
@@ -493,33 +493,33 @@ export default function BehandlingsplanForm() {
 
                                             <div className="grid grid-cols-2 gap-4 mb-3">
                                                 <div>
-                                                    <label className="form-label">Frekvens</label>
+                                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Frekvens</label>
                                                     <input
                                                         type="text"
                                                         value={m.frekvens}
                                                         onChange={(e) => updateMedikament(m.id, 'frekvens', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                         placeholder="Frekvens, f.eks. 2x daglig"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="form-label">Varighet</label>
+                                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Varighet</label>
                                                     <input
                                                         type="text"
                                                         value={m.varighet}
                                                         onChange={(e) => updateMedikament(m.id, 'varighet', e.target.value)}
-                                                        className="input-field !text-sm"
+                                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                         placeholder="Varighet, f.eks. 3 måneder"
                                                     />
                                                 </div>
                                             </div>
 
                                             <div>
-                                                <label className="form-label">Spesielle instruksjoner</label>
+                                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Spesielle instruksjoner</label>
                                                 <textarea
                                                     value={m.notater}
                                                     onChange={(e) => updateMedikament(m.id, 'notater', e.target.value)}
-                                                    className="input-field !text-sm min-h-[40px] resize-y"
+                                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[40px] resize-y"
                                                     placeholder="Spesielle instruksjoner..."
                                                 />
                                             </div>
@@ -530,7 +530,7 @@ export default function BehandlingsplanForm() {
 
                             <button
                                 onClick={addMedikament}
-                                className="mt-3 w-full py-2.5 rounded-lg border-2 border-dashed border-[#DDD7CE] text-sm font-medium text-[#5E5549] hover:border-[#A0714F] hover:text-[#A0714F] hover:bg-[#F5FAFF] transition-all flex items-center justify-center gap-2"
+                                className="mt-3 w-full py-2.5 rounded-lg border-2 border-dashed border-[rgba(255,255,255,0.06)] text-sm font-medium text-[#8B8B8B] hover:border-[#5E6AD2] hover:text-[#7B89DB] hover:bg-[rgba(94,106,210,0.08)] transition-all flex items-center justify-center gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Legg til medikament
@@ -538,103 +538,103 @@ export default function BehandlingsplanForm() {
                         </div>
 
                         {/* Section 6: Aktivitet og livsstil */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <Activity className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Aktivitet og livsstil</h2>
+                                <Activity className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">6. Aktivitet og livsstil</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Anbefalinger for livsstilsendringer</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Anbefalinger for livsstilsendringer</p>
 
                             <div>
-                                <label className="form-label">Livsstilsanbefalinger</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Livsstilsanbefalinger</label>
                                 <textarea
                                     value={formData.livsstilAnbefalinger}
                                     onChange={(e) => updateField('livsstilAnbefalinger', e.target.value)}
-                                    className="input-field !text-sm min-h-[100px] resize-y"
+                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[100px] resize-y"
                                     placeholder="Anbefalinger for livsstilsendringer..."
                                 />
                             </div>
                         </div>
 
                         {/* Section 7: Oppfolgingsplan */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <Calendar className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Oppfølgingsplan</h2>
+                                <Calendar className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">7. Oppfølgingsplan</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Plan for videre oppfølging og evaluering</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Plan for videre oppfølging og evaluering</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="form-label form-required">Neste konsultasjon</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Neste konsultasjon <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="date"
                                         value={formData.nesteKonsultasjon}
                                         onChange={(e) => updateField('nesteKonsultasjon', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Ansvarlig behandler</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Ansvarlig behandler</label>
                                     <input
                                         type="text"
                                         value={formData.ansvarligBehandler}
                                         onChange={(e) => updateField('ansvarligBehandler', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Navn på ansvarlig behandler"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="form-label">Evalueringskriterier</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Evalueringskriterier</label>
                                 <textarea
                                     value={formData.evalueringskriterier}
                                     onChange={(e) => updateField('evalueringskriterier', e.target.value)}
-                                    className="input-field !text-sm min-h-[80px] resize-y"
+                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
                                     placeholder="Kriterier for evaluering av behandlingseffekt..."
                                 />
                             </div>
                         </div>
 
                         {/* Section 8: Pasientmedvirkning */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <FileCheck className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">8. Pasientmedvirkning</h2>
+                                <FileCheck className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">8. Pasientmedvirkning</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Pasientens samtykke og signatur</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Pasientens samtykke og signatur</p>
 
                             <label className={cn(
                                 "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all mb-4",
-                                formData.pasientSamtykke ? "border-[#A0714F] bg-[#F5FAFF]" : "border-[#DDD7CE] hover:border-[#A0714F]/30"
+                                formData.pasientSamtykke ? "border-[#5E6AD2] bg-[rgba(94,106,210,0.08)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#5E6AD2]/30"
                             )}>
                                 <input
                                     type="checkbox"
                                     checked={formData.pasientSamtykke}
                                     onChange={(e) => updateField('pasientSamtykke', e.target.checked)}
-                                    className="mt-0.5 w-5 h-5 rounded border-[#CBD2D9] text-[#A0714F] focus:ring-[#A0714F]"
+                                    className="mt-0.5 w-5 h-5 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                 />
                                 <div>
-                                    <span className="text-sm font-semibold text-[#1E1914] block">Pasientens samtykke</span>
-                                    <span className="text-xs text-[#7D7267] mt-1 block">
+                                    <span className="text-sm font-semibold text-[#EDEDED] block">Pasientens samtykke</span>
+                                    <span className="text-xs text-[#8B8B8B] mt-1 block">
                                         Pasienten har deltatt i utarbeidelsen av behandlingsplanen og samtykker til de planlagte tiltakene
                                     </span>
                                 </div>
                             </label>
 
                             <div className="mb-3">
-                                <label className="form-label form-required">Pasientens signatur (skriv fullt navn)</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Pasientens signatur (skriv fullt navn) <span className="text-[#EF4444]">*</span></label>
                                 <input
                                     type="text"
                                     value={formData.pasientSignatur}
                                     onChange={(e) => updateField('pasientSignatur', e.target.value)}
-                                    className="input-field !text-sm"
-                                    style={{ fontFamily: "var(--font-serif), 'Georgia', serif", fontStyle: 'italic' }}
+                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                    style={{ fontFamily: "'Georgia', serif", fontStyle: 'italic' }}
                                     placeholder="Skriv ditt fulle navn her som elektronisk signatur"
                                 />
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)]">
+                            <p className="text-xs text-[#5C5C5C]">
                                 Dato: {new Date().toLocaleDateString('nb-NO', { year: 'numeric', month: 'long', day: 'numeric' })}
                             </p>
                         </div>
@@ -642,16 +642,16 @@ export default function BehandlingsplanForm() {
                         {/* Footer with GDPR badge */}
                         <div className="flex items-center justify-between py-4">
                             <div className="flex items-center gap-2">
-                                <Shield className="w-4 h-4 text-[#3D8B6E]" />
-                                <span className="text-xs font-semibold text-[#3D8B6E]">GDPR-kompatibel</span>
+                                <Shield className="w-4 h-4 text-[#10B981]" />
+                                <span className="text-xs font-semibold text-[#10B981]">GDPR-kompatibel</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                {error && <p className="text-sm text-[#C44536]">{error}</p>}
-                                <button onClick={handleSave} disabled={saving} className="btn-secondary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                {error && <p className="text-sm text-[#EF4444]">{error}</p>}
+                                <button onClick={handleSave} disabled={saving} className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {saving ? 'Lagrer...' : 'Lagre utkast'}
                                 </button>
-                                <button onClick={handleSubmit} disabled={submitting} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button onClick={handleSubmit} disabled={submitting} className="bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150 !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
                                     {submitting ? 'Lagrer...' : 'Lagre behandlingsplan'}
                                 </button>

@@ -14,6 +14,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
     }
 
+    // Admin authorization check
+    const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean);
+    if (adminEmails.length === 0 || !adminEmails.includes(user.email ?? '')) {
+      return NextResponse.json({ error: 'Ingen admin-tilgang' }, { status: 403 });
+    }
+
     // Parse optional limit param
     const body = await req.json().catch(() => ({}));
     const limit: number | undefined = body.limit;

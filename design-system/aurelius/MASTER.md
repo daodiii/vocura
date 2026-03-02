@@ -6,7 +6,7 @@
 
 ---
 
-**Project:** Aurelius
+**Project:** Vocura
 **Generated:** 2026-02-16 02:30:05
 **Category:** Financial Dashboard
 

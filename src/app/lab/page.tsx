@@ -14,7 +14,7 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, fetchWithTimeout } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
 import type { ParsedLabValue, LabInterpretResponse } from '@/app/api/lab/interpret/route';
 
@@ -64,20 +64,25 @@ export default function LabPage() {
     setError('');
     setResult(null);
     try {
-      const res = await fetch('/api/lab/interpret', {
+      const res = await fetchWithTimeout('/api/lab/interpret', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rawText, mode: 'paste' }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || 'Noe gikk galt.');
+        try {
+          const data = await res.json();
+          setError(data.error || `Serverfeil (${res.status}). Prøv igjen.`);
+        } catch {
+          setError(`Serverfeil (${res.status}). Prøv igjen.`);
+        }
         return;
       }
       const data = await res.json();
       setResult(data);
       setSummaryOpen(false);
-    } catch {
+    } catch (err) {
+      console.error('Lab interpret error:', err);
       setError('Nettverksfeil. Sjekk tilkoblingen og prøv igjen.');
     } finally {
       setLoading(false);

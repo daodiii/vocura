@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Brain, AlertTriangle, Calendar, Info, Heart, Pill, Wine, Users, ClipboardList, FileText, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
 export default function InntakPsykiskForm() {
     const { submissionId, saving, submitting, saved, submitted, error, saveAsDraft, submitForm, exportPdf } = useFormSubmission({ formType: 'inntak-psykisk' });
+    const [fnrError, setFnrError] = useState('');
     const [formData, setFormData] = useState({
         // Patient
         patientNavn: '',
@@ -117,7 +118,7 @@ export default function InntakPsykiskForm() {
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={submitting}
+                            disabled={submitting || !!fnrError}
                             className={cn(
                                 "text-xs !py-2 !px-4 flex items-center gap-1.5",
                                 submitted ? "bg-[#3D8B6E] text-white rounded-lg font-semibold" : "btn-primary"
@@ -135,10 +136,10 @@ export default function InntakPsykiskForm() {
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 bg-[#EDE9FE] rounded-xl flex items-center justify-center">
-                            <Brain className="w-5 h-5 text-[#7C3AED]" />
+                            <Brain className="w-5 h-5 text-[#4F5ABF]" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                         Inntaksnotat (psykisk helse)
                     </h1>
                     <p className="text-[#7D7267] mt-1">Strukturert inntaksnotat for første konsultasjon</p>
@@ -149,11 +150,11 @@ export default function InntakPsykiskForm() {
                         <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Inntaksnotat lagret
                         </h2>
                         <p className="text-[#7D7267] mb-6">Inntaksnotatet er lagret i pasientjournalen.</p>
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: {submissionId || `PSY-INT-${Math.random().toString(36).substr(2, 8).toUpperCase()}`}</p>
+                        <p className="text-sm font-mono text-[#9E958C] mb-8">Referanse: {submissionId || `PSY-INT-${Math.random().toString(36).substr(2, 8).toUpperCase()}`}</p>
                         <div className="flex items-center justify-center gap-4">
                             <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
@@ -168,10 +169,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 1: Pasientopplysninger */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <User className="w-4 h-4 text-[#7C3AED]" />
+                                <User className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Pasientopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Grunnleggende pasientinformasjon</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Grunnleggende pasientinformasjon</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -190,10 +191,12 @@ export default function InntakPsykiskForm() {
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
+                                        onBlur={() => setFnrError(validateFnr(formData.patientFnr) || '')}
                                         className="input-field !text-sm font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
+                                    {fnrError && <p className="text-[#EF4444] text-xs mt-1">{fnrError}</p>}
                                 </div>
                             </div>
 
@@ -234,10 +237,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 2: Henvisningsinformasjon */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <FileText className="w-4 h-4 text-[#7C3AED]" />
+                                <FileText className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Henvisningsinformasjon</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om henvisningen</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om henvisningen</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -275,10 +278,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 3: Presenterende problem */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Brain className="w-4 h-4 text-[#7C3AED]" />
+                                <Brain className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Presenterende problem</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Hovedproblem og alvorlighetsgrad</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Hovedproblem og alvorlighetsgrad</p>
 
                             <div>
                                 <label className="form-label form-required">Hovedproblem</label>
@@ -321,10 +324,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 4: Symptomhistorikk */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Calendar className="w-4 h-4 text-[#7C3AED]" />
+                                <Calendar className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Symptomhistorikk</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Varighet, tidligere episoder og triggere</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Varighet, tidligere episoder og triggere</p>
 
                             <div>
                                 <label className="form-label">Varighet av nåværende episode</label>
@@ -347,7 +350,7 @@ export default function InntakPsykiskForm() {
                                             value="ja"
                                             checked={formData.tidligereEpisoder === 'ja'}
                                             onChange={() => updateField('tidligereEpisoder', 'ja')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59]">Ja</span>
                                     </label>
@@ -358,7 +361,7 @@ export default function InntakPsykiskForm() {
                                             value="nei"
                                             checked={formData.tidligereEpisoder === 'nei'}
                                             onChange={() => updateField('tidligereEpisoder', 'nei')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59]">Nei</span>
                                     </label>
@@ -391,10 +394,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 5: Tidligere behandling */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Heart className="w-4 h-4 text-[#7C3AED]" />
+                                <Heart className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Tidligere behandling</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Tidligere behandlingshistorikk</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Tidligere behandlingshistorikk</p>
 
                             <div>
                                 <label className="form-label">Har pasienten mottatt tidligere behandling?</label>
@@ -406,7 +409,7 @@ export default function InntakPsykiskForm() {
                                             value="ja"
                                             checked={formData.tidligereBehandling === 'ja'}
                                             onChange={() => updateField('tidligereBehandling', 'ja')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59]">Ja</span>
                                     </label>
@@ -417,7 +420,7 @@ export default function InntakPsykiskForm() {
                                             value="nei"
                                             checked={formData.tidligereBehandling === 'nei'}
                                             onChange={() => updateField('tidligereBehandling', 'nei')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59]">Nei</span>
                                     </label>
@@ -469,7 +472,7 @@ export default function InntakPsykiskForm() {
                                             value="ja"
                                             checked={formData.tidligereInnleggelse === 'ja'}
                                             onChange={() => updateField('tidligereInnleggelse', 'ja')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59]">Ja</span>
                                     </label>
@@ -480,7 +483,7 @@ export default function InntakPsykiskForm() {
                                             value="nei"
                                             checked={formData.tidligereInnleggelse === 'nei'}
                                             onChange={() => updateField('tidligereInnleggelse', 'nei')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59]">Nei</span>
                                     </label>
@@ -503,10 +506,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 6: Medikamenter */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Pill className="w-4 h-4 text-[#7C3AED]" />
+                                <Pill className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Medikamenter</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Nåværende og tidligere medikamenter</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Nåværende og tidligere medikamenter</p>
 
                             <div>
                                 <label className="form-label">Nåværende medikamenter</label>
@@ -532,10 +535,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 7: Rusmiddelbruk */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Wine className="w-4 h-4 text-[#7C3AED]" />
+                                <Wine className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Rusmiddelbruk</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Alkohol, tobakk og andre rusmidler</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Alkohol, tobakk og andre rusmidler</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -588,7 +591,7 @@ export default function InntakPsykiskForm() {
                                             value="ja"
                                             checked={formData.rusmidler === 'ja'}
                                             onChange={() => updateField('rusmidler', 'ja')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59]">Ja</span>
                                     </label>
@@ -599,7 +602,7 @@ export default function InntakPsykiskForm() {
                                             value="nei"
                                             checked={formData.rusmidler === 'nei'}
                                             onChange={() => updateField('rusmidler', 'nei')}
-                                            className="text-[#7C3AED]"
+                                            className="text-[#4F5ABF]"
                                         />
                                         <span className="text-sm text-[#3E4C59]">Nei</span>
                                     </label>
@@ -625,7 +628,7 @@ export default function InntakPsykiskForm() {
                                 <AlertTriangle className="w-4 h-4 text-[#C44536]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0 !text-[#C44536]">8. Risikovurdering</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Vurdering av risikofaktorer</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Vurdering av risikofaktorer</p>
 
                             {/* Suicidal tanker */}
                             <div>
@@ -794,10 +797,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 9: Sosial situasjon og familiehistorikk */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <Users className="w-4 h-4 text-[#7C3AED]" />
+                                <Users className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">9. Sosial situasjon og familiehistorikk</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Boforhold, arbeid og familiær belastning</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Boforhold, arbeid og familiær belastning</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -878,10 +881,10 @@ export default function InntakPsykiskForm() {
                         {/* Section 10: Foreløpig vurdering */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
-                                <ClipboardList className="w-4 h-4 text-[#7C3AED]" />
+                                <ClipboardList className="w-4 h-4 text-[#4F5ABF]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">10. Foreløpig vurdering</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Diagnose, funksjonsvurdering og behandlingsplan</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Diagnose, funksjonsvurdering og behandlingsplan</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -932,15 +935,15 @@ export default function InntakPsykiskForm() {
                                             className={cn(
                                                 "flex items-center gap-4 p-3 rounded-lg border-2 cursor-pointer transition-all",
                                                 formData.anbefalteBehandlinger.includes(behandling)
-                                                    ? "border-[#7C3AED] bg-[#EDE9FE]/30"
-                                                    : "border-[#DDD7CE] hover:border-[#7C3AED]/30"
+                                                    ? "border-[#4F5ABF] bg-[#EDE9FE]/30"
+                                                    : "border-[#DDD7CE] hover:border-[#4F5ABF]/30"
                                             )}
                                         >
                                             <input
                                                 type="checkbox"
                                                 checked={formData.anbefalteBehandlinger.includes(behandling)}
                                                 onChange={() => toggleBehandling(behandling)}
-                                                className="w-5 h-5 rounded border-[#CBD2D9] text-[#7C3AED] focus:ring-[#7C3AED]"
+                                                className="w-5 h-5 rounded border-[#CBD2D9] text-[#4F5ABF] focus:ring-[#4F5ABF]"
                                             />
                                             <span className="text-sm font-medium text-[#1E1914]">{behandling}</span>
                                         </label>
@@ -970,7 +973,7 @@ export default function InntakPsykiskForm() {
                                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                     {saving ? 'Lagrer...' : 'Lagre utkast'}
                                 </button>
-                                <button onClick={handleSubmit} disabled={submitting} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button onClick={handleSubmit} disabled={submitting || !!fnrError} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
                                     {submitting ? 'Lagrer...' : 'Lagre inntaksnotat'}
                                 </button>

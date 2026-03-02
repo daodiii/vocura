@@ -26,6 +26,12 @@ export async function POST(req: Request) {
     const limited = rateLimit(getClientIp(req), 'transcribe:post', { limit: 10 });
     if (limited) return limited;
 
+    // Early request size validation via Content-Length header
+    const contentLength = parseInt(req.headers.get('content-length') || '0');
+    if (contentLength > 25 * 1024 * 1024) {
+        return NextResponse.json({ error: 'Filen er for stor. Maks 25 MB.' }, { status: 413 });
+    }
+
     try {
         // Authentication check
         const supabase = await createClient();
@@ -85,12 +91,36 @@ export async function POST(req: Request) {
         try {
             const whisperPrompt = WHISPER_PROMPTS[profession] || WHISPER_PROMPTS['default'];
 
-            const transcription = await openai.audio.transcriptions.create({
-                file: fs.createReadStream(tempFilePath),
-                model: 'gpt-4o-transcribe',
-                language: 'no',
-                prompt: whisperPrompt,
-            });
+            // Try gpt-4o-transcribe first, fall back to whisper-1 if unavailable
+            let transcription;
+            try {
+                transcription = await openai.audio.transcriptions.create({
+                    file: fs.createReadStream(tempFilePath),
+                    model: 'gpt-4o-transcribe',
+                    language: 'no',
+                    prompt: whisperPrompt,
+                });
+                console.log('Transcription succeeded with gpt-4o-transcribe');
+            } catch (modelError: unknown) {
+                const isModelError = modelError instanceof Error &&
+                    (modelError.message?.includes('model') ||
+                     modelError.message?.includes('not found') ||
+                     modelError.message?.includes('does not exist') ||
+                     (modelError as any)?.status === 404);
+
+                if (isModelError) {
+                    console.warn('gpt-4o-transcribe not available, falling back to whisper-1');
+                    transcription = await openai.audio.transcriptions.create({
+                        file: fs.createReadStream(tempFilePath),
+                        model: 'whisper-1',
+                        language: 'no',
+                        prompt: whisperPrompt,
+                    });
+                    console.log('Transcription succeeded with whisper-1 (fallback)');
+                } else {
+                    throw modelError;
+                }
+            }
 
             return NextResponse.json({ text: transcription.text });
         } finally {
@@ -100,9 +130,40 @@ export async function POST(req: Request) {
             }
         }
     } catch (error: unknown) {
-        console.error('Transcription error:', error);
+        // Detailed error logging
+        const openaiError = error as any;
+        const errorStatus = openaiError?.status || openaiError?.response?.status;
+        const errorMessage = openaiError?.message || 'Unknown error';
+        const errorType = openaiError?.type || openaiError?.error?.type;
+
+        console.error('Transcription error details:', {
+            status: errorStatus,
+            message: errorMessage,
+            type: errorType,
+        });
+
+        // Return specific error messages based on the error type
+        if (errorStatus === 401 || errorMessage.includes('API key')) {
+            return NextResponse.json(
+                { error: 'OpenAI API-nøkkel er ugyldig. Kontakt administrator.' },
+                { status: 500 }
+            );
+        }
+        if (errorStatus === 429) {
+            return NextResponse.json(
+                { error: 'OpenAI API rate limit nådd. Vennligst vent litt og prøv igjen.' },
+                { status: 429 }
+            );
+        }
+        if (errorStatus === 413 || errorMessage.includes('too large')) {
+            return NextResponse.json(
+                { error: 'Lydfilen er for stor for OpenAI API. Prøv et kortere opptak.' },
+                { status: 413 }
+            );
+        }
+
         return NextResponse.json(
-            { error: 'Transkribering feilet. Prøv igjen senere.' },
+            { error: `Transkribering feilet: ${errorMessage}` },
             { status: 500 }
         );
     }

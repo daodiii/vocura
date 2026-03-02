@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, UserPlus, Phone, Mail, Heart, Activity, Info, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
 export default function PasientregistreringForm() {
     const { submissionId, saving, submitting, saved, submitted, error, saveAsDraft, submitForm, exportPdf } = useFormSubmission({ formType: 'pasientregistrering' });
+    const [fnrError, setFnrError] = useState('');
     const [formData, setFormData] = useState({
         // Personal info
         fornavn: '',
@@ -87,7 +88,7 @@ export default function PasientregistreringForm() {
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={submitting}
+                            disabled={submitting || !!fnrError}
                             className={cn(
                                 "text-xs !py-2 !px-4 flex items-center gap-1.5",
                                 submitted ? "bg-[#3D8B6E] text-white rounded-lg font-semibold" : "btn-primary"
@@ -108,7 +109,7 @@ export default function PasientregistreringForm() {
                             <UserPlus className="w-5 h-5 text-[#A0714F]" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                         Pasientregistrering
                     </h1>
                     <p className="text-[#7D7267] mt-1">Førstegangsregistrering for nye pasienter</p>
@@ -119,11 +120,11 @@ export default function PasientregistreringForm() {
                         <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Pasient registrert
                         </h2>
                         <p className="text-[#7D7267] mb-6">Pasienten er registrert i systemet og klar for konsultasjon.</p>
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: {submissionId || `MED-REG-${Math.random().toString(36).substr(2, 8).toUpperCase()}`}</p>
+                        <p className="text-sm font-mono text-[#9E958C] mb-8">Referanse: {submissionId || `MED-REG-${Math.random().toString(36).substr(2, 8).toUpperCase()}`}</p>
                         <div className="flex items-center justify-center gap-4">
                             <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
@@ -141,7 +142,7 @@ export default function PasientregistreringForm() {
                                 <User className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Personopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Grunnleggende informasjon om pasienten</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Grunnleggende informasjon om pasienten</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
@@ -182,10 +183,12 @@ export default function PasientregistreringForm() {
                                         type="text"
                                         value={formData.fnr}
                                         onChange={(e) => updateField('fnr', e.target.value)}
+                                        onBlur={() => setFnrError(validateFnr(formData.fnr) || '')}
                                         className="input-field !text-sm font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
+                                    {fnrError && <p className="text-[#EF4444] text-xs mt-1">{fnrError}</p>}
                                 </div>
                                 <div>
                                     <label className="form-label form-required">Kjønn</label>
@@ -268,7 +271,7 @@ export default function PasientregistreringForm() {
                                 <Phone className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Kontaktperson</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Nærmeste pårørende eller kontaktperson ved nødstilfelle</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Nærmeste pårørende eller kontaktperson ved nødstilfelle</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -315,7 +318,7 @@ export default function PasientregistreringForm() {
                                 <UserPlus className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Fastlegeinformasjon</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om pasientens fastlege</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om pasientens fastlege</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -357,7 +360,7 @@ export default function PasientregistreringForm() {
                                 <Shield className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Forsikring og HELFO</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Forsikrings- og refusjonsinformasjon</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Forsikrings- og refusjonsinformasjon</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -399,7 +402,7 @@ export default function PasientregistreringForm() {
                                 <Heart className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Medisinsk historikk</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Tidligere og nåværende helsetilstand</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Tidligere og nåværende helsetilstand</p>
 
                             <div className="space-y-4">
                                 <div>
@@ -447,7 +450,7 @@ export default function PasientregistreringForm() {
                                 <Activity className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Familiehistorikk</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Arvelige sykdommer i familien</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Arvelige sykdommer i familien</p>
 
                             <div>
                                 <label className="form-label">Kjente arvelige sykdommer</label>
@@ -475,7 +478,7 @@ export default function PasientregistreringForm() {
                                 <Activity className="w-4 h-4 text-[#A0714F]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Livsstil</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Levevaner og livsstilsinformasjon</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Levevaner og livsstilsinformasjon</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -534,7 +537,7 @@ export default function PasientregistreringForm() {
                                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                     {saving ? 'Lagrer...' : 'Lagre utkast'}
                                 </button>
-                                <button onClick={handleSubmit} disabled={submitting} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button onClick={handleSubmit} disabled={submitting || !!fnrError} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
                                     {submitting ? 'Registrerer...' : 'Registrer pasient'}
                                 </button>

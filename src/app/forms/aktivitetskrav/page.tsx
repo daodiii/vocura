@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, FileCheck, AlertCircle, Calendar, Briefcase, Info, ClipboardList, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
@@ -51,6 +51,7 @@ export default function AktivitetskravForm() {
     }, [profile]);
 
     const { saving, submitting, saved, submitted, error, saveAsDraft, submitForm, exportPdf } = useFormSubmission({ formType: 'aktivitetskrav' });
+    const [fnrError, setFnrError] = useState('');
 
     const updateField = (field: string, value: string | boolean) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -121,14 +122,14 @@ export default function AktivitetskravForm() {
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={!formData.bekreftelse || submitting}
+                            disabled={!formData.bekreftelse || formData.medisinskBegrunnelse.trim().length === 0 || submitting || !!fnrError}
                             className={cn(
                                 "text-xs !py-2 !px-4 flex items-center gap-1.5",
                                 submitted
                                     ? "bg-[#3D8B6E] text-white rounded-lg font-semibold"
-                                    : formData.bekreftelse
+                                    : (formData.bekreftelse && formData.medisinskBegrunnelse.trim().length > 0)
                                         ? "btn-primary"
-                                        : "bg-[#DDD7CE] text-[var(--medical-gray-400)] rounded-lg font-semibold cursor-not-allowed"
+                                        : "bg-[#DDD7CE] text-[#9E958C] rounded-lg font-semibold cursor-not-allowed"
                             )}
                         >
                             {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileCheck className="w-3.5 h-3.5" />}
@@ -149,7 +150,7 @@ export default function AktivitetskravForm() {
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FEF3C7] text-[#C8842B] uppercase tracking-wider">NAV</span>
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                         Aktivitetskrav erklæring (8 uker)
                     </h1>
                     <p className="text-[#7D7267] mt-1">Erklæring om aktivitetskrav ved sykemelding over 8 uker</p>
@@ -160,12 +161,12 @@ export default function AktivitetskravForm() {
                         <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Erklæring sendt til NAV
                         </h2>
                         <p className="text-[#7D7267] mb-6">Aktivitetskraverklæring er sendt til NAV og vil bli behandlet innen 1-3 virkedager.</p>
                         {error && <p className="text-sm text-[#C44536] mb-4">{error}</p>}
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: NAV-AKT-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
+                        <p className="text-sm font-mono text-[#9E958C] mb-8">Referanse: NAV-AKT-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
                         <div className="flex items-center justify-center gap-4">
                             <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
@@ -183,7 +184,7 @@ export default function AktivitetskravForm() {
                                 <User className="w-4 h-4 text-[#C8842B]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Pasientopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om den sykmeldte</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om den sykmeldte</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -202,10 +203,12 @@ export default function AktivitetskravForm() {
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
+                                        onBlur={() => setFnrError(validateFnr(formData.patientFnr) || '')}
                                         className="input-field !text-sm font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
+                                    {fnrError && <p className="text-[#EF4444] text-xs mt-1">{fnrError}</p>}
                                 </div>
                                 <div>
                                     <label className="form-label">Telefon</label>
@@ -226,7 +229,7 @@ export default function AktivitetskravForm() {
                                 <Calendar className="w-4 h-4 text-[#C8842B]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Sykmeldingsperiode og diagnose</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Opprinnelig sykemelding og diagnose</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Opprinnelig sykemelding og diagnose</p>
 
                             <div className="mb-4">
                                 <label className="form-label form-required">Dato for opprinnelig sykemelding</label>
@@ -323,7 +326,7 @@ export default function AktivitetskravForm() {
                                 <Briefcase className="w-4 h-4 text-[#C8842B]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Medisinsk vurdering av arbeidsevne</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Beskriv pasientens funksjonsnivå og arbeidsevne</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Beskriv pasientens funksjonsnivå og arbeidsevne</p>
 
                             <div className="space-y-4">
                                 <div>
@@ -364,7 +367,7 @@ export default function AktivitetskravForm() {
                                 <ClipboardList className="w-4 h-4 text-[#C8842B]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Aktivitetsmuligheter</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Vurdering av mulighet for tilpasset aktivitet</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Vurdering av mulighet for tilpasset aktivitet</p>
 
                             <div className="mb-4">
                                 <label className="form-label form-required">Kan pasienten utføre tilpasset arbeid?</label>
@@ -450,7 +453,7 @@ export default function AktivitetskravForm() {
                                 <Calendar className="w-4 h-4 text-[#C8842B]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Forventet varighet</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Estimert varighet og dato for tilbakeføring</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Estimert varighet og dato for tilbakeføring</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -487,7 +490,7 @@ export default function AktivitetskravForm() {
                                 <AlertCircle className="w-4 h-4 text-[#C8842B]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Medisinsk begrunnelse</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Påkrevd ved sykemelding over 8 uker</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Påkrevd ved sykemelding over 8 uker</p>
 
                             <div className="p-4 bg-[#FFFBEB] rounded-lg border border-[#FEF3C7] mb-4">
                                 <div className="flex items-start gap-3">
@@ -515,7 +518,7 @@ export default function AktivitetskravForm() {
                                 <Briefcase className="w-4 h-4 text-[#C8842B]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Plan for tilbakeføring til arbeid</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Konkret plan for tilbakeføring og gradvise tiltak</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Konkret plan for tilbakeføring og gradvise tiltak</p>
 
                             <div className="space-y-4">
                                 <div>
@@ -554,7 +557,7 @@ export default function AktivitetskravForm() {
                                 <Shield className="w-4 h-4 text-[#C8842B]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">8. Legens erklæring</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Bekreftelse og legeopplysninger</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Bekreftelse og legeopplysninger</p>
 
                             <div className="p-4 bg-[#F5FAFF] rounded-lg border border-[#F5EDE6] mb-4">
                                 <div className="flex items-start gap-3">
@@ -615,7 +618,7 @@ export default function AktivitetskravForm() {
                                 </div>
                             </div>
 
-                            <p className="text-xs text-[var(--medical-gray-400)] mt-4">
+                            <p className="text-xs text-[#9E958C] mt-4">
                                 Dato: {new Date().toLocaleDateString('nb-NO', { year: 'numeric', month: 'long', day: 'numeric' })}
                             </p>
                         </div>
@@ -634,12 +637,12 @@ export default function AktivitetskravForm() {
                                 </button>
                                 <button
                                     onClick={handleSubmit}
-                                    disabled={!formData.bekreftelse || submitting}
+                                    disabled={!formData.bekreftelse || formData.medisinskBegrunnelse.trim().length === 0 || submitting || !!fnrError}
                                     className={cn(
                                         "!py-2.5 !px-6 text-sm flex items-center gap-2",
-                                        formData.bekreftelse
+                                        (formData.bekreftelse && formData.medisinskBegrunnelse.trim().length > 0)
                                             ? "btn-primary"
-                                            : "bg-[#DDD7CE] text-[var(--medical-gray-400)] rounded-lg font-semibold cursor-not-allowed"
+                                            : "bg-[#DDD7CE] text-[#9E958C] rounded-lg font-semibold cursor-not-allowed"
                                     )}
                                 >
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCheck className="w-4 h-4" />}

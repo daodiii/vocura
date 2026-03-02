@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Activity, AlertCircle, Info, Target, Users, BarChart3, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
@@ -84,6 +84,7 @@ export default function FunksjonsvurderingICF() {
     const [nesteVurdering, setNesteVurdering] = useState('');
 
     const { saving, submitting, saved, submitted, error, saveAsDraft, submitForm, exportPdf } = useFormSubmission({ formType: 'funksjonsvurdering' });
+    const [fnrError, setFnrError] = useState('');
 
     const updateField = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -148,7 +149,7 @@ export default function FunksjonsvurderingICF() {
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={submitting}
+                            disabled={submitting || !!fnrError}
                             className="btn-primary text-xs !py-2 !px-4 flex items-center gap-1.5"
                         >
                             {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
@@ -166,10 +167,10 @@ export default function FunksjonsvurderingICF() {
                             <Activity className="w-5 h-5 text-[#0D9488]" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "'Georgia', serif" }}>
                         Funksjonsvurdering (ICF)
                     </h1>
-                    <p className="text-[#7D7267] mt-1">Funksjonsvurdering basert p&aring; WHO sitt ICF-rammeverk</p>
+                    <p className="text-[#7D7267] mt-1">Funksjonsvurdering basert på WHO sitt ICF-rammeverk</p>
                 </div>
 
                 {submitted ? (
@@ -177,12 +178,12 @@ export default function FunksjonsvurderingICF() {
                         <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Funksjonsvurdering lagret
                         </h2>
                         <p className="text-[#7D7267] mb-6">ICF-vurderingen er lagret i pasientjournalen.</p>
                         {error && <p className="text-sm text-[#C44536] mb-4">{error}</p>}
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: ICF-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
+                        <p className="text-sm font-mono text-[#9E958C] mb-8">Referanse: ICF-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
                         <div className="flex items-center justify-center gap-4">
                             <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
@@ -200,7 +201,7 @@ export default function FunksjonsvurderingICF() {
                                 <User className="w-4 h-4 text-[#0D9488]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Pasientopplysninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om pasienten</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Informasjon om pasienten</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -214,15 +215,17 @@ export default function FunksjonsvurderingICF() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">F&oslash;dselsnummer (11 siffer)</label>
+                                    <label className="form-label form-required">Fødselsnummer (11 siffer)</label>
                                     <input
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
+                                        onBlur={() => setFnrError(validateFnr(formData.patientFnr) || '')}
                                         className="input-field !text-sm font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
+                                    {fnrError && <p className="text-[#EF4444] text-xs mt-1">{fnrError}</p>}
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 gap-4 mt-4">
@@ -244,7 +247,7 @@ export default function FunksjonsvurderingICF() {
                                 <AlertCircle className="w-4 h-4 text-[#0D9488]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Diagnoseinformasjon</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Hoveddiagnose og diagnosekode</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Hoveddiagnose og diagnosekode</p>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -277,7 +280,7 @@ export default function FunksjonsvurderingICF() {
                                 <Activity className="w-4 h-4 text-[#0D9488]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Kroppsfunksjoner</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Vurder grad av funksjonsnedsettelse (ICF 0-4)</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Vurder grad av funksjonsnedsettelse (ICF 0-4)</p>
 
                             <div className="space-y-4">
                                 {BODY_FUNCTIONS.map((item, index) => (
@@ -314,7 +317,7 @@ export default function FunksjonsvurderingICF() {
                                 <Activity className="w-4 h-4 text-[#0D9488]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Aktivitetsbegrensninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Vurder grad av aktivitetsbegrensning (ICF 0-4)</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Vurder grad av aktivitetsbegrensning (ICF 0-4)</p>
 
                             <div className="space-y-4">
                                 {ACTIVITY_ITEMS.map((item, index) => (
@@ -351,7 +354,7 @@ export default function FunksjonsvurderingICF() {
                                 <Users className="w-4 h-4 text-[#0D9488]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Deltakelsesbegrensninger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Vurder grad av deltakelsesbegrensning (ICF 0-4)</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Vurder grad av deltakelsesbegrensning (ICF 0-4)</p>
 
                             <div className="space-y-4">
                                 {PARTICIPATION_ITEMS.map((item, index) => (
@@ -386,27 +389,27 @@ export default function FunksjonsvurderingICF() {
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
                                 <Info className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Milj&oslash;- og personlige faktorer</h2>
+                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Miljø- og personlige faktorer</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Faktorer som p&aring;virker funksjon og deltagelse</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Faktorer som påvirker funksjon og deltagelse</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label">Milj&oslash;fasilitatorer</label>
+                                    <label className="form-label">Miljøfasilitatorer</label>
                                     <textarea
                                         value={miljoFasilitatorer}
                                         onChange={(e) => setMiljoFasilitatorer(e.target.value)}
                                         className="input-field !text-sm min-h-[80px] resize-y"
-                                        placeholder="Faktorer i milj&oslash;et som fremmer funksjon..."
+                                        placeholder="Faktorer i miljøet som fremmer funksjon..."
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Milj&oslash;barrierer</label>
+                                    <label className="form-label">Miljøbarrierer</label>
                                     <textarea
                                         value={miljoBarrierer}
                                         onChange={(e) => setMiljoBarrierer(e.target.value)}
                                         className="input-field !text-sm min-h-[80px] resize-y"
-                                        placeholder="Faktorer i milj&oslash;et som hemmer funksjon..."
+                                        placeholder="Faktorer i miljøet som hemmer funksjon..."
                                     />
                                 </div>
                                 <div>
@@ -415,7 +418,7 @@ export default function FunksjonsvurderingICF() {
                                         value={personligeFaktorer}
                                         onChange={(e) => setPersonligeFaktorer(e.target.value)}
                                         className="input-field !text-sm min-h-[60px] resize-y"
-                                        placeholder="Personlige faktorer som p&aring;virker funksjon..."
+                                        placeholder="Personlige faktorer som påvirker funksjon..."
                                     />
                                 </div>
                             </div>
@@ -427,7 +430,7 @@ export default function FunksjonsvurderingICF() {
                                 <BarChart3 className="w-4 h-4 text-[#0D9488]" />
                                 <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Oppsummering</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Automatisk beregnet funksjonsprofil</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Automatisk beregnet funksjonsprofil</p>
 
                             <div className="card-base p-6">
                                 {[
@@ -453,7 +456,7 @@ export default function FunksjonsvurderingICF() {
                                 <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: getScoreColor(totalAvg) + '15' }}>
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm font-semibold text-[#1E1914]">Totalskala (gjennomsnitt)</span>
-                                        <span className="text-2xl font-bold" style={{ color: getScoreColor(totalAvg), fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                                        <span className="text-2xl font-bold" style={{ color: getScoreColor(totalAvg), fontFamily: "'Georgia', serif" }}>
                                             {totalAvg.toFixed(1)}
                                         </span>
                                     </div>
@@ -474,7 +477,7 @@ export default function FunksjonsvurderingICF() {
                                         <div key={level.label} className="text-center">
                                             <div className="h-2 rounded-full mb-1" style={{ backgroundColor: level.color }} />
                                             <span className="text-[10px] text-[#7D7267] block">{level.label}</span>
-                                            <span className="text-[10px] text-[var(--medical-gray-400)] block">{level.range}</span>
+                                            <span className="text-[10px] text-[#9E958C] block">{level.range}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -485,18 +488,18 @@ export default function FunksjonsvurderingICF() {
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
                                 <Target className="w-4 h-4 text-[#0D9488]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">8. M&aring;l og anbefalinger</h2>
+                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">8. Mål og anbefalinger</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Behandlingsm&aring;l og videre anbefalinger</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Behandlingsmål og videre anbefalinger</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label">Behandlingsm&aring;l</label>
+                                    <label className="form-label">Behandlingsmål</label>
                                     <textarea
                                         value={maal}
                                         onChange={(e) => setMaal(e.target.value)}
                                         className="input-field !text-sm min-h-[80px] resize-y"
-                                        placeholder="Behandlingsm&aring;l..."
+                                        placeholder="Behandlingsmål..."
                                     />
                                 </div>
                                 <div>
@@ -534,7 +537,7 @@ export default function FunksjonsvurderingICF() {
                                 </button>
                                 <button
                                     onClick={handleSubmit}
-                                    disabled={submitting}
+                                    disabled={submitting || !!fnrError}
                                     className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2"
                                 >
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Activity className="w-4 h-4" />}

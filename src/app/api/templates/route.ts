@@ -24,6 +24,8 @@ export async function GET(req: Request) {
         const profession = searchParams.get('profession');
         const search = searchParams.get('search');
         const sort = searchParams.get('sort');
+        const limit = Math.min(Math.max(1, parseInt(searchParams.get('limit') || '50')), 500);
+        const offset = Math.max(0, parseInt(searchParams.get('offset') || '0'));
 
         const where: Record<string, unknown> = {
             OR: [
@@ -64,6 +66,8 @@ export async function GET(req: Request) {
         const templates = await prisma.template.findMany({
             where,
             orderBy,
+            take: limit,
+            skip: offset,
         });
 
         return NextResponse.json(templates);

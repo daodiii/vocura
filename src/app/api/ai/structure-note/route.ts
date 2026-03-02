@@ -56,7 +56,7 @@ export async function POST(req: Request) {
             ? `\n\nKontekst:\n${contextParts.join('\n')}`
             : '';
 
-        const model = process.env.AI_MODEL_STRUCTURE_NOTE || 'gpt-5-mini';
+        const model = process.env.AI_MODEL_STRUCTURE_NOTE || 'gpt-4o';
 
         const completion = await openai.chat.completions.create({
             model,

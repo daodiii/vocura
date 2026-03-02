@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Search, PlusCircle, Star, ArrowRight, Trash2, Loader2, Stethoscope, Brain, Smile, Activity, Heart } from 'lucide-react';
+import { FileText, Search, PlusCircle, Star, ArrowRight, Trash2, Stethoscope, Brain, Smile, Activity, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
 import { SkeletonCard } from '@/components/Skeleton';
@@ -32,15 +32,15 @@ const SPECIALTIES = [
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-    allmennmedisin: 'var(--primary)',
-    tannhelse: 'var(--success)',
-    psykoterapi: 'var(--accent)',
-    kirurgi: 'var(--warning)',
-    fysioterapi: 'var(--primary-light)',
+    allmennmedisin: '#5E6AD2',
+    tannhelse: '#10B981',
+    psykoterapi: '#5E6AD2',
+    kirurgi: '#F59E0B',
+    fysioterapi: '#7B89DB',
 };
 
 function getColorForTemplate(template: Template): string {
-    return CATEGORY_COLORS[template.category?.toLowerCase()] || 'var(--primary)';
+    return CATEGORY_COLORS[template.category?.toLowerCase()] || '#5E6AD2';
 }
 
 function formatUsage(template: Template): string {
@@ -160,11 +160,13 @@ export default function Templates() {
     ];
 
     return (
-        <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-deep)' }}>
+        <div className="flex h-screen overflow-hidden bg-[#0A0A0A]">
             <AppSidebar>
                 {/* Specialty filters inside AppSidebar children slot */}
                 <div className="mt-6 px-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider mb-3 px-2" style={{ color: 'var(--text-secondary)' }}>Spesialiteter</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider mb-3 px-2 text-[#8B8B8B]">
+                        Spesialiteter
+                    </p>
                     <div className="space-y-1">
                         {SPECIALTIES.map((specialty) => {
                             const Icon = specialty.icon;
@@ -176,8 +178,10 @@ export default function Templates() {
                                         setActiveSpecialty(isActive ? null : specialty.category)
                                     }
                                     className={cn(
-                                        'sidebar-nav-item w-full cursor-pointer',
-                                        isActive && 'active'
+                                        'flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 cursor-pointer w-full',
+                                        isActive
+                                            ? 'bg-[rgba(94,106,210,0.1)] text-[#7B89DB]'
+                                            : 'text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#EDEDED]'
                                     )}
                                 >
                                     <Icon className="w-5 h-5" />
@@ -191,14 +195,17 @@ export default function Templates() {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-y-auto">
-                <header className="glass-header sticky top-0 z-10 px-8 py-5 flex items-center justify-between">
+                {/* Header */}
+                <header className="bg-[#111111]/80 border-b border-[rgba(255,255,255,0.06)] sticky top-0 z-10 px-8 py-5 flex items-center justify-between backdrop-blur-sm">
                     <div className="flex items-center gap-6 flex-1">
-                        <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Mal-bibliotek</h2>
+                        <h2 className="text-2xl font-bold text-[#EDEDED]">
+                            Mal-bibliotek
+                        </h2>
                         <div className="relative max-w-md w-full">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5C5C5C]" />
                             <input
-                                className="glass-input !pl-10 !py-2.5"
-                                placeholder="Søk i maler..."
+                                className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] pl-10 pr-3 py-2.5 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] transition-colors duration-150"
+                                placeholder="Sok i maler..."
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -207,7 +214,7 @@ export default function Templates() {
                     </div>
                     <button
                         onClick={handleCreateTemplate}
-                        className="glass-btn-primary text-sm !py-2.5 flex items-center gap-2 cursor-pointer"
+                        className="bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2.5 transition-colors duration-150 text-sm flex items-center gap-2 cursor-pointer"
                     >
                         <PlusCircle className="w-4 h-4" />
                         Opprett egen mal
@@ -216,22 +223,24 @@ export default function Templates() {
 
                 <div className="p-8 max-w-6xl mx-auto w-full">
                     {/* Filter Tabs */}
-                    <div className="flex items-center justify-between mb-8 animate-fade-in">
-                        <div className="glass-pill-group">
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-1 bg-[#191919] p-1 rounded-lg">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={cn(
-                                        'glass-pill cursor-pointer',
-                                        activeTab === tab.id && 'active'
+                                        'px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-150 cursor-pointer',
+                                        activeTab === tab.id
+                                            ? 'bg-[#5E6AD2] text-white'
+                                            : 'text-[#8B8B8B] hover:text-[#EDEDED]'
                                     )}
                                 >
                                     {tab.label}
                                 </button>
                             ))}
                         </div>
-                        <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                        <div className="flex items-center gap-2 text-sm text-[#8B8B8B]">
                             <span>
                                 {displayedTemplates.length} mal{displayedTemplates.length !== 1 ? 'er' : ''}
                             </span>
@@ -250,21 +259,21 @@ export default function Templates() {
 
                     {/* Empty State */}
                     {!loading && displayedTemplates.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
-                            <FileText className="w-12 h-12 mb-4" style={{ color: 'var(--text-muted)' }} />
-                            <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                        <div className="flex flex-col items-center justify-center py-24">
+                            <FileText className="w-12 h-12 mb-4 text-[#5C5C5C]" />
+                            <h3 className="text-lg font-semibold mb-2 text-[#EDEDED]">
                                 Ingen maler funnet
                             </h3>
-                            <p className="text-sm mb-6 text-center max-w-sm" style={{ color: 'var(--text-muted)' }}>
+                            <p className="text-sm mb-6 text-center max-w-sm text-[#5C5C5C]">
                                 {searchTerm
-                                    ? `Ingen resultater for "${searchTerm}". Prøv et annet søkeord.`
+                                    ? `Ingen resultater for "${searchTerm}". Prov et annet sokeord.`
                                     : activeTab === 'favorites'
-                                        ? 'Du har ingen favorittmaler ennå. Klikk på stjernen for å legge til favoritter.'
-                                        : 'Kom i gang ved å opprette din første mal.'}
+                                        ? 'Du har ingen favorittmaler enna. Klikk pa stjernen for a legge til favoritter.'
+                                        : 'Kom i gang ved a opprette din forste mal.'}
                             </p>
                             <button
                                 onClick={handleCreateTemplate}
-                                className="glass-btn-primary text-sm !py-2.5 flex items-center gap-2 cursor-pointer"
+                                className="bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2.5 transition-colors duration-150 text-sm flex items-center gap-2 cursor-pointer"
                             >
                                 <PlusCircle className="w-4 h-4" />
                                 Opprett egen mal
@@ -274,13 +283,13 @@ export default function Templates() {
 
                     {/* Template Grid */}
                     {!loading && displayedTemplates.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in stagger-1">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {displayedTemplates.map((template) => {
                                 const color = getColorForTemplate(template);
                                 return (
                                     <div
                                         key={template.id}
-                                        className="glass-card p-6 flex flex-col h-[280px] group cursor-pointer"
+                                        className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl hover:border-[rgba(255,255,255,0.10)] transition-all duration-200 p-6 flex flex-col h-[280px] group cursor-pointer hover:scale-[1.01]"
                                         onClick={() => handlePreview(template)}
                                     >
                                         <div className="flex justify-between items-start mb-4">
@@ -295,10 +304,7 @@ export default function Templates() {
                                                 {!template.isDefault && (
                                                     <button
                                                         onClick={(e) => handleDelete(template, e)}
-                                                        className="transition-colors opacity-0 group-hover:opacity-100 p-1 cursor-pointer"
-                                                        style={{ color: 'var(--text-muted)' }}
-                                                        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--error)')}
-                                                        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                                                        className="transition-all duration-200 opacity-0 group-hover:opacity-100 p-1 cursor-pointer text-[#5C5C5C] hover:text-[#EF4444]"
                                                         title="Slett mal"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -307,39 +313,38 @@ export default function Templates() {
                                                 <button
                                                     onClick={(e) => handleToggleFavorite(template, e)}
                                                     className={cn(
-                                                        'transition-colors p-1 cursor-pointer',
+                                                        'transition-colors duration-150 p-1 cursor-pointer',
                                                         template.isFavorite
-                                                            ? 'text-[var(--warning)]'
-                                                            : 'hover:text-[var(--warning)]'
+                                                            ? 'text-[#F59E0B]'
+                                                            : 'text-[#5C5C5C] hover:text-[#F59E0B]'
                                                     )}
-                                                    style={!template.isFavorite ? { color: 'var(--text-muted)' } : undefined}
                                                     title={template.isFavorite ? 'Fjern fra favoritter' : 'Legg til i favoritter'}
                                                 >
                                                     <Star className={cn('w-5 h-5', template.isFavorite && 'fill-current')} />
                                                 </button>
                                             </div>
                                         </div>
-                                        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                                        <h3 className="text-lg font-semibold mb-2 text-[#EDEDED]">
                                             {template.name}
                                         </h3>
-                                        <p className="text-sm mb-5 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+                                        <p className="text-sm mb-5 line-clamp-2 text-[#8B8B8B]">
                                             {template.content
                                                 ? template.content.replace(/<[^>]*>/g, '').slice(0, 100) + (template.content.length > 100 ? '...' : '')
                                                 : template.profession || 'Ingen beskrivelse'}
                                         </p>
 
                                         {/* Content Preview - skeleton lines */}
-                                        <div className="flex-1 rounded-lg p-4 mb-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
+                                        <div className="flex-1 rounded-lg p-4 mb-4 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
                                             <div className="space-y-2">
-                                                <div className="h-1.5 w-3/4 rounded-full" style={{ background: 'var(--glass-border-hover)' }} />
-                                                <div className="h-1.5 w-full rounded-full" style={{ background: 'var(--glass-border-hover)' }} />
-                                                <div className="h-1.5 w-1/2 rounded-full" style={{ background: 'var(--glass-border-hover)' }} />
-                                                <div className="h-1.5 w-5/6 rounded-full" style={{ background: 'var(--glass-border-hover)' }} />
+                                                <div className="h-1.5 w-3/4 rounded-full bg-[rgba(255,255,255,0.10)]" />
+                                                <div className="h-1.5 w-full rounded-full bg-[rgba(255,255,255,0.10)]" />
+                                                <div className="h-1.5 w-1/2 rounded-full bg-[rgba(255,255,255,0.10)]" />
+                                                <div className="h-1.5 w-5/6 rounded-full bg-[rgba(255,255,255,0.10)]" />
                                             </div>
                                         </div>
 
                                         <div className="flex items-center justify-between mt-auto">
-                                            <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                                            <span className="text-xs font-medium text-[#5C5C5C]">
                                                 {formatUsage(template)}
                                             </span>
                                             <button
@@ -347,8 +352,7 @@ export default function Templates() {
                                                     e.stopPropagation();
                                                     handlePreview(template);
                                                 }}
-                                                className="text-sm font-semibold transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100 cursor-pointer"
-                                                style={{ color: 'var(--primary-light)' }}
+                                                className="text-sm font-semibold transition-all duration-200 flex items-center gap-1 opacity-0 group-hover:opacity-100 cursor-pointer text-[#7B89DB] hover:text-[#5E6AD2]"
                                             >
                                                 Forhåndsvis <ArrowRight className="w-4 h-4" />
                                             </button>
@@ -360,24 +364,17 @@ export default function Templates() {
                             {/* Create Custom Template */}
                             <div
                                 onClick={handleCreateTemplate}
-                                className="rounded-xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer transition-all h-[280px]"
-                                style={{
-                                    border: '2px dashed var(--glass-border-hover)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--primary)';
-                                    e.currentTarget.style.background = 'var(--primary-subtle)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--glass-border-hover)';
-                                    e.currentTarget.style.background = 'transparent';
-                                }}
+                                className="rounded-xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer transition-all duration-200 h-[280px] border-2 border-dashed border-[rgba(255,255,255,0.10)] hover:border-[#5E6AD2] hover:bg-[rgba(94,106,210,0.08)]"
                             >
-                                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-colors" style={{ background: 'var(--glass-bg)' }}>
-                                    <PlusCircle className="w-6 h-6 transition-colors" style={{ color: 'var(--text-muted)' }} />
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-colors duration-200 bg-[rgba(255,255,255,0.03)] group-hover:bg-[rgba(94,106,210,0.15)]">
+                                    <PlusCircle className="w-6 h-6 transition-colors duration-200 text-[#5C5C5C] group-hover:text-[#7B89DB]" />
                                 </div>
-                                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Egendefinert mal</h3>
-                                <p className="text-sm max-w-[200px]" style={{ color: 'var(--text-muted)' }}>Design en spesialisert struktur skreddersydd for din arbeidsflyt.</p>
+                                <h3 className="text-lg font-semibold mb-2 text-[#EDEDED]">
+                                    Egendefinert mal
+                                </h3>
+                                <p className="text-sm max-w-[200px] text-[#5C5C5C]">
+                                    Design en spesialisert struktur skreddersydd for din arbeidsflyt.
+                                </p>
                             </div>
                         </div>
                     )}

@@ -79,7 +79,7 @@ export function TubesBackground({ className }: TubesBackgroundProps) {
       )}
       aria-hidden="true"
     >
-      <div className="absolute inset-0 opacity-[0.15]">
+      <div className="absolute inset-0" style={{ mixBlendMode: 'screen' }}>
         <canvas
           ref={canvasRef}
           className="absolute inset-0 block h-full w-full"

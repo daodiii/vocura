@@ -108,13 +108,13 @@ export default function SuicidalvurderingForm() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[#0A0A0A]">
             <AppHeader />
 
             {/* Action Bar */}
-            <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
+            <div className="sticky top-14 z-40 bg-[#111111]/80 border-b border-[rgba(255,255,255,0.06)]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
+                    <Link href="/forms" className="flex items-center gap-2 text-[#8B8B8B] hover:text-[#EDEDED] transition-colors">
                         <ArrowLeft className="w-4 h-4" />
                         <span className="text-sm font-medium">Tilbake til skjemaer</span>
                     </Link>
@@ -122,14 +122,14 @@ export default function SuicidalvurderingForm() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="btn-ghost text-xs flex items-center gap-1.5 !py-2"
+                            className="text-[#8B8B8B] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-xs flex items-center gap-1.5 !py-2"
                         >
-                            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle className="w-3.5 h-3.5 text-[#3D8B6E]" /> : <Save className="w-3.5 h-3.5" />}
+                            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" /> : <Save className="w-3.5 h-3.5" />}
                             {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre utkast'}
                         </button>
                         <button
                             onClick={() => exportPdf(getAllFormData(), 'Suicidalvurdering', 'Lege')}
-                            className="btn-secondary text-xs !py-2 !px-4 flex items-center gap-1.5"
+                            className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs !py-2 !px-4 flex items-center gap-1.5"
                         >
                             <Download className="w-3.5 h-3.5" /> Last ned PDF
                         </button>
@@ -138,7 +138,7 @@ export default function SuicidalvurderingForm() {
                             disabled={submitting}
                             className={cn(
                                 "text-xs !py-2 !px-4 flex items-center gap-1.5",
-                                submitted ? "bg-[#3D8B6E] text-white rounded-lg font-semibold" : "btn-primary"
+                                submitted ? "bg-[#10B981] text-white rounded-lg font-semibold" : "bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150"
                             )}
                         >
                             {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <AlertTriangle className="w-3.5 h-3.5" />}
@@ -152,35 +152,35 @@ export default function SuicidalvurderingForm() {
                 {/* Form Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-[#FAEAE8] rounded-xl flex items-center justify-center">
-                            <AlertTriangle className="w-5 h-5 text-[#C44536]" />
+                        <div className="w-10 h-10 bg-[rgba(239,68,68,0.1)] rounded-xl flex items-center justify-center">
+                            <AlertTriangle className="w-5 h-5 text-[#EF4444]" />
                         </div>
                         <div>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#E8F5EE] text-[#3D8B6E] uppercase tracking-wider">Helsedirektoratet</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[rgba(16,185,129,0.1)] text-[#10B981] uppercase tracking-wider">Helsedirektoratet</span>
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#1E1914]" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[#EDEDED]" style={{ fontFamily: "'Georgia', serif" }}>
                         Suicidalvurdering
                     </h1>
-                    <p className="text-[#7D7267] mt-1">Strukturert vurdering av suicidalrisiko med handlingsplan</p>
+                    <p className="text-[#8B8B8B] mt-1">Strukturert vurdering av suicidalrisiko med handlingsplan</p>
                 </div>
 
                 {submitted ? (
-                    <div className="card-base p-12 text-center">
-                        <div className="w-16 h-16 bg-[#E8F5EE] rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle className="w-8 h-8 text-[#3D8B6E]" />
+                    <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-12 text-center">
+                        <div className="w-16 h-16 bg-[rgba(16,185,129,0.1)] rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle className="w-8 h-8 text-[#10B981]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1914] mb-3" style={{ fontFamily: "var(--font-serif), 'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[#EDEDED] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Suicidalvurdering lagret
                         </h2>
-                        <p className="text-[#7D7267] mb-6">Vurderingen er lagret i pasientjournalen.</p>
-                        {error && <p className="text-sm text-[#C44536] mb-4">{error}</p>}
-                        <p className="text-sm font-mono text-[var(--medical-gray-400)] mb-8">Referanse: SUI-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
+                        <p className="text-[#8B8B8B] mb-6">Vurderingen er lagret i pasientjournalen.</p>
+                        {error && <p className="text-sm text-[#EF4444] mb-4">{error}</p>}
+                        <p className="text-sm font-mono text-[#5C5C5C] mb-8">Referanse: SUI-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
                         <div className="flex items-center justify-center gap-4">
-                            <Link href="/forms" className="btn-secondary inline-flex items-center gap-2">
+                            <Link href="/forms" className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
                             </Link>
-                            <Link href="/dashboard" className="btn-primary inline-flex items-center gap-2">
+                            <Link href="/dashboard" className="bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
                                 Ny konsultasjon
                             </Link>
                         </div>
@@ -188,31 +188,31 @@ export default function SuicidalvurderingForm() {
                 ) : (
                     <div className="space-y-6">
                         {/* Section 1: Pasient og vurderer */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <User className="w-4 h-4 text-[#C44536]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">1. Pasient og vurderer</h2>
+                                <User className="w-4 h-4 text-[#EF4444]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">1. Pasient og vurderer</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Informasjon om pasienten og den som gjennomforer vurderingen</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Informasjon om pasienten og den som gjennomforer vurderingen</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="form-label form-required">Pasientens navn</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Pasientens navn <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.patientNavn}
                                         onChange={(e) => updateField('patientNavn', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Fornavn Etternavn"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Fodselsnummer (11 siffer)</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Fodselsnummer (11 siffer) <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
-                                        className="input-field !text-sm font-mono"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
@@ -221,21 +221,21 @@ export default function SuicidalvurderingForm() {
 
                             <div className="grid grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label className="form-label form-required">Vurderers navn</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Vurderers navn <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.vurdererNavn}
                                         onChange={(e) => updateField('vurdererNavn', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Fornavn Etternavn"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Rolle</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Rolle <span className="text-[#EF4444]">*</span></label>
                                     <select
                                         value={formData.vurdererRolle}
                                         onChange={(e) => updateField('vurdererRolle', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                     >
                                         <option value="">Velg...</option>
                                         <option value="Psykolog">Psykolog</option>
@@ -246,12 +246,12 @@ export default function SuicidalvurderingForm() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Sted</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Sted <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.sted}
                                         onChange={(e) => updateField('sted', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Avdeling / lokasjon"
                                     />
                                 </div>
@@ -259,50 +259,50 @@ export default function SuicidalvurderingForm() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="form-label form-required">Dato</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Dato <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="date"
                                         value={formData.vurderingsDato}
                                         onChange={(e) => updateField('vurderingsDato', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Tidspunkt</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tidspunkt <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="time"
                                         value={formData.vurderingsTid}
                                         onChange={(e) => updateField('vurderingsTid', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Section 2: Aktuell situasjon */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <AlertTriangle className="w-4 h-4 text-[#C44536]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">2. Aktuell situasjon</h2>
+                                <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">2. Aktuell situasjon</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Bakgrunn for vurderingen og navaerende krise</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Bakgrunn for vurderingen og navaerende krise</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label form-required">Arsak til vurdering</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Arsak til vurdering <span className="text-[#EF4444]">*</span></label>
                                     <textarea
                                         value={formData.arsakTilVurdering}
                                         onChange={(e) => updateField('arsakTilVurdering', e.target.value)}
-                                        className="input-field !text-sm min-h-[100px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[100px] resize-y"
                                         placeholder="Hva er arsaken til at suicidalvurdering gjennomfores?"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Aktuell krisesituasjon</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Aktuell krisesituasjon</label>
                                     <textarea
                                         value={formData.aktuellKrise}
                                         onChange={(e) => updateField('aktuellKrise', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
                                         placeholder="Beskriv den aktuelle krisesituasjonen..."
                                     />
                                 </div>
@@ -310,47 +310,47 @@ export default function SuicidalvurderingForm() {
                         </div>
 
                         {/* Section 3: Statiske risikofaktorer */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <AlertTriangle className="w-4 h-4 text-[#C44536]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">3. Statiske risikofaktorer</h2>
+                                <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">3. Statiske risikofaktorer</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Historiske faktorer som oker risiko</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Historiske faktorer som oker risiko</p>
 
                             <div className="space-y-3">
                                 {/* Tidligere selvmordsforsok */}
                                 <div>
                                     <label className={cn(
                                         "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                        formData.tidligereForsok ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                        formData.tidligereForsok ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                     )}>
                                         <input
                                             type="checkbox"
                                             checked={formData.tidligereForsok}
                                             onChange={(e) => updateField('tidligereForsok', e.target.checked)}
-                                            className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                            className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#1E1914]">Tidligere selvmordsforsok</span>
+                                        <span className="text-sm text-[#EDEDED]">Tidligere selvmordsforsok</span>
                                     </label>
                                     {formData.tidligereForsok && (
                                         <div className="grid grid-cols-2 gap-4 mt-3 ml-7">
                                             <div>
-                                                <label className="form-label">Antall forsok</label>
+                                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Antall forsok</label>
                                                 <input
                                                     type="text"
                                                     value={formData.tidligereForsokAntall}
                                                     onChange={(e) => updateField('tidligereForsokAntall', e.target.value)}
-                                                    className="input-field !text-sm"
+                                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                     placeholder="Antall"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="form-label">Datoer / tidspunkt</label>
+                                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Datoer / tidspunkt</label>
                                                 <input
                                                     type="text"
                                                     value={formData.tidligereForsokDatoer}
                                                     onChange={(e) => updateField('tidligereForsokDatoer', e.target.value)}
-                                                    className="input-field !text-sm"
+                                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                     placeholder="Omtrentlige datoer"
                                                 />
                                             </div>
@@ -361,86 +361,86 @@ export default function SuicidalvurderingForm() {
                                 {/* Familiehistorie med selvmord */}
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.familiehistorieSuicid ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.familiehistorieSuicid ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.familiehistorieSuicid}
                                         onChange={(e) => updateField('familiehistorieSuicid', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Familiehistorie med selvmord</span>
+                                    <span className="text-sm text-[#EDEDED]">Familiehistorie med selvmord</span>
                                 </label>
 
                                 {/* Kronisk sykdom */}
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.kroniskSykdom ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.kroniskSykdom ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.kroniskSykdom}
                                         onChange={(e) => updateField('kroniskSykdom', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Kronisk sykdom</span>
+                                    <span className="text-sm text-[#EDEDED]">Kronisk sykdom</span>
                                 </label>
 
                                 {/* Tidligere psykiatrisk innleggelse */}
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.tidligereInnleggelse ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.tidligereInnleggelse ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.tidligereInnleggelse}
                                         onChange={(e) => updateField('tidligereInnleggelse', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Tidligere psykiatrisk innleggelse</span>
+                                    <span className="text-sm text-[#EDEDED]">Tidligere psykiatrisk innleggelse</span>
                                 </label>
 
                                 {/* Historikk med rusmisbruk */}
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.rusmisbrukHistorie ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.rusmisbrukHistorie ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.rusmisbrukHistorie}
                                         onChange={(e) => updateField('rusmisbrukHistorie', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Historikk med rusmisbruk</span>
+                                    <span className="text-sm text-[#EDEDED]">Historikk med rusmisbruk</span>
                                 </label>
 
                                 {/* Barndomstraumer */}
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.barndomstraumer ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.barndomstraumer ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.barndomstraumer}
                                         onChange={(e) => updateField('barndomstraumer', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Barndomstraumer</span>
+                                    <span className="text-sm text-[#EDEDED]">Barndomstraumer</span>
                                 </label>
                             </div>
                         </div>
 
                         {/* Section 4: Dynamiske risikofaktorer */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <Brain className="w-4 h-4 text-[#C44536]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">4. Dynamiske risikofaktorer</h2>
+                                <Brain className="w-4 h-4 text-[#EF4444]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">4. Dynamiske risikofaktorer</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Navaerende faktorer som kan endres over tid</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Navaerende faktorer som kan endres over tid</p>
 
                             {/* Aktuell suicidal ideering */}
                             <div className="mb-4">
-                                <label className="form-label form-required">Aktuell suicidal ideering?</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Aktuell suicidal ideering? <span className="text-[#EF4444]">*</span></label>
                                 <div className="flex gap-6 mt-2">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -449,9 +449,9 @@ export default function SuicidalvurderingForm() {
                                             value="ja"
                                             checked={formData.aktuellSuicidalIdeering === 'ja'}
                                             onChange={() => updateField('aktuellSuicidalIdeering', 'ja')}
-                                            className="text-[#C44536]"
+                                            className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#3E4C59]">Ja</span>
+                                        <span className="text-sm text-[#8B8B8B]">Ja</span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -460,21 +460,21 @@ export default function SuicidalvurderingForm() {
                                             value="nei"
                                             checked={formData.aktuellSuicidalIdeering === 'nei'}
                                             onChange={() => updateField('aktuellSuicidalIdeering', 'nei')}
-                                            className="text-[#C44536]"
+                                            className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#3E4C59]">Nei</span>
+                                        <span className="text-sm text-[#8B8B8B]">Nei</span>
                                     </label>
                                 </div>
                             </div>
 
                             {formData.aktuellSuicidalIdeering === 'ja' && (
                                 <div className="mb-4">
-                                    <label className="form-label">Frekvens</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Frekvens</label>
                                     <input
                                         type="text"
                                         value={formData.ideaSjonFrekvens}
                                         onChange={(e) => updateField('ideaSjonFrekvens', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Beskriv frekvens av suicidale tanker..."
                                     />
                                 </div>
@@ -482,11 +482,11 @@ export default function SuicidalvurderingForm() {
 
                             {/* Haploshet */}
                             <div className="mb-4">
-                                <label className="form-label">Haploshet</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Haploshet</label>
                                 <select
                                     value={formData.haaploshet}
                                     onChange={(e) => updateField('haaploshet', e.target.value)}
-                                    className="input-field !text-sm"
+                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                 >
                                     <option value="">Velg...</option>
                                     <option value="Ingen">Ingen</option>
@@ -500,175 +500,175 @@ export default function SuicidalvurderingForm() {
                             <div className="space-y-3">
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.aktueltRusmiddelbruk ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.aktueltRusmiddelbruk ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.aktueltRusmiddelbruk}
                                         onChange={(e) => updateField('aktueltRusmiddelbruk', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Aktuelt rusmiddelbruk</span>
+                                    <span className="text-sm text-[#EDEDED]">Aktuelt rusmiddelbruk</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.nyligeTap ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.nyligeTap ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.nyligeTap}
                                         onChange={(e) => updateField('nyligeTap', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Nylige signifikante tap</span>
+                                    <span className="text-sm text-[#EDEDED]">Nylige signifikante tap</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.sovnforstyrrelse ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.sovnforstyrrelse ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.sovnforstyrrelse}
                                         onChange={(e) => updateField('sovnforstyrrelse', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Sovnforstyrrelser</span>
+                                    <span className="text-sm text-[#EDEDED]">Sovnforstyrrelser</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.agitasjon ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.agitasjon ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.agitasjon}
                                         onChange={(e) => updateField('agitasjon', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Agitasjon/uro</span>
+                                    <span className="text-sm text-[#EDEDED]">Agitasjon/uro</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.tilgangTilMidler ? "border-[#C44536]/30 bg-[#FEF2F2]" : "border-[#DDD7CE] hover:border-[#C44536]/20"
+                                    formData.tilgangTilMidler ? "border-[#EF4444]/30 bg-[rgba(239,68,68,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.tilgangTilMidler}
                                         onChange={(e) => updateField('tilgangTilMidler', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Tilgang til midler</span>
+                                    <span className="text-sm text-[#EDEDED]">Tilgang til midler</span>
                                 </label>
                             </div>
                         </div>
 
                         {/* Section 5: Beskyttende faktorer */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <ShieldCheck className="w-4 h-4 text-[#3D8B6E]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">5. Beskyttende faktorer</h2>
+                                <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">5. Beskyttende faktorer</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Faktorer som reduserer risiko</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Faktorer som reduserer risiko</p>
 
                             <div className="space-y-3">
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.sosialtNettverk ? "border-[#3D8B6E]/30 bg-[#E8F5EE]/30" : "border-[#DDD7CE] hover:border-[#3D8B6E]/20"
+                                    formData.sosialtNettverk ? "border-[#10B981]/30 bg-[rgba(16,185,129,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#10B981]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.sosialtNettverk}
                                         onChange={(e) => updateField('sosialtNettverk', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#3D8B6E] focus:ring-[#3D8B6E]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Sosialt stottenettverk</span>
+                                    <span className="text-sm text-[#EDEDED]">Sosialt stottenettverk</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.barnFamilieansvar ? "border-[#3D8B6E]/30 bg-[#E8F5EE]/30" : "border-[#DDD7CE] hover:border-[#3D8B6E]/20"
+                                    formData.barnFamilieansvar ? "border-[#10B981]/30 bg-[rgba(16,185,129,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#10B981]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.barnFamilieansvar}
                                         onChange={(e) => updateField('barnFamilieansvar', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#3D8B6E] focus:ring-[#3D8B6E]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Barn/familieansvar</span>
+                                    <span className="text-sm text-[#EDEDED]">Barn/familieansvar</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.behandlingsengasjement ? "border-[#3D8B6E]/30 bg-[#E8F5EE]/30" : "border-[#DDD7CE] hover:border-[#3D8B6E]/20"
+                                    formData.behandlingsengasjement ? "border-[#10B981]/30 bg-[rgba(16,185,129,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#10B981]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.behandlingsengasjement}
                                         onChange={(e) => updateField('behandlingsengasjement', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#3D8B6E] focus:ring-[#3D8B6E]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Behandlingsengasjement</span>
+                                    <span className="text-sm text-[#EDEDED]">Behandlingsengasjement</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.religioseVerdier ? "border-[#3D8B6E]/30 bg-[#E8F5EE]/30" : "border-[#DDD7CE] hover:border-[#3D8B6E]/20"
+                                    formData.religioseVerdier ? "border-[#10B981]/30 bg-[rgba(16,185,129,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#10B981]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.religioseVerdier}
                                         onChange={(e) => updateField('religioseVerdier', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#3D8B6E] focus:ring-[#3D8B6E]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Religiose/kulturelle verdier</span>
+                                    <span className="text-sm text-[#EDEDED]">Religiose/kulturelle verdier</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.fremtidsplaner ? "border-[#3D8B6E]/30 bg-[#E8F5EE]/30" : "border-[#DDD7CE] hover:border-[#3D8B6E]/20"
+                                    formData.fremtidsplaner ? "border-[#10B981]/30 bg-[rgba(16,185,129,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#10B981]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.fremtidsplaner}
                                         onChange={(e) => updateField('fremtidsplaner', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#3D8B6E] focus:ring-[#3D8B6E]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Fremtidsplaner/grunner til a leve</span>
+                                    <span className="text-sm text-[#EDEDED]">Fremtidsplaner/grunner til a leve</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.terapeutiskRelasjon ? "border-[#3D8B6E]/30 bg-[#E8F5EE]/30" : "border-[#DDD7CE] hover:border-[#3D8B6E]/20"
+                                    formData.terapeutiskRelasjon ? "border-[#10B981]/30 bg-[rgba(16,185,129,0.1)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#10B981]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.terapeutiskRelasjon}
                                         onChange={(e) => updateField('terapeutiskRelasjon', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#3D8B6E] focus:ring-[#3D8B6E]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Terapeutisk relasjon</span>
+                                    <span className="text-sm text-[#EDEDED]">Terapeutisk relasjon</span>
                                 </label>
                             </div>
                         </div>
 
                         {/* Section 6: Selvmordstankevurdering */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <AlertTriangle className="w-4 h-4 text-[#C44536]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Selvmordstankevurdering</h2>
+                                <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">6. Selvmordstankevurdering</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Detaljert vurdering av selvmordstanker og plan</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Detaljert vurdering av selvmordstanker og plan</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="form-label">Tankefrekvens</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tankefrekvens</label>
                                     <select
                                         value={formData.tankeFrekvens}
                                         onChange={(e) => updateField('tankeFrekvens', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                     >
                                         <option value="">Velg...</option>
                                         <option value="Sjelden">Sjelden</option>
@@ -678,11 +678,11 @@ export default function SuicidalvurderingForm() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="form-label">Tankeintensitet</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tankeintensitet</label>
                                     <select
                                         value={formData.tankeIntensitet}
                                         onChange={(e) => updateField('tankeIntensitet', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                     >
                                         <option value="">Velg...</option>
                                         <option value="1">1 - Svaert lav</option>
@@ -701,7 +701,7 @@ export default function SuicidalvurderingForm() {
 
                             {/* Har pasienten en plan? */}
                             <div className="mb-4">
-                                <label className="form-label form-required">Har pasienten en plan?</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Har pasienten en plan? <span className="text-[#EF4444]">*</span></label>
                                 <div className="flex gap-6 mt-2">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -710,9 +710,9 @@ export default function SuicidalvurderingForm() {
                                             value="ja"
                                             checked={formData.harPlan === 'ja'}
                                             onChange={() => updateField('harPlan', 'ja')}
-                                            className="text-[#C44536]"
+                                            className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#3E4C59]">Ja</span>
+                                        <span className="text-sm text-[#8B8B8B]">Ja</span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -721,20 +721,20 @@ export default function SuicidalvurderingForm() {
                                             value="nei"
                                             checked={formData.harPlan === 'nei'}
                                             onChange={() => updateField('harPlan', 'nei')}
-                                            className="text-[#C44536]"
+                                            className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#3E4C59]">Nei</span>
+                                        <span className="text-sm text-[#8B8B8B]">Nei</span>
                                     </label>
                                 </div>
                             </div>
 
                             {formData.harPlan === 'ja' && (
                                 <div className="mb-4">
-                                    <label className="form-label">Plandetaljer</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Plandetaljer</label>
                                     <textarea
                                         value={formData.planDetaljer}
                                         onChange={(e) => updateField('planDetaljer', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
                                         placeholder="Beskriv planen i detalj..."
                                     />
                                 </div>
@@ -742,7 +742,7 @@ export default function SuicidalvurderingForm() {
 
                             {/* Tilgang til midler? */}
                             <div className="mb-4">
-                                <label className="form-label form-required">Tilgang til midler?</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tilgang til midler? <span className="text-[#EF4444]">*</span></label>
                                 <div className="flex gap-6 mt-2">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -751,9 +751,9 @@ export default function SuicidalvurderingForm() {
                                             value="ja"
                                             checked={formData.tilgangMidler === 'ja'}
                                             onChange={() => updateField('tilgangMidler', 'ja')}
-                                            className="text-[#C44536]"
+                                            className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#3E4C59]">Ja</span>
+                                        <span className="text-sm text-[#8B8B8B]">Ja</span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -762,21 +762,21 @@ export default function SuicidalvurderingForm() {
                                             value="nei"
                                             checked={formData.tilgangMidler === 'nei'}
                                             onChange={() => updateField('tilgangMidler', 'nei')}
-                                            className="text-[#C44536]"
+                                            className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#3E4C59]">Nei</span>
+                                        <span className="text-sm text-[#8B8B8B]">Nei</span>
                                     </label>
                                 </div>
                             </div>
 
                             {formData.tilgangMidler === 'ja' && (
                                 <div className="mb-4">
-                                    <label className="form-label">Type midler</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Type midler</label>
                                     <input
                                         type="text"
                                         value={formData.midlerType}
                                         onChange={(e) => updateField('midlerType', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Beskriv type midler pasienten har tilgang til..."
                                     />
                                 </div>
@@ -784,11 +784,11 @@ export default function SuicidalvurderingForm() {
 
                             {/* Intensjon */}
                             <div className="mb-4">
-                                <label className="form-label">Intensjon</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Intensjon</label>
                                 <select
                                     value={formData.intensjon}
                                     onChange={(e) => updateField('intensjon', e.target.value)}
-                                    className="input-field !text-sm"
+                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                 >
                                     <option value="">Velg...</option>
                                     <option value="Ingen intensjon">Ingen intensjon</option>
@@ -799,32 +799,32 @@ export default function SuicidalvurderingForm() {
 
                             {/* Tidslinje */}
                             <div>
-                                <label className="form-label">Tidslinje/tidsramme</label>
+                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tidslinje/tidsramme</label>
                                 <input
                                     type="text"
                                     value={formData.tidslinje}
                                     onChange={(e) => updateField('tidslinje', e.target.value)}
-                                    className="input-field !text-sm"
+                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                     placeholder="Tidslinje/tidsramme"
                                 />
                             </div>
                         </div>
 
                         {/* Section 7: Risikoniva */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <AlertTriangle className="w-4 h-4 text-[#C44536]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">7. Risikoniva</h2>
+                                <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">7. Risikoniva</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Samlet vurdering av risikoniva med anbefalte tiltak</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Samlet vurdering av risikoniva med anbefalte tiltak</p>
 
                             <div className="space-y-3">
                                 {/* Lavt */}
                                 <label className={cn(
                                     "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
                                     formData.risikoniva === 'lavt'
-                                        ? "border-[#3D8B6E] bg-[#E8F5EE]/30"
-                                        : "border-[#DDD7CE] hover:border-[#3D8B6E]/30"
+                                        ? "border-[#10B981] bg-[rgba(16,185,129,0.1)]"
+                                        : "border-[rgba(255,255,255,0.06)] hover:border-[#10B981]/30"
                                 )}>
                                     <input
                                         type="radio"
@@ -832,15 +832,15 @@ export default function SuicidalvurderingForm() {
                                         value="lavt"
                                         checked={formData.risikoniva === 'lavt'}
                                         onChange={() => updateField('risikoniva', 'lavt')}
-                                        className="mt-1 w-5 h-5 text-[#3D8B6E] focus:ring-[#3D8B6E]"
+                                        className="mt-1 w-5 h-5 text-[#10B981] focus:ring-[#10B981]"
                                     />
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <ShieldCheck className="w-4 h-4 text-[#3D8B6E]" />
-                                            <span className="text-sm font-bold text-[#3D8B6E]">Lavt</span>
+                                            <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+                                            <span className="text-sm font-bold text-[#10B981]">Lavt</span>
                                         </div>
-                                        <p className="text-xs text-[#7D7267] mb-2">Lav umiddelbar risiko. Pasienten har beskyttende faktorer og ingen aktiv plan.</p>
-                                        <div className="p-2 bg-[#E8F5EE]/50 rounded text-xs text-[#3D8B6E]">
+                                        <p className="text-xs text-[#8B8B8B] mb-2">Lav umiddelbar risiko. Pasienten har beskyttende faktorer og ingen aktiv plan.</p>
+                                        <div className="p-2 bg-[rgba(16,185,129,0.1)] rounded text-xs text-[#10B981]">
                                             <strong>Anbefalte tiltak:</strong> Oppfolging i poliklinikk. Sikkerhetsplan. Neste vurdering om 2-4 uker.
                                         </div>
                                     </div>
@@ -850,8 +850,8 @@ export default function SuicidalvurderingForm() {
                                 <label className={cn(
                                     "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
                                     formData.risikoniva === 'moderat'
-                                        ? "border-[#C8842B] bg-[#FEF3C7]/30"
-                                        : "border-[#DDD7CE] hover:border-[#C8842B]/30"
+                                        ? "border-[#F59E0B] bg-[rgba(245,158,11,0.1)]"
+                                        : "border-[rgba(255,255,255,0.06)] hover:border-[#F59E0B]/30"
                                 )}>
                                     <input
                                         type="radio"
@@ -859,15 +859,15 @@ export default function SuicidalvurderingForm() {
                                         value="moderat"
                                         checked={formData.risikoniva === 'moderat'}
                                         onChange={() => updateField('risikoniva', 'moderat')}
-                                        className="mt-1 w-5 h-5 text-[#C8842B] focus:ring-[#C8842B]"
+                                        className="mt-1 w-5 h-5 text-[#F59E0B] focus:ring-[#F59E0B]"
                                     />
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <AlertTriangle className="w-4 h-4 text-[#C8842B]" />
-                                            <span className="text-sm font-bold text-[#C8842B]">Moderat</span>
+                                            <AlertTriangle className="w-4 h-4 text-[#F59E0B]" />
+                                            <span className="text-sm font-bold text-[#F59E0B]">Moderat</span>
                                         </div>
-                                        <p className="text-xs text-[#7D7267] mb-2">Forhoyede risikofaktorer. Suicidale tanker til stede, men ambivalent.</p>
-                                        <div className="p-2 bg-[#FEF3C7]/50 rounded text-xs text-[#C8842B]">
+                                        <p className="text-xs text-[#8B8B8B] mb-2">Forhoyede risikofaktorer. Suicidale tanker til stede, men ambivalent.</p>
+                                        <div className="p-2 bg-[rgba(245,158,11,0.1)] rounded text-xs text-[#F59E0B]">
                                             <strong>Anbefalte tiltak:</strong> Hyppig oppfolging (ukentlig). Vurder medisinendring. Sikkerhetsplan obligatorisk.
                                         </div>
                                     </div>
@@ -877,8 +877,8 @@ export default function SuicidalvurderingForm() {
                                 <label className={cn(
                                     "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
                                     formData.risikoniva === 'hoyt'
-                                        ? "border-[#F97316] bg-[#FFEDD5]/30"
-                                        : "border-[#DDD7CE] hover:border-[#F97316]/30"
+                                        ? "border-[#F97316] bg-[rgba(249,115,22,0.1)]"
+                                        : "border-[rgba(255,255,255,0.06)] hover:border-[#F97316]/30"
                                 )}>
                                     <input
                                         type="radio"
@@ -893,8 +893,8 @@ export default function SuicidalvurderingForm() {
                                             <AlertTriangle className="w-4 h-4 text-[#F97316]" />
                                             <span className="text-sm font-bold text-[#F97316]">Hoyt</span>
                                         </div>
-                                        <p className="text-xs text-[#7D7267] mb-2">Signifikant risiko. Aktive suicidale tanker med mulig plan.</p>
-                                        <div className="p-2 bg-[#FFEDD5]/50 rounded text-xs text-[#F97316]">
+                                        <p className="text-xs text-[#8B8B8B] mb-2">Signifikant risiko. Aktive suicidale tanker med mulig plan.</p>
+                                        <div className="p-2 bg-[rgba(249,115,22,0.1)] rounded text-xs text-[#F97316]">
                                             <strong>Anbefalte tiltak:</strong> Daglig oppfolging. Vurder innleggelse. Varsle parorende. Fjern tilgang til midler.
                                         </div>
                                     </div>
@@ -904,8 +904,8 @@ export default function SuicidalvurderingForm() {
                                 <label className={cn(
                                     "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
                                     formData.risikoniva === 'akutt'
-                                        ? "border-[#C44536] bg-[#FAEAE8]/30 animate-pulse"
-                                        : "border-[#DDD7CE] hover:border-[#C44536]/30"
+                                        ? "border-[#EF4444] bg-[rgba(239,68,68,0.1)] animate-pulse"
+                                        : "border-[rgba(255,255,255,0.06)] hover:border-[#EF4444]/30"
                                 )}>
                                     <input
                                         type="radio"
@@ -913,15 +913,15 @@ export default function SuicidalvurderingForm() {
                                         value="akutt"
                                         checked={formData.risikoniva === 'akutt'}
                                         onChange={() => updateField('risikoniva', 'akutt')}
-                                        className="mt-1 w-5 h-5 text-[#C44536] focus:ring-[#C44536]"
+                                        className="mt-1 w-5 h-5 text-[#EF4444] focus:ring-[#EF4444]"
                                     />
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <AlertTriangle className="w-4 h-4 text-[#C44536]" />
-                                            <span className="text-sm font-bold text-[#C44536]">Akutt</span>
+                                            <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
+                                            <span className="text-sm font-bold text-[#EF4444]">Akutt</span>
                                         </div>
-                                        <p className="text-xs text-[#7D7267] mb-2">Umiddelbar fare. Klar intensjon og/eller aktiv plan med tilgang til midler.</p>
-                                        <div className="p-2 bg-[#FAEAE8]/50 rounded text-xs text-[#C44536]">
+                                        <p className="text-xs text-[#8B8B8B] mb-2">Umiddelbar fare. Klar intensjon og/eller aktiv plan med tilgang til midler.</p>
+                                        <div className="p-2 bg-[rgba(239,68,68,0.1)] rounded text-xs text-[#EF4444]">
                                             <strong>Anbefalte tiltak:</strong> Umiddelbar innleggelse eller tvangsvurdering. Kontinuerlig tilsyn. Varsle nodkontakter.
                                         </div>
                                     </div>
@@ -930,58 +930,58 @@ export default function SuicidalvurderingForm() {
                         </div>
 
                         {/* Section 8: Sikkerhetsplan */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <Shield className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">8. Sikkerhetsplan</h2>
+                                <Shield className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">8. Sikkerhetsplan</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Individuell sikkerhetsplan for pasienten</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Individuell sikkerhetsplan for pasienten</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label">Varseltegn</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Varseltegn</label>
                                     <textarea
                                         value={formData.varseltegn}
                                         onChange={(e) => updateField('varseltegn', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
                                         placeholder="Varseltegn pasienten skal vaere oppmerksom pa..."
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="form-label">Mestringsstrategier</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Mestringsstrategier</label>
                                     <textarea
                                         value={formData.mestringsstrategier}
                                         onChange={(e) => updateField('mestringsstrategier', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
                                         placeholder="Mestringsstrategier pasienten kan bruke..."
                                     />
                                 </div>
 
                                 {/* Kontaktpersoner */}
                                 <div>
-                                    <label className="form-label">Kontaktpersoner</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Kontaktpersoner</label>
 
                                     {kontakter.length > 0 && (
                                         <div className="space-y-2 mb-3">
                                             {kontakter.map((kontakt, index) => (
                                                 <div
                                                     key={index}
-                                                    className="flex items-center justify-between p-3 bg-[#F5FAFF] rounded-lg border border-[#F5EDE6]"
+                                                    className="flex items-center justify-between p-3 bg-[rgba(94,106,210,0.08)] rounded-lg border border-[rgba(94,106,210,0.15)]"
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex items-center gap-2">
-                                                            <User className="w-3.5 h-3.5 text-[#A0714F]" />
-                                                            <span className="text-sm text-[#3E4C59]">{kontakt.navn}</span>
+                                                            <User className="w-3.5 h-3.5 text-[#7B89DB]" />
+                                                            <span className="text-sm text-[#EDEDED]">{kontakt.navn}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <Phone className="w-3.5 h-3.5 text-[#A0714F]" />
-                                                            <span className="text-sm text-[#3E4C59] font-mono">{kontakt.telefon}</span>
+                                                            <Phone className="w-3.5 h-3.5 text-[#7B89DB]" />
+                                                            <span className="text-sm text-[#EDEDED] font-mono">{kontakt.telefon}</span>
                                                         </div>
                                                     </div>
                                                     <button
                                                         onClick={() => removeKontakt(index)}
-                                                        className="p-1 text-[var(--medical-gray-400)] hover:text-[#C44536] transition-colors rounded"
+                                                        className="p-1 text-[#5C5C5C] hover:text-[#EF4444] transition-colors rounded"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -1002,7 +1002,7 @@ export default function SuicidalvurderingForm() {
                                                         addKontakt();
                                                     }
                                                 }}
-                                                className="input-field !text-sm"
+                                                className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                 placeholder="Navn"
                                             />
                                             <input
@@ -1015,7 +1015,7 @@ export default function SuicidalvurderingForm() {
                                                         addKontakt();
                                                     }
                                                 }}
-                                                className="input-field !text-sm"
+                                                className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                                 placeholder="Telefon"
                                             />
                                         </div>
@@ -1025,8 +1025,8 @@ export default function SuicidalvurderingForm() {
                                             className={cn(
                                                 "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                                                 nyKontaktNavn.trim() && nyKontaktTelefon.trim()
-                                                    ? "bg-[#A0714F] text-white hover:bg-[#0052A3]"
-                                                    : "bg-[#DDD7CE] text-[var(--medical-gray-400)] cursor-not-allowed"
+                                                    ? "bg-[#5E6AD2] text-white hover:bg-[#4F5ABF]"
+                                                    : "bg-[rgba(255,255,255,0.05)] text-[#5C5C5C] cursor-not-allowed"
                                             )}
                                         >
                                             <Plus className="w-4 h-4" />
@@ -1036,22 +1036,22 @@ export default function SuicidalvurderingForm() {
                                 </div>
 
                                 <div>
-                                    <label className="form-label">Profesjonell kontakt (navn og telefon)</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Profesjonell kontakt (navn og telefon)</label>
                                     <input
                                         type="text"
                                         value={formData.fagligKontakt}
                                         onChange={(e) => updateField('fagligKontakt', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                         placeholder="Profesjonell kontakt (navn og telefon)"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="form-label">Trygge omgivelser</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Trygge omgivelser</label>
                                     <textarea
                                         value={formData.tryggeOmgivelser}
                                         onChange={(e) => updateField('tryggeOmgivelser', e.target.value)}
-                                        className="input-field !text-sm min-h-[60px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[60px] resize-y"
                                         placeholder="Tiltak for a sikre trygge omgivelser..."
                                     />
                                 </div>
@@ -1059,109 +1059,109 @@ export default function SuicidalvurderingForm() {
                         </div>
 
                         {/* Section 9: Kliniske tiltak og oppfolging */}
-                        <div className="form-section">
+                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
-                                <Info className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">9. Kliniske tiltak og oppfolging</h2>
+                                <Info className="w-4 h-4 text-[#5E6AD2]" />
+                                <h2 className="text-sm font-semibold text-[#EDEDED]">9. Kliniske tiltak og oppfolging</h2>
                             </div>
-                            <p className="text-xs text-[var(--medical-gray-400)] mb-4 ml-6">Besluttede tiltak og plan for videre oppfolging</p>
+                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Besluttede tiltak og plan for videre oppfolging</p>
 
                             <div className="space-y-3 mb-4">
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.sikkerhetsplanOpprettet ? "border-[#A0714F]/30 bg-[#F5FAFF]" : "border-[#DDD7CE] hover:border-[#A0714F]/20"
+                                    formData.sikkerhetsplanOpprettet ? "border-[#5E6AD2]/30 bg-[rgba(94,106,210,0.08)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#5E6AD2]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.sikkerhetsplanOpprettet}
                                         onChange={(e) => updateField('sikkerhetsplanOpprettet', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#A0714F] focus:ring-[#A0714F]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Sikkerhetsplan opprettet</span>
+                                    <span className="text-sm text-[#EDEDED]">Sikkerhetsplan opprettet</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.medisingjennomgang ? "border-[#A0714F]/30 bg-[#F5FAFF]" : "border-[#DDD7CE] hover:border-[#A0714F]/20"
+                                    formData.medisingjennomgang ? "border-[#5E6AD2]/30 bg-[rgba(94,106,210,0.08)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#5E6AD2]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.medisingjennomgang}
                                         onChange={(e) => updateField('medisingjennomgang', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#A0714F] focus:ring-[#A0714F]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Medisingjennomgang utfort</span>
+                                    <span className="text-sm text-[#EDEDED]">Medisingjennomgang utfort</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.parorendeVarslet ? "border-[#A0714F]/30 bg-[#F5FAFF]" : "border-[#DDD7CE] hover:border-[#A0714F]/20"
+                                    formData.parorendeVarslet ? "border-[#5E6AD2]/30 bg-[rgba(94,106,210,0.08)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#5E6AD2]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.parorendeVarslet}
                                         onChange={(e) => updateField('parorendeVarslet', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#A0714F] focus:ring-[#A0714F]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Parorende varslet</span>
+                                    <span className="text-sm text-[#EDEDED]">Parorende varslet</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.tvangsVurdert ? "border-[#A0714F]/30 bg-[#F5FAFF]" : "border-[#DDD7CE] hover:border-[#A0714F]/20"
+                                    formData.tvangsVurdert ? "border-[#5E6AD2]/30 bg-[rgba(94,106,210,0.08)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#5E6AD2]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.tvangsVurdert}
                                         onChange={(e) => updateField('tvangsVurdert', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#A0714F] focus:ring-[#A0714F]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Tvangsvurdering vurdert</span>
+                                    <span className="text-sm text-[#EDEDED]">Tvangsvurdering vurdert</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.innleggelse ? "border-[#A0714F]/30 bg-[#F5FAFF]" : "border-[#DDD7CE] hover:border-[#A0714F]/20"
+                                    formData.innleggelse ? "border-[#5E6AD2]/30 bg-[rgba(94,106,210,0.08)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#5E6AD2]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.innleggelse}
                                         onChange={(e) => updateField('innleggelse', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#A0714F] focus:ring-[#A0714F]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Innleggelse</span>
+                                    <span className="text-sm text-[#EDEDED]">Innleggelse</span>
                                 </label>
 
                                 <label className={cn(
                                     "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
-                                    formData.polikliniskOppfolging ? "border-[#A0714F]/30 bg-[#F5FAFF]" : "border-[#DDD7CE] hover:border-[#A0714F]/20"
+                                    formData.polikliniskOppfolging ? "border-[#5E6AD2]/30 bg-[rgba(94,106,210,0.08)]" : "border-[rgba(255,255,255,0.06)] hover:border-[#5E6AD2]/20"
                                 )}>
                                     <input
                                         type="checkbox"
                                         checked={formData.polikliniskOppfolging}
                                         onChange={(e) => updateField('polikliniskOppfolging', e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-[#CBD2D9] text-[#A0714F] focus:ring-[#A0714F]"
+                                        className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#1E1914]">Poliklinisk oppfolging</span>
+                                    <span className="text-sm text-[#EDEDED]">Poliklinisk oppfolging</span>
                                 </label>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="form-label">Oppfolgingsdato</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Oppfolgingsdato</label>
                                     <input
                                         type="date"
                                         value={formData.oppfolgingsDato}
                                         onChange={(e) => updateField('oppfolgingsDato', e.target.value)}
-                                        className="input-field !text-sm"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Oppfolgingsplan</label>
+                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Oppfolgingsplan</label>
                                     <textarea
                                         value={formData.oppfolgingsplan}
                                         onChange={(e) => updateField('oppfolgingsplan', e.target.value)}
-                                        className="input-field !text-sm min-h-[80px] resize-y"
+                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
                                         placeholder="Beskriv plan for videre oppfolging..."
                                     />
                                 </div>
@@ -1171,16 +1171,16 @@ export default function SuicidalvurderingForm() {
                         {/* Footer with GDPR badge */}
                         <div className="flex items-center justify-between py-4">
                             <div className="flex items-center gap-2">
-                                <Shield className="w-4 h-4 text-[#3D8B6E]" />
-                                <span className="text-xs font-semibold text-[#3D8B6E]">GDPR-kompatibel lagring i journal</span>
+                                <Shield className="w-4 h-4 text-[#10B981]" />
+                                <span className="text-xs font-semibold text-[#10B981]">GDPR-kompatibel lagring i journal</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                {error && <p className="text-sm text-[#C44536]">{error}</p>}
-                                <button onClick={handleSave} disabled={saving} className="btn-secondary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                {error && <p className="text-sm text-[#EF4444]">{error}</p>}
+                                <button onClick={handleSave} disabled={saving} className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {saving ? 'Lagrer...' : 'Lagre utkast'}
                                 </button>
-                                <button onClick={handleSubmit} disabled={submitting} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button onClick={handleSubmit} disabled={submitting} className="bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150 !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
                                     {submitting ? 'Lagrer...' : 'Lagre suicidalvurdering'}
                                 </button>

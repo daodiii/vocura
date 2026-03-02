@@ -24,9 +24,24 @@ export default function AdminPage() {
       if (!res.body) return;
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
+      const CHUNK_TIMEOUT_MS = 30_000;
 
       while (true) {
-        const { done: streamDone, value } = await reader.read();
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('timeout')), CHUNK_TIMEOUT_MS);
+        });
+
+        let result: ReadableStreamReadResult<Uint8Array>;
+        try {
+          result = await Promise.race([reader.read(), timeoutPromise]);
+        } catch {
+          setLog((prev) => [...prev, 'Tidsavbrudd: ingen data mottatt på 30 sekunder.']);
+          setDone(false);
+          reader.cancel();
+          break;
+        }
+
+        const { done: streamDone, value } = result;
         if (streamDone) break;
         const text = decoder.decode(value);
         for (const line of text.split('\n').filter(Boolean)) {

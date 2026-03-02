@@ -103,7 +103,7 @@ function generatePDF(
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('MediScribe AI', margin, 12);
+    doc.text('Vocura AI', margin, 12);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.text(type.toUpperCase(), pageWidth - margin, 12, { align: 'right' });
@@ -240,7 +240,7 @@ function addFooter(
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(107, 114, 128);
-    doc.text('Generert av MediScribe AI', margin, footerY);
+    doc.text('Generert av Vocura AI', margin, footerY);
     doc.setFont('helvetica', 'normal');
     doc.text(timestamp, pageWidth - margin, footerY, { align: 'right' });
 

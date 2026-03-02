@@ -1660,7 +1660,7 @@ html {
 
 /* Top radial shade */
 .hero-centered-shade {
-  background: radial-gradient(35% 80% at 49% 0%, rgba(0, 0, 0, 0.06), transparent);
+  background: transparent;
 }
 .dark .hero-centered-shade {
   background: radial-gradient(35% 80% at 49% 0%, rgba(255, 255, 255, 0.06), transparent);
