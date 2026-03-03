@@ -5,6 +5,7 @@ import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 import { clinicalNoteUpdateSchema } from '@/lib/validations';
 import { computeDeleteAfter } from '@/lib/retention';
+import { createAuditLog } from '@/lib/audit';
 
 export async function GET(
   request: NextRequest,
@@ -28,6 +29,15 @@ export async function GET(
   if (!note) {
     return NextResponse.json({ error: 'Notat ikke funnet' }, { status: 404 });
   }
+
+  // Fire-and-forget: log read access for Normen compliance (patient access audit trail)
+  createAuditLog({
+    userId: auth.user.id,
+    entityType: 'clinical_note',
+    entityId: id,
+    action: 'view',
+    ipAddress: ip,
+  }).catch(() => {}) // Silent fail for read events — don't block response
 
   return NextResponse.json(note);
 }
