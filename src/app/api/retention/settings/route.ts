@@ -1,12 +1,20 @@
 // src/app/api/retention/settings/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth, isAuthResponse } from '@/lib/api-auth';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 import { retentionSettingsSchema } from '@/lib/validations';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await requireAuth();
   if (isAuthResponse(auth)) return auth;
+
+  // Rate limiting
+  const ip = getClientIp(request);
+  const ipLimited = await rateLimit(ip, 'retention-settings:get', { limit: 60 });
+  if (ipLimited) return ipLimited;
+  const userLimited = await rateLimitByUser(auth.user.id, 'retention-settings:get', { limit: 60 });
+  if (userLimited) return userLimited;
 
   const settings = await prisma.retentionSettings.findUnique({
     where: { userId: auth.user.id },
@@ -20,6 +28,13 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   const auth = await requireAuth();
   if (isAuthResponse(auth)) return auth;
+
+  // Rate limiting
+  const ip = getClientIp(request);
+  const ipLimited = await rateLimit(ip, 'retention-settings:put', { limit: 20 });
+  if (ipLimited) return ipLimited;
+  const userLimited = await rateLimitByUser(auth.user.id, 'retention-settings:put', { limit: 20 });
+  if (userLimited) return userLimited;
 
   const body = await request.json();
   const parsed = retentionSettingsSchema.safeParse(body);

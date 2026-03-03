@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
 import { FELLESKATALOGEN_SYSTEM_PROMPT } from '@/lib/ai-prompts';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { felleskatalovenChatSchema } from '@/lib/validations';
 
 interface SearchResult {
@@ -48,7 +48,7 @@ function buildContextBlock(chunks: SearchResult[]): string {
 }
 
 export async function POST(req: Request) {
-  const limited = rateLimit(getClientIp(req), 'felleskatalogen:chat', { limit: 30 });
+  const limited = await rateLimit(getClientIp(req), 'felleskatalogen:chat', { limit: 30 });
   if (limited) return limited;
 
   try {
@@ -57,6 +57,9 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
     }
+
+    const userLimited = await rateLimitByUser(user.id, 'fk-chat:post', { limit: 30 });
+    if (userLimited) return userLimited;
 
     const body = await req.json();
     const parsed = felleskatalovenChatSchema.safeParse(body);

@@ -3,14 +3,14 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { templateUpdateSchema } from '@/lib/validations';
 
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const limited = rateLimit(getClientIp(req), 'templates:get', { limit: 60 });
+    const limited = await rateLimit(getClientIp(req), 'templates:get', { limit: 60 });
     if (limited) return limited;
 
     try {
@@ -22,6 +22,9 @@ export async function GET(
         if (!user) {
             return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'template-id:get', { limit: 60 });
+        if (userLimited) return userLimited;
 
         const { id } = await params;
 
@@ -56,7 +59,7 @@ export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const limited = rateLimit(getClientIp(req), 'templates:patch', { limit: 30 });
+    const limited = await rateLimit(getClientIp(req), 'templates:patch', { limit: 30 });
     if (limited) return limited;
 
     try {
@@ -68,6 +71,9 @@ export async function PATCH(
         if (!user) {
             return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'template-id:patch', { limit: 30 });
+        if (userLimited) return userLimited;
 
         const { id } = await params;
         const { searchParams } = new URL(req.url);
@@ -152,7 +158,7 @@ export async function DELETE(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const limited = rateLimit(getClientIp(req), 'templates:delete', { limit: 10 });
+    const limited = await rateLimit(getClientIp(req), 'templates:delete', { limit: 10 });
     if (limited) return limited;
 
     try {
@@ -164,6 +170,9 @@ export async function DELETE(
         if (!user) {
             return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'template-id:delete', { limit: 10 });
+        if (userLimited) return userLimited;
 
         const { id } = await params;
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Search, PlusCircle, Star, ArrowRight, Trash2, Stethoscope, Brain, Smile, Activity, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { csrfHeaders } from '@/lib/csrf-client';
 import AppSidebar from '@/components/AppSidebar';
 import { SkeletonCard } from '@/components/Skeleton';
 
@@ -107,7 +108,7 @@ export default function Templates() {
         try {
             const res = await fetch(`/api/templates/${template.id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
                 body: JSON.stringify({ isFavorite: !template.isFavorite }),
             });
             if (res.ok) {
@@ -128,6 +129,7 @@ export default function Templates() {
         try {
             const res = await fetch(`/api/templates/${template.id}`, {
                 method: 'DELETE',
+                headers: csrfHeaders(),
             });
             if (res.ok) {
                 setTemplates((prev) => prev.filter((t) => t.id !== template.id));

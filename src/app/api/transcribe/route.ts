@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@/lib/supabase/server';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { WHISPER_PROMPTS } from '@/lib/ai-prompts';
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB - Whisper API limit
@@ -23,7 +23,7 @@ const ALLOWED_TYPES = [
 
 export async function POST(req: Request) {
     // Rate limiting
-    const limited = rateLimit(getClientIp(req), 'transcribe:post', { limit: 10 });
+    const limited = await rateLimit(getClientIp(req), 'transcribe:post', { limit: 10 });
     if (limited) return limited;
 
     // Early request size validation via Content-Length header
@@ -42,6 +42,9 @@ export async function POST(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'transcribe:post', { limit: 10 });
+        if (userLimited) return userLimited;
 
         // Check API key
         if (!process.env.OPENAI_API_KEY) {

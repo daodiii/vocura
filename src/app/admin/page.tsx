@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { RefreshCw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import AppSidebar from '@/components/AppSidebar';
+import { csrfHeaders } from '@/lib/csrf-client';
 
 export default function AdminPage() {
   const [running, setRunning] = useState(false);
@@ -17,7 +18,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/reindex-felleskatalogen', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
         body: JSON.stringify({}),
       });
 

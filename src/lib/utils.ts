@@ -1,9 +1,12 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { csrfHeaders } from './csrf-client';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
+
+const STATE_CHANGING_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
 export async function fetchWithTimeout(
   url: string,
@@ -12,8 +15,19 @@ export async function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  // Auto-include CSRF token header for state-changing requests
+  const method = (options.method ?? 'GET').toUpperCase();
+  let headers = options.headers;
+  if (STATE_CHANGING_METHODS.includes(method)) {
+    const csrf = csrfHeaders();
+    headers = headers instanceof Headers
+      ? (() => { Object.entries(csrf).forEach(([k, v]) => (headers as Headers).set(k, v)); return headers; })()
+      : { ...csrf, ...(headers as Record<string, string> | undefined) };
+  }
+
   try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
+    const response = await fetch(url, { ...options, headers, signal: controller.signal });
     return response;
   } finally {
     clearTimeout(id);

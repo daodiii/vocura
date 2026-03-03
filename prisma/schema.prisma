@@ -25,6 +25,7 @@ model User {
   auditLogs         AuditLog[]
   clinicalNotes     ClinicalNote[]
   retentionSettings RetentionSettings?
+  consentLogs       ConsentLog[]
 
   @@map("users")
 }
@@ -102,6 +103,23 @@ model ClinicalNote {
   @@index([deleteAfter])
   @@index([userId])
   @@map("clinical_notes")
+}
+
+model ConsentLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  consentType String   @map("consent_type")  // e.g. "gdpr_data_processing", "gdpr_audio_recording"
+  granted     Boolean
+  version     String   @default("1.0")       // consent policy version
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([consentType, userId])
+  @@map("consent_logs")
 }
 
 model RetentionSettings {

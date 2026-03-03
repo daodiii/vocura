@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
 import { LAB_INTERPRET_PROMPT } from '@/lib/ai-prompts';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { labInterpretSchema } from '@/lib/validations';
 import { lookupRange, classifyValue } from '@/lib/lab-reference-ranges';
 import { z } from 'zod';
@@ -45,7 +45,7 @@ export interface LabInterpretResponse {
 }
 
 export async function POST(req: Request) {
-  const limited = rateLimit(getClientIp(req), 'lab:interpret', { limit: 20 });
+  const limited = await rateLimit(getClientIp(req), 'lab:interpret', { limit: 20 });
   if (limited) return limited;
 
   try {
@@ -54,6 +54,9 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
     }
+
+    const userLimited = await rateLimitByUser(user.id, 'lab-interpret:post', { limit: 20 });
+    if (userLimited) return userLimited;
 
     const body = await req.json();
     const parsed = labInterpretSchema.safeParse(body);

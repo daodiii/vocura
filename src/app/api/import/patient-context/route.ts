@@ -2,12 +2,12 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { getEPJAdapter } from '@/lib/epj';
 import { createAuditLog } from '@/lib/audit';
 
 export async function GET(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'patient:search', { limit: 30 });
+    const limited = await rateLimit(getClientIp(req), 'patient:search', { limit: 30 });
     if (limited) return limited;
 
     try {
@@ -22,6 +22,9 @@ export async function GET(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'import-patient-context:post', { limit: 30 });
+        if (userLimited) return userLimited;
 
         const { searchParams } = new URL(req.url);
         const search = searchParams.get('search');

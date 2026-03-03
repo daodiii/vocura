@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { exportSchema } from '@/lib/validations';
 import { jsPDF } from 'jspdf';
 
@@ -251,7 +251,7 @@ function addFooter(
 }
 
 export async function POST(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'export:post', { limit: 20 });
+    const limited = await rateLimit(getClientIp(req), 'export:post', { limit: 20 });
     if (limited) return limited;
 
     try {
@@ -266,6 +266,9 @@ export async function POST(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'export-pdf:post', { limit: 20 });
+        if (userLimited) return userLimited;
 
         const body = await req.json();
         const parsed = exportSchema.safeParse(body);

@@ -1,7 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function updateSession(request: NextRequest) {
+export async function updateSession(request: NextRequest, extraRequestHeaders?: Headers) {
+    // If extra headers provided (e.g. x-nonce for CSP), merge them into the request
+    if (extraRequestHeaders) {
+        extraRequestHeaders.forEach((value, key) => {
+            request.headers.set(key, value);
+        });
+    }
+
     let supabaseResponse = NextResponse.next({
         request,
     });

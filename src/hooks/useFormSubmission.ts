@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { csrfHeaders } from '@/lib/csrf-client';
 
 function escapeHtml(str: string): string {
     return String(str)
@@ -64,7 +65,7 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
 
             const res = await fetch('/api/export/epj', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
                 body: JSON.stringify({
                     title,
                     content: sections,
@@ -108,7 +109,7 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
 
             const res = await fetch('/api/export/pdf', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
                 body: JSON.stringify({
                     content: sections,
                     title,

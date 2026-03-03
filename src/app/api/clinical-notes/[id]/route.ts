@@ -1,16 +1,24 @@
 // src/app/api/clinical-notes/[id]/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth, isAuthResponse } from '@/lib/api-auth';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 import { clinicalNoteUpdateSchema } from '@/lib/validations';
 import { computeDeleteAfter } from '@/lib/retention';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireAuth();
   if (isAuthResponse(auth)) return auth;
+
+  // Rate limiting
+  const ip = getClientIp(request);
+  const ipLimited = await rateLimit(ip, 'clinical-notes-id:get', { limit: 60 });
+  if (ipLimited) return ipLimited;
+  const userLimited = await rateLimitByUser(auth.user.id, 'clinical-notes-id:get', { limit: 60 });
+  if (userLimited) return userLimited;
 
   const { id } = await params;
   const note = await prisma.clinicalNote.findFirst({
@@ -30,6 +38,13 @@ export async function PATCH(
 ) {
   const auth = await requireAuth();
   if (isAuthResponse(auth)) return auth;
+
+  // Rate limiting
+  const ip = getClientIp(request);
+  const ipLimited = await rateLimit(ip, 'clinical-notes-id:patch', { limit: 30 });
+  if (ipLimited) return ipLimited;
+  const userLimited = await rateLimitByUser(auth.user.id, 'clinical-notes-id:patch', { limit: 30 });
+  if (userLimited) return userLimited;
 
   const { id } = await params;
   const body = await request.json();
@@ -69,11 +84,18 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireAuth();
   if (isAuthResponse(auth)) return auth;
+
+  // Rate limiting
+  const ip = getClientIp(request);
+  const ipLimited = await rateLimit(ip, 'clinical-notes-id:delete', { limit: 10 });
+  if (ipLimited) return ipLimited;
+  const userLimited = await rateLimitByUser(auth.user.id, 'clinical-notes-id:delete', { limit: 10 });
+  if (userLimited) return userLimited;
 
   const { id } = await params;
   const result = await prisma.clinicalNote.deleteMany({

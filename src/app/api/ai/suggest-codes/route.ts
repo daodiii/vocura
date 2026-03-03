@@ -4,11 +4,11 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
 import { getCodeSuggestionPrompt } from '@/lib/ai-prompts';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { suggestCodesSchema } from '@/lib/validations';
 
 export async function POST(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'suggest-codes:post', { limit: 10 });
+    const limited = await rateLimit(getClientIp(req), 'suggest-codes:post', { limit: 10 });
     if (limited) return limited;
 
     try {
@@ -23,6 +23,9 @@ export async function POST(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'suggest-codes:post', { limit: 10 });
+        if (userLimited) return userLimited;
 
         const body = await req.json();
         const parsed = suggestCodesSchema.safeParse(body);

@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth, isAuthResponse } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { clinicalNoteCreateSchema } from '@/lib/validations';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 
 export async function GET() {
   const auth = await requireAuth();
@@ -20,11 +20,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  const limited = rateLimit(ip, 'clinical-notes-create', { limit: 30 });
+  const limited = await rateLimit(ip, 'clinical-notes-create', { limit: 30 });
   if (limited) return limited;
 
   const auth = await requireAuth();
   if (isAuthResponse(auth)) return auth;
+
+  const userLimited = await rateLimitByUser(auth.user.id, 'clinical-notes:post', { limit: 30 });
+  if (userLimited) return userLimited;
 
   const body = await request.json();
   const parsed = clinicalNoteCreateSchema.safeParse(body);

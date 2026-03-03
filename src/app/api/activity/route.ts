@@ -2,13 +2,13 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 
 const ALLOWED_ENTITY_TYPES = ['epj_push', 'patient_context_import', 'epj_integration'];
 
 export async function GET(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'activity:get', { limit: 30 });
+    const limited = await rateLimit(getClientIp(req), 'activity:get', { limit: 30 });
     if (limited) return limited;
 
     try {
@@ -23,6 +23,9 @@ export async function GET(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'activity:post', { limit: 30 });
+        if (userLimited) return userLimited;
 
         const url = new URL(req.url);
         const limitParam = parseInt(url.searchParams.get('limit') || '50', 10);

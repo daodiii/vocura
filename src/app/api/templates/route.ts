@@ -3,11 +3,11 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { templateCreateSchema } from '@/lib/validations';
 
 export async function GET(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'templates:get', { limit: 60 });
+    const limited = await rateLimit(getClientIp(req), 'templates:get', { limit: 60 });
     if (limited) return limited;
 
     try {
@@ -19,6 +19,9 @@ export async function GET(req: Request) {
         if (!user) {
             return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'templates:get', { limit: 60 });
+        if (userLimited) return userLimited;
 
         const { searchParams } = new URL(req.url);
         const profession = searchParams.get('profession');
@@ -81,7 +84,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'templates:post', { limit: 20 });
+    const limited = await rateLimit(getClientIp(req), 'templates:post', { limit: 20 });
     if (limited) return limited;
 
     try {
@@ -93,6 +96,9 @@ export async function POST(req: Request) {
         if (!user) {
             return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'templates:post', { limit: 20 });
+        if (userLimited) return userLimited;
 
         const body = await req.json();
         const parsed = templateCreateSchema.safeParse(body);

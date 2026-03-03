@@ -3,11 +3,11 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { profileUpdateSchema } from '@/lib/validations';
 
 export async function GET(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'profile:get', { limit: 60 });
+    const limited = await rateLimit(getClientIp(req), 'profile:get', { limit: 60 });
     if (limited) return limited;
 
     try {
@@ -19,6 +19,9 @@ export async function GET(req: Request) {
         if (!user) {
             return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'profile:get', { limit: 60 });
+        if (userLimited) return userLimited;
 
         const profile = await prisma.user.findUnique({
             where: { id: user.id },
@@ -47,7 +50,7 @@ export async function GET(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'profile:patch', { limit: 20 });
+    const limited = await rateLimit(getClientIp(req), 'profile:patch', { limit: 20 });
     if (limited) return limited;
 
     try {
@@ -59,6 +62,9 @@ export async function PATCH(req: Request) {
         if (!user) {
             return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'profile:patch', { limit: 20 });
+        if (userLimited) return userLimited;
 
         const updates = await req.json();
         const parsed = profileUpdateSchema.safeParse(updates);

@@ -3,10 +3,15 @@ export const maxDuration = 300; // 5 minutes
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
+import { requireAdmin } from '@/lib/rbac';
 import { spawn } from 'child_process';
 import path from 'path';
 
 export async function POST(req: Request) {
+  const limited = await rateLimit(getClientIp(req), 'admin-reindex:post', { limit: 5 });
+  if (limited) return limited;
+
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -14,11 +19,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
     }
 
-    // Admin authorization check
-    const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean);
-    if (adminEmails.length === 0 || !adminEmails.includes(user.email ?? '')) {
-      return NextResponse.json({ error: 'Ingen admin-tilgang' }, { status: 403 });
-    }
+    const userLimited = await rateLimitByUser(user.id, 'admin-reindex:post', { limit: 5 });
+    if (userLimited) return userLimited;
+
+    // Role-based admin authorization (DB role + env fallback)
+    const denied = await requireAdmin(user.id, user.email ?? undefined);
+    if (denied) return denied;
 
     // Parse and validate optional limit param
     const body = await req.json().catch(() => ({}));

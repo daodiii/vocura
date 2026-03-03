@@ -4,13 +4,13 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
 import { SUMMARY_PROMPTS } from '@/lib/ai-prompts';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { summarizeSchema } from '@/lib/validations';
 
 type Language = 'bokmal' | 'nynorsk' | 'enkel';
 
 export async function POST(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'summarize:post', { limit: 10 });
+    const limited = await rateLimit(getClientIp(req), 'summarize:post', { limit: 10 });
     if (limited) return limited;
 
     try {
@@ -25,6 +25,9 @@ export async function POST(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'summarize:post', { limit: 10 });
+        if (userLimited) return userLimited;
 
         const body = await req.json();
         const parsed = summarizeSchema.safeParse(body);

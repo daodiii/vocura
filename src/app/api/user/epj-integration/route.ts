@@ -2,14 +2,14 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { epjIntegrationSchema } from '@/lib/validations';
 import { encryptCredentials, LeyrAdapter } from '@/lib/epj';
 import { createAuditLog } from '@/lib/audit';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'epj-integration:get', { limit: 30 });
+    const limited = await rateLimit(getClientIp(req), 'epj-integration:get', { limit: 30 });
     if (limited) return limited;
 
     try {
@@ -24,6 +24,9 @@ export async function GET(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'epj-integration:get', { limit: 30 });
+        if (userLimited) return userLimited;
 
         const integration = await prisma.epjIntegration.findUnique({
             where: { userId: user.id },
@@ -51,7 +54,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'epj-integration:post', { limit: 10 });
+    const limited = await rateLimit(getClientIp(req), 'epj-integration:post', { limit: 10 });
     if (limited) return limited;
 
     try {
@@ -66,6 +69,9 @@ export async function POST(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'epj-integration:post', { limit: 10 });
+        if (userLimited) return userLimited;
 
         const body = await req.json();
         const parsed = epjIntegrationSchema.safeParse(body);
@@ -143,7 +149,7 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'epj-integration:delete', { limit: 10 });
+    const limited = await rateLimit(getClientIp(req), 'epj-integration:delete', { limit: 10 });
     if (limited) return limited;
 
     try {
@@ -158,6 +164,9 @@ export async function DELETE(req: Request) {
                 { status: 401 }
             );
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'epj-integration:delete', { limit: 10 });
+        if (userLimited) return userLimited;
 
         const existing = await prisma.epjIntegration.findUnique({
             where: { userId: user.id },

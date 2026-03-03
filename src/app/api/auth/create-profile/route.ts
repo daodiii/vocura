@@ -3,11 +3,11 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { createProfileSchema } from '@/lib/validations';
 
 export async function POST(req: Request) {
-    const limited = rateLimit(getClientIp(req), 'create-profile:post', { limit: 5 });
+    const limited = await rateLimit(getClientIp(req), 'create-profile:post', { limit: 5 });
     if (limited) return limited;
 
     try {
@@ -19,6 +19,9 @@ export async function POST(req: Request) {
         if (!user) {
             return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
         }
+
+        const userLimited = await rateLimitByUser(user.id, 'create-profile:post', { limit: 5 });
+        if (userLimited) return userLimited;
 
         const body = await req.json();
         const parsed = createProfileSchema.safeParse(body);

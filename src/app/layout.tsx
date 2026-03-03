@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import SessionTimeout from "@/components/SessionTimeout";
 import CommandPalette from "@/components/CommandPalette";
@@ -82,15 +83,18 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get('x-nonce') ?? '';
+
   return (
     <html lang="no" className={`${inter.variable} ${jetbrainsMono.variable} ${playfairDisplay.variable}`} suppressHydrationWarning>
       <head>
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var d=localStorage.getItem('vocura_dark_mode');if(d==='true')document.documentElement.classList.add('dark');var a=localStorage.getItem('vocura_accent_theme');if(a&&['purple','red','blue'].indexOf(a)!==-1)document.documentElement.setAttribute('data-accent',a)}catch(e){}})()`,
           }}

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Mic, Loader2, AlertCircle, Eye, EyeOff, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { csrfHeaders } from '@/lib/csrf-client';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -49,7 +50,7 @@ export default function LoginPage() {
                     // Create user profile in database
                     await fetch('/api/auth/create-profile', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
                         body: JSON.stringify({
                             userId: data.user.id,
                             email,
