@@ -5,7 +5,7 @@ interface AuditLogParams {
     userId: string;
     entityType: 'journal_entry' | 'form_submission' | 'patient' | 'recording' | 'epj_push' | 'patient_context_import' | 'epj_integration' | 'clinical_note' | 'retention_settings' | 'auto_delete';
     entityId: string;
-    action: 'create' | 'update' | 'delete' | 'approve' | 'push' | 'search' | 'auto_delete' | 'encrypt' | 'decrypt' | 'view';
+    action: 'create' | 'update' | 'delete' | 'approve' | 'push' | 'search' | 'auto_delete' | 'encrypt' | 'decrypt' | 'view' | 'sign';
     changes?: Record<string, unknown>;
     content?: string;
     ipAddress?: string;
@@ -17,7 +17,7 @@ interface AuditLogParams {
  * know so it can decide whether to abort the operation — losing these records
  * could violate GDPR audit-trail requirements.
  */
-const CRITICAL_ACTIONS: AuditLogParams['action'][] = ['delete', 'approve', 'push', 'auto_delete'];
+const CRITICAL_ACTIONS: AuditLogParams['action'][] = ['delete', 'approve', 'push', 'auto_delete', 'sign'];
 
 export function computeContentHash(content: string): string {
     return crypto.createHash('sha256').update(content).digest('hex');

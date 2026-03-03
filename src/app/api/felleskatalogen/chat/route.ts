@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
-import { FELLESKATALOGEN_SYSTEM_PROMPT } from '@/lib/ai-prompts';
+import { FELLESKATALOGEN_SYSTEM_PROMPT, getInjectionDefenseClause, sanitizeUserInput } from '@/lib/ai-prompts';
 import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { felleskatalovenChatSchema } from '@/lib/validations';
 
@@ -81,10 +81,10 @@ export async function POST(req: Request) {
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       {
         role: 'system',
-        content: `${FELLESKATALOGEN_SYSTEM_PROMPT}\n\n== FELLESKATALOGEN KONTEKST ==\n${contextBlock}`,
+        content: `${FELLESKATALOGEN_SYSTEM_PROMPT}${getInjectionDefenseClause('user_query')}\n\n== FELLESKATALOGEN KONTEKST ==\n${contextBlock}`,
       },
-      ...history.map((h) => ({ role: h.role, content: h.content } as OpenAI.Chat.ChatCompletionMessageParam)),
-      { role: 'user', content: message },
+      ...history.map((h) => ({ role: h.role, content: sanitizeUserInput(h.content) } as OpenAI.Chat.ChatCompletionMessageParam)),
+      { role: 'user', content: `<user_query>\n${sanitizeUserInput(message)}\n</user_query>` },
     ];
 
     const completion = await openai.chat.completions.create({
@@ -106,8 +106,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ answer, sources });
   } catch (error) {
     console.error('Felleskatalogen chat error:', error);
+    const errMsg = error instanceof Error ? error.message : '';
+    if (errMsg.includes('rate limit') || errMsg.includes('429')) {
+      return NextResponse.json(
+        { error: 'AI-tjenesten er overbelastet. Vent et minutt og prøv igjen.' },
+        { status: 429 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Kunne ikke svare på spørsmålet. Prøv igjen.' },
+      { error: 'Kunne ikke hente legemiddelinformasjon. Prøv igjen om et øyeblikk.' },
       { status: 500 }
     );
   }

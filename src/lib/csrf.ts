@@ -5,6 +5,13 @@ const CSRF_HEADER = 'x-csrf-token';
 const STATE_CHANGING_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
 /**
+ * Internal/cron API routes that authenticate via Authorization bearer token
+ * and are never called from a browser session. Only these paths are exempt
+ * from CSRF validation.
+ */
+const BEARER_ONLY_PATHS = ['/api/retention/cleanup'];
+
+/**
  * Generate a cryptographically random CSRF token.
  */
 function generateToken(): string {
@@ -16,7 +23,7 @@ function generateToken(): string {
  * - Sets a CSRF token cookie on every response if not present.
  * - For state-changing requests (POST/PUT/PATCH/DELETE) to API routes,
  *   validates that the x-csrf-token header matches the cookie value.
- * - API routes called with Authorization header (external API clients) are exempt.
+ * - Only specific bearer-token-only routes (e.g. cron jobs) are exempt from CSRF.
  */
 export function csrfProtect(
   request: NextRequest,
@@ -40,8 +47,13 @@ export function csrfProtect(
   if (!STATE_CHANGING_METHODS.includes(method)) return null;
   if (!request.nextUrl.pathname.startsWith('/api/')) return null;
 
-  // Exempt requests with Authorization header (external API clients / cron)
-  if (request.headers.get('authorization')) return null;
+  // Exempt only specific internal/cron endpoints that use bearer-token auth
+  if (
+    request.headers.get('authorization') &&
+    BEARER_ONLY_PATHS.includes(request.nextUrl.pathname)
+  ) {
+    return null;
+  }
 
   // Validate: header token must match cookie token
   if (!existingToken) {

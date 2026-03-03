@@ -9,7 +9,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 
 export async function POST(req: Request) {
-  const limited = await rateLimit(getClientIp(req), 'admin-reindex:post', { limit: 5 });
+  const limited = await rateLimit(getClientIp(req), 'admin-reindex:post', { limit: 1, windowMs: 600_000 });
   if (limited) return limited;
 
   try {
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ikke autorisert' }, { status: 401 });
     }
 
-    const userLimited = await rateLimitByUser(user.id, 'admin-reindex:post', { limit: 5 });
+    const userLimited = await rateLimitByUser(user.id, 'admin-reindex:post', { limit: 1, windowMs: 600_000 });
     if (userLimited) return userLimited;
 
     // Role-based admin authorization (DB role + env fallback)
@@ -30,8 +30,8 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const limit: number | undefined = body.limit;
 
-    if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 10000)) {
-      return NextResponse.json({ error: 'Ugyldig limit-parameter. Må være et heltall mellom 1 og 10000.' }, { status: 400 });
+    if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 1000)) {
+      return NextResponse.json({ error: 'Ugyldig limit-parameter. Må være et heltall mellom 1 og 1000.' }, { status: 400 });
     }
 
     // Stream progress back as NDJSON
@@ -44,9 +44,27 @@ export async function POST(req: Request) {
         const args = ['tsx', 'scripts/index-felleskatalogen.ts'];
         if (limit) args.push('--limit', String(limit));
 
+        // Only pass necessary env vars to the subprocess — avoid leaking
+        // secrets that the indexer script does not need.
+        const allowedEnvKeys = [
+          'SUPABASE_URL',
+          'SUPABASE_SERVICE_ROLE_KEY',
+          'OPENAI_API_KEY',
+          'DATABASE_URL',
+          'NODE_ENV',
+          'PATH',
+          'HOME',
+        ];
+        const filteredEnv: Record<string, string> = {};
+        for (const key of allowedEnvKeys) {
+          if (process.env[key]) {
+            filteredEnv[key] = process.env[key] as string;
+          }
+        }
+
         const proc = spawn('npx', args, {
           cwd: path.resolve(process.cwd()),
-          env: { ...process.env },
+          env: filteredEnv,
         });
 
         proc.stdout.on('data', (data: Buffer) => {
@@ -74,6 +92,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Reindex error:', error);
-    return NextResponse.json({ error: 'Reindeksering feilet' }, { status: 500 });
+    return NextResponse.json({ error: 'Reindeksering av Felleskatalogen feilet. Sjekk serverloggen for detaljer.' }, { status: 500 });
   }
 }

@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
-import { getCodeSuggestionPrompt } from '@/lib/ai-prompts';
+import { getCodeSuggestionPrompt, getInjectionDefenseClause, wrapClinicalText } from '@/lib/ai-prompts';
 import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { suggestCodesSchema } from '@/lib/validations';
 
@@ -83,11 +83,11 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'system',
-                    content: getCodeSuggestionPrompt(safeProfession),
+                    content: getCodeSuggestionPrompt(safeProfession) + getInjectionDefenseClause('clinical_text'),
                 },
                 {
                     role: 'user',
-                    content: text,
+                    content: wrapClinicalText(text, 'clinical_text'),
                 },
             ],
         });
@@ -113,8 +113,15 @@ export async function POST(req: Request) {
         return NextResponse.json({ codes });
     } catch (error: unknown) {
         console.error('Suggest codes error:', error);
+        const errMsg = error instanceof Error ? error.message : '';
+        if (errMsg.includes('rate limit') || errMsg.includes('429')) {
+            return NextResponse.json(
+                { error: 'AI-tjenesten er overbelastet. Diagnosekodeforslag er midlertidig utilgjengelig.' },
+                { status: 429 }
+            );
+        }
         return NextResponse.json(
-            { error: 'Kunne ikke foreslå diagnosekoder. Prøv igjen senere.' },
+            { error: 'Kunne ikke foreslå diagnosekoder. AI-tjenesten er midlertidig utilgjengelig.' },
             { status: 500 }
         );
     }

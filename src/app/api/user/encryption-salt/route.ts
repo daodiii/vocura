@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
   const auth = await requireAuth();
   if (isAuthResponse(auth)) return auth;
 
-  // Rate limiting
+  // Rate limiting — strict limit: regenerating salt makes previously encrypted data inaccessible
   const ip = getClientIp(request);
-  const ipLimited = await rateLimit(ip, 'encryption-salt:post', { limit: 10 });
+  const ipLimited = await rateLimit(ip, 'encryption-salt:post', { limit: 3, windowMs: 3_600_000 });
   if (ipLimited) return ipLimited;
-  const userLimited = await rateLimitByUser(auth.user.id, 'encryption-salt:post', { limit: 10 });
+  const userLimited = await rateLimitByUser(auth.user.id, 'encryption-salt:post', { limit: 3, windowMs: 3_600_000 });
   if (userLimited) return userLimited;
 
   // Generate salt on server for storage, but the actual crypto happens client-side

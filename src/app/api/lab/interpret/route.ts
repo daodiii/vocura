@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
-import { LAB_INTERPRET_PROMPT } from '@/lib/ai-prompts';
+import { LAB_INTERPRET_PROMPT, getInjectionDefenseClause, wrapClinicalText } from '@/lib/ai-prompts';
 import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { labInterpretSchema } from '@/lib/validations';
 import { lookupRange, classifyValue } from '@/lib/lab-reference-ranges';
@@ -75,14 +75,14 @@ export async function POST(req: Request) {
       temperature: 0.1,
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: LAB_INTERPRET_PROMPT },
-        { role: 'user', content: rawText },
+        { role: 'system', content: LAB_INTERPRET_PROMPT + getInjectionDefenseClause('lab_values') },
+        { role: 'user', content: wrapClinicalText(rawText, 'lab_values') },
       ],
     });
 
     const content = completion.choices[0]?.message?.content;
     if (!content) {
-      return NextResponse.json({ error: 'Ingen respons fra AI' }, { status: 500 });
+      return NextResponse.json({ error: 'AI-tjenesten ga ingen respons. Prøv igjen om et øyeblikk.' }, { status: 500 });
     }
 
     let aiResult;
@@ -115,8 +115,21 @@ export async function POST(req: Request) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('Lab interpret error:', error);
+    const errMsg = error instanceof Error ? error.message : '';
+    if (errMsg.includes('API key') || errMsg.includes('auth')) {
+      return NextResponse.json(
+        { error: 'AI-tjenesten er midlertidig utilgjengelig. Kontakt support hvis problemet vedvarer.' },
+        { status: 503 }
+      );
+    }
+    if (errMsg.includes('rate limit') || errMsg.includes('429')) {
+      return NextResponse.json(
+        { error: 'AI-tjenesten er overbelastet. Vent et minutt og prøv igjen.' },
+        { status: 429 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Kunne ikke analysere laboratorieverdier. Prøv igjen.' },
+      { error: 'Kunne ikke analysere laboratorieverdier. Prøv igjen om et øyeblikk.' },
       { status: 500 }
     );
   }

@@ -4,16 +4,28 @@ import { requireAuth, isAuthResponse } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { clinicalNoteCreateSchema } from '@/lib/validations';
 import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
+import { createAuditLog } from '@/lib/audit';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await requireAuth();
   if (isAuthResponse(auth)) return auth;
+
+  const ip = getClientIp(request);
 
   const notes = await prisma.clinicalNote.findMany({
     where: { userId: auth.user.id },
     orderBy: { createdAt: 'desc' },
     take: 50,
   });
+
+  // Fire-and-forget: log list access for Normen compliance (patient access audit trail)
+  createAuditLog({
+    userId: auth.user.id,
+    entityType: 'clinical_note',
+    entityId: '_list',
+    action: 'view',
+    ipAddress: ip,
+  }).catch((err) => console.error('Audit log failed:', err))
 
   return NextResponse.json(notes);
 }

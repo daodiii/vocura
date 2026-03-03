@@ -16,18 +16,16 @@ const PUBLIC_ROUTES = [
 function buildCsp(nonce: string) {
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://cdn.jsdelivr.net`,
+    `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
-    "font-src 'self' data:",
-    "connect-src 'self' https://*.supabase.co https://api.openai.com https://cdn.jsdelivr.net https://*.criipto.id",
+    "font-src 'self'",
+    "connect-src 'self' https://api.openai.com https://*.supabase.co https://*.criipto.id",
+    "frame-src 'self' https://*.criipto.id",
     "media-src 'self' blob:",
-    "object-src 'none'",
+    "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self' https://*.criipto.id",
-    "frame-src 'self' https://*.criipto.id https://*.bankid.no https://*.buypass.no",
-    "frame-ancestors 'self'",
-    "upgrade-insecure-requests",
   ].join('; ');
 }
 

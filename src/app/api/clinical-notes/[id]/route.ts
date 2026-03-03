@@ -37,7 +37,7 @@ export async function GET(
     entityId: id,
     action: 'view',
     ipAddress: ip,
-  }).catch(() => {}) // Silent fail for read events — don't block response
+  }).catch((err) => console.error('Audit log failed:', err))
 
   return NextResponse.json(note);
 }
@@ -57,6 +57,21 @@ export async function PATCH(
   if (userLimited) return userLimited;
 
   const { id } = await params;
+
+  // Check if note is signed (finalized) — signed notes are immutable per Norwegian healthcare law
+  const existingNote = await prisma.clinicalNote.findFirst({
+    where: { id, userId: auth.user.id },
+  });
+  if (!existingNote) {
+    return NextResponse.json({ error: 'Notat ikke funnet' }, { status: 404 });
+  }
+  if (existingNote.status === 'final') {
+    return NextResponse.json(
+      { error: 'Signerte notater kan ikke redigeres. Opprett et tilleggsnotat ved behov.' },
+      { status: 403 }
+    );
+  }
+
   const body = await request.json();
   const parsed = clinicalNoteUpdateSchema.safeParse(body);
   if (!parsed.success) {
@@ -108,6 +123,21 @@ export async function DELETE(
   if (userLimited) return userLimited;
 
   const { id } = await params;
+
+  // Check if note is signed (finalized) — signed notes cannot be deleted
+  const noteToDelete = await prisma.clinicalNote.findFirst({
+    where: { id, userId: auth.user.id },
+  });
+  if (!noteToDelete) {
+    return NextResponse.json({ error: 'Notat ikke funnet' }, { status: 404 });
+  }
+  if (noteToDelete.status === 'final') {
+    return NextResponse.json(
+      { error: 'Signerte notater kan ikke slettes.' },
+      { status: 403 }
+    );
+  }
+
   const result = await prisma.clinicalNote.deleteMany({
     where: { id, userId: auth.user.id },
   });

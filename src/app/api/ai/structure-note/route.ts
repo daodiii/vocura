@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
-import { getStructureNotePrompt } from '@/lib/ai-prompts';
+import { getStructureNotePrompt, getInjectionDefenseClause, wrapClinicalText } from '@/lib/ai-prompts';
 import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { structureNoteSchema } from '@/lib/validations';
 
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
         const openai = new OpenAI();
 
-        const systemPrompt = getStructureNotePrompt(templateType);
+        const systemPrompt = getStructureNotePrompt(templateType) + getInjectionDefenseClause('clinical_dictation');
 
         // Allowed professions and encounter types to prevent prompt injection
         const ALLOWED_PROFESSIONS = ['lege', 'tannlege', 'psykolog', 'fysioterapeut'];
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
                 },
                 {
                     role: 'user',
-                    content: `${contextBlock}Diktering:\n${text}`,
+                    content: `${contextBlock}Diktering:\n${wrapClinicalText(text, 'clinical_dictation')}`,
                 },
             ],
         });
@@ -106,8 +106,15 @@ export async function POST(req: Request) {
         });
     } catch (error: unknown) {
         console.error('Structure note error:', error);
+        const errMsg = error instanceof Error ? error.message : '';
+        if (errMsg.includes('rate limit') || errMsg.includes('429')) {
+            return NextResponse.json(
+                { error: 'AI-tjenesten er overbelastet. Vent et minutt og prøv igjen.' },
+                { status: 429 }
+            );
+        }
         return NextResponse.json(
-            { error: 'Kunne ikke strukturere journalnotat. Prøv igjen senere.' },
+            { error: 'Kunne ikke strukturere journalnotat. AI-tjenesten er midlertidig utilgjengelig.' },
             { status: 500 }
         );
     }

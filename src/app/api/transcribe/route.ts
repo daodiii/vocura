@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import fs from 'fs';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { createClient } from '@/lib/supabase/server';
 import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { WHISPER_PROMPTS } from '@/lib/ai-prompts';
@@ -85,10 +85,12 @@ export async function POST(req: Request) {
             apiKey: process.env.OPENAI_API_KEY,
         });
 
-        // Convert File to Buffer and write to temp
+        // SECURITY: Temp file contains unencrypted patient audio. We use
+        // crypto.randomBytes for an unpredictable filename and ensure cleanup
+        // in the finally block to minimise the window of exposure on disk.
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        const tempFilePath = path.join('/tmp', `upload_${uuidv4()}.webm`);
+        const tempFilePath = path.join('/tmp', `upload_${crypto.randomBytes(16).toString('hex')}.webm`);
         fs.writeFileSync(tempFilePath, buffer);
 
         try {
@@ -127,9 +129,15 @@ export async function POST(req: Request) {
 
             return NextResponse.json({ text: transcription.text });
         } finally {
-            // Always clean up temp file
-            if (fs.existsSync(tempFilePath)) {
-                fs.unlinkSync(tempFilePath);
+            // Always clean up temp file — wrapped in try/catch so cleanup
+            // failures (e.g. file already removed, permission errors) never
+            // mask the original response or error.
+            try {
+                if (fs.existsSync(tempFilePath)) {
+                    fs.unlinkSync(tempFilePath);
+                }
+            } catch (cleanupErr) {
+                console.error('Failed to remove temp audio file:', tempFilePath, cleanupErr);
             }
         }
     } catch (error: unknown) {

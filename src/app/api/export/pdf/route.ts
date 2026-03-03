@@ -6,52 +6,108 @@ import { rateLimit, rateLimitByUser, getClientIp } from '@/lib/rate-limit';
 import { exportSchema } from '@/lib/validations';
 import { jsPDF } from 'jspdf';
 
+/** Maximum content size accepted for PDF export (500 KB). */
+const MAX_CONTENT_LENGTH = 500_000;
+
+/** Supported block-level tag names for PDF extraction. */
+const BLOCK_TAGS = new Set(['h2', 'h3', 'p', 'li']);
+
+/** Decode common HTML entities to plain text. */
+function decodeEntities(text: string): string {
+    return text
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+}
+
 /**
  * Strip HTML tags and convert to structured text for PDF rendering.
  * Preserves headings, paragraphs, and list structure.
+ *
+ * Uses iterative indexOf-based parsing instead of regex with back-references
+ * to avoid ReDoS (catastrophic backtracking) on adversarial input.
  */
 function stripHTML(html: string): Array<{ type: 'h2' | 'h3' | 'p' | 'li'; text: string }> {
+    // Defence-in-depth: reject oversized input before any parsing
+    if (html.length > MAX_CONTENT_LENGTH) {
+        html = html.slice(0, MAX_CONTENT_LENGTH);
+    }
+
     const blocks: Array<{ type: 'h2' | 'h3' | 'p' | 'li'; text: string }> = [];
 
     // Normalize whitespace and line breaks
-    let cleaned = html
+    const cleaned = html
         .replace(/\r\n/g, '\n')
         .replace(/<br\s*\/?>/gi, '\n');
 
-    // Extract blocks by tag type
-    const blockRegex = /<(h2|h3|p|li)[^>]*>([\s\S]*?)<\/\1>/gi;
-    let match: RegExpExecArray | null;
+    // Iterative parser: find opening tags, then locate the matching closing tag
+    // by simple string search — no backtracking regex involved.
+    let cursor = 0;
+    while (cursor < cleaned.length) {
+        // Find the next '<' character
+        const openBracket = cleaned.indexOf('<', cursor);
+        if (openBracket === -1) break;
 
-    while ((match = blockRegex.exec(cleaned)) !== null) {
-        const tag = match[1].toLowerCase() as 'h2' | 'h3' | 'p' | 'li';
-        // Strip remaining inline tags
-        const text = match[2]
-            .replace(/<[^>]+>/g, '')
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .replace(/&#039;/g, "'")
-            .replace(/&nbsp;/g, ' ')
-            .trim();
+        // Quick check: is this potentially an opening block tag?
+        let tagName = '';
+
+        // Check for each supported tag by prefix
+        for (const tag of BLOCK_TAGS) {
+            if (
+                cleaned.substring(openBracket + 1, openBracket + 1 + tag.length).toLowerCase() === tag
+            ) {
+                const charAfterTag = cleaned[openBracket + 1 + tag.length];
+                // Must be followed by '>', ' ', or end-of-string to be a valid tag
+                if (charAfterTag === '>' || charAfterTag === ' ' || charAfterTag === undefined) {
+                    tagName = tag;
+                    break;
+                }
+            }
+        }
+
+        if (!tagName) {
+            cursor = openBracket + 1;
+            continue;
+        }
+
+        // Find the end of the opening tag
+        const openTagEnd = cleaned.indexOf('>', openBracket);
+        if (openTagEnd === -1) break;
+
+        // Find the matching closing tag (case-insensitive search via lowercase)
+        const closingTag = `</${tagName}>`;
+        const closingSearch = cleaned.toLowerCase();
+        const closeStart = closingSearch.indexOf(closingTag, openTagEnd + 1);
+
+        if (closeStart === -1) {
+            // No matching close tag found — skip past this opening tag
+            cursor = openTagEnd + 1;
+            continue;
+        }
+
+        // Extract inner content between opening and closing tags
+        const innerHtml = cleaned.substring(openTagEnd + 1, closeStart);
+
+        // Strip remaining inline tags (safe regex — no nested quantifiers)
+        const text = decodeEntities(innerHtml.replace(/<[^>]+>/g, '')).trim();
 
         if (text) {
-            blocks.push({ type: tag, text });
+            blocks.push({ type: tagName as 'h2' | 'h3' | 'p' | 'li', text });
         }
+
+        cursor = closeStart + closingTag.length;
     }
 
     // Fallback: if no blocks found, treat entire content as a single paragraph
     if (blocks.length === 0) {
-        const plainText = html
-            .replace(/<[^>]+>/g, ' ')
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .replace(/&#039;/g, "'")
-            .replace(/&nbsp;/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
+        const plainText = decodeEntities(
+            html
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/\s+/g, ' ')
+        ).trim();
         if (plainText) {
             blocks.push({ type: 'p', text: plainText });
         }
@@ -282,6 +338,14 @@ export async function POST(req: Request) {
 
         const { title, content, type, metadata } = parsed.data as { title: string; content: string; type: string; metadata?: Record<string, string> };
 
+        // Guard against oversized content that could cause slow regex/parsing
+        if (content.length > MAX_CONTENT_LENGTH) {
+            return NextResponse.json(
+                { error: `Innholdet er for stort (${(content.length / 1024).toFixed(0)} KB). Maks ${MAX_CONTENT_LENGTH / 1000} KB.` },
+                { status: 400 }
+            );
+        }
+
         const pdfBuffer = generatePDF(title, content, type, metadata);
 
         const filename = `${title.replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, '').replace(/\s+/g, '_')}.pdf`;
@@ -294,9 +358,9 @@ export async function POST(req: Request) {
             },
         });
     } catch (error: unknown) {
-        console.error('Export error:', error);
+        console.error('PDF export error:', error);
         return NextResponse.json(
-            { error: 'Kunne ikke eksportere dokument. Prøv igjen senere.' },
+            { error: 'Kunne ikke generere PDF-dokumentet. Prøv igjen om et øyeblikk.' },
             { status: 500 }
         );
     }
