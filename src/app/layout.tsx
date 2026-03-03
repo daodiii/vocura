@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import SessionTimeout from "@/components/SessionTimeout";
 import CommandPalette from "@/components/CommandPalette";
+import { CookieBanner } from "@/components/CookieBanner";
 import "./globals.css";
 
 const inter = Inter({
@@ -112,6 +113,7 @@ export default async function RootLayout({
         <div className="relative z-10">
           {children}
         </div>
+        <CookieBanner />
       </body>
     </html>
   );
