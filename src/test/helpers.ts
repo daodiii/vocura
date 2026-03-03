@@ -12,7 +12,8 @@ export function createMockRequest(
   if (options.body) {
     init.body = JSON.stringify(options.body)
   }
-  return new NextRequest(new URL(url), init)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new NextRequest(new URL(url), init as any)
 }
 
 export function mockPrismaClient() {

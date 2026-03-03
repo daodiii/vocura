@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 
 export enum AuthEventType {
   LOGIN = 'login',
@@ -30,7 +31,7 @@ export async function createAuthEvent(params: AuthEventParams): Promise<void> {
         ipAddress,
         userAgent,
         success,
-        metadata: metadata ?? undefined,
+        metadata: (metadata as Prisma.InputJsonValue) ?? undefined,
       },
     })
   } catch (error) {
