@@ -73,7 +73,7 @@ export function TubesBackground({ className }: TubesBackgroundProps) {
   return (
     <div
       className={cn(
-        'pointer-events-none absolute inset-0 z-0 overflow-hidden',
+        'tubes-bg pointer-events-none absolute inset-0 z-0 overflow-hidden',
         loadFailed && 'hidden',
         className
       )}

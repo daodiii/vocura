@@ -1654,6 +1654,11 @@ html {
 .hero-animate-cta-1    { animation-duration: 600ms; animation-delay: 340ms; }
 .hero-animate-cta-2    { animation-duration: 600ms; animation-delay: 420ms; }
 
+/* Tubes background: invert for light mode so black bg becomes white */
+:root:not(.dark) .tubes-bg {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 /* =============================================
    Landing Page: Centered Hero (Efferd-style)
    ============================================= */
