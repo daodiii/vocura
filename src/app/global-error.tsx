@@ -18,8 +18,8 @@ export default function GlobalError({
     <html lang="no">
       <body>
         <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'system-ui' }}>
-          <h2>Noe gikk galt</h2>
-          <p>En uventet feil oppstod. Feilen er logget automatisk.</p>
+          <h2>En uventet feil oppstod</h2>
+          <p>Applikasjonen støtte på et problem. Feilen er logget automatisk. Prøv å laste siden på nytt.</p>
           <button
             onClick={reset}
             style={{

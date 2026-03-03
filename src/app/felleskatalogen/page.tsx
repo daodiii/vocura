@@ -114,10 +114,18 @@ export default function FelleskatalogenPage() {
       if (res.ok) {
         setMessages((prev) => [...prev, { role: 'assistant', content: data.answer, sources: data.sources }]);
       } else {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.error || 'Noe gikk galt.' }]);
+        let errorMsg: string;
+        if (res.status === 401) {
+          errorMsg = 'Økten din har utløpt. Logg inn på nytt for å fortsette.';
+        } else if (res.status === 429) {
+          errorMsg = 'Du har sendt for mange spørsmål. Vent et minutt og prøv igjen.';
+        } else {
+          errorMsg = data.error || 'Kunne ikke hente svar fra Felleskatalogen. Prøv igjen.';
+        }
+        setMessages((prev) => [...prev, { role: 'assistant', content: errorMsg }]);
       }
     } catch {
-      setMessages((prev) => [...prev, { role: 'assistant', content: 'Nettverksfeil. Prøv igjen.' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: 'Kunne ikke nå Felleskatalogen-tjenesten. Sjekk internettforbindelsen og prøv igjen.' }]);
     } finally {
       setLoading(false);
     }

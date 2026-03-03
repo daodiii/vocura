@@ -111,6 +111,9 @@ model ClinicalNote {
   contentEncrypted String    @map("content_encrypted")
   contentIv        String?   @map("content_iv")
   templateType     String?   @map("template_type")
+  status           String    @default("draft")
+  signedAt         DateTime? @map("signed_at")
+  signedBy         String?   @map("signed_by")
   epjTransferred   Boolean   @default(false) @map("epj_transferred")
   epjTransferredAt DateTime? @map("epj_transferred_at")
   retentionHours   Int       @default(48) @map("retention_hours")
@@ -122,6 +125,7 @@ model ClinicalNote {
 
   @@index([deleteAfter])
   @@index([userId])
+  @@index([status])
   @@map("clinical_notes")
 }
 

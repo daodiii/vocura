@@ -89,6 +89,7 @@ export default function SettingsPage() {
             }
         } catch (err) {
             console.error('Kunne ikke hente EPJ-status:', err);
+            setTestError('Kunne ikke hente EPJ-tilkoblingsstatus. Sjekk internettforbindelsen.');
         } finally {
             setEpjLoading(false);
         }
@@ -109,6 +110,7 @@ export default function SettingsPage() {
                 }
             } catch (err) {
                 console.error('Kunne ikke hente oppbevaringsinnstillinger:', err);
+                // Bruker standardverdier ved feil
             } finally {
                 setRetentionLoading(false);
             }
@@ -126,6 +128,7 @@ export default function SettingsPage() {
             });
         } catch (err) {
             console.error('Kunne ikke lagre oppbevaringsinnstillinger:', err);
+            alert('Kunne ikke lagre oppbevaringsinnstillinger. Sjekk internettforbindelsen og prøv igjen.');
         } finally {
             setRetentionSaving(false);
         }
@@ -151,7 +154,11 @@ export default function SettingsPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                setTestError(data.error || 'Tilkoblingen feilet');
+                if (res.status === 401) {
+                    setTestError('Økten din har utløpt. Logg inn på nytt og prøv igjen.');
+                } else {
+                    setTestError(data.error || 'Tilkoblingen til EPJ-systemet feilet. Sjekk at Client ID og Client Secret er korrekte.');
+                }
                 return;
             }
 
@@ -161,11 +168,11 @@ export default function SettingsPage() {
                 setClientSecret('');
                 await fetchEpjStatus();
             } else {
-                setTestError(data.testError || 'Tilkoblingstesten feilet. Sjekk legitimasjon.');
+                setTestError(data.testError || 'Tilkoblingstesten feilet. Verifiser at legitimasjon og behandlingsenhet-ID er korrekte.');
             }
         } catch (err) {
             console.error('EPJ test error:', err);
-            setTestError('Nettverksfeil. Prøv igjen senere.');
+            setTestError('Kunne ikke nå EPJ-tjenesten. Sjekk internettforbindelsen og prøv igjen.');
         } finally {
             setTestLoading(false);
         }
@@ -187,6 +194,7 @@ export default function SettingsPage() {
             }
         } catch (err) {
             console.error('Disconnect error:', err);
+            setTestError('Kunne ikke koble fra EPJ. Sjekk internettforbindelsen og prøv igjen.');
         } finally {
             setDisconnectLoading(false);
         }
@@ -418,7 +426,7 @@ export default function SettingsPage() {
                             </div>
                         ) : (
                             <p className="text-[13px] text-[var(--text-muted)]">
-                                Kunne ikke laste profil.
+                                Kunne ikke laste profilen din. Sjekk internettforbindelsen eller prøv å laste siden på nytt.
                             </p>
                         )}
                     </div>

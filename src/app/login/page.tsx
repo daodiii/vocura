@@ -62,7 +62,23 @@ export default function LoginPage() {
                 }
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'En feil oppstod';
+            const rawMsg = err instanceof Error ? err.message : '';
+            let message: string;
+            if (rawMsg.includes('Invalid login credentials')) {
+                message = 'Feil e-post eller passord. Sjekk at du har skrevet riktig.';
+            } else if (rawMsg.includes('Email not confirmed')) {
+                message = 'E-posten din er ikke bekreftet. Sjekk innboksen for en bekreftelseslenke.';
+            } else if (rawMsg.includes('User already registered')) {
+                message = 'Denne e-postadressen er allerede registrert. Prøv å logge inn i stedet.';
+            } else if (rawMsg.includes('Password should be at least')) {
+                message = 'Passordet er for kort. Bruk minst 6 tegn.';
+            } else if (rawMsg.includes('rate limit') || rawMsg.includes('too many')) {
+                message = 'For mange innloggingsforsøk. Vent noen minutter og prøv igjen.';
+            } else if (rawMsg) {
+                message = rawMsg;
+            } else {
+                message = 'Innlogging feilet. Sjekk legitimasjon og prøv igjen.';
+            }
             setError(message);
         } finally {
             setLoading(false);
@@ -112,7 +128,10 @@ export default function LoginPage() {
                               });
                               if (error) throw error;
                             } catch (err: unknown) {
-                              const message = err instanceof Error ? err.message : 'BankID-innlogging feilet';
+                              const rawMsg = err instanceof Error ? err.message : '';
+                              const message = rawMsg.includes('rate limit') || rawMsg.includes('too many')
+                                ? 'For mange innloggingsforsøk. Vent noen minutter og prøv igjen.'
+                                : rawMsg || 'BankID-innlogging feilet. Sjekk at BankID er aktivert og prøv igjen.';
                               setError(message);
                               setLoading(false);
                             }

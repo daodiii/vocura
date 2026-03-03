@@ -54,7 +54,12 @@ export default function AdminPage() {
         }
       }
     } catch (err) {
-      setLog((prev) => [...prev, `Feil: ${(err as Error).message}`]);
+      const errMsg = (err as Error).message || 'Ukjent feil';
+      if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('Failed')) {
+        setLog((prev) => [...prev, `Nettverksfeil: Kunne ikke nå indekseringstjenesten. Sjekk internettforbindelsen.`]);
+      } else {
+        setLog((prev) => [...prev, `Reindeksering feilet: ${errMsg}`]);
+      }
       setDone(false);
     } finally {
       setRunning(false);

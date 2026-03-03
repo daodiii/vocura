@@ -24,11 +24,12 @@ export default function Error({
           </div>
 
           <h2 className="text-2xl font-semibold text-[#EDEDED] mb-3">
-            Noe gikk galt
+            En uventet feil oppstod
           </h2>
 
           <p className="text-[#8B8B8B] mb-2">
-            En uventet feil oppstod. Vi beklager uleiligheten.
+            Siden kunne ikke lastes. Feilen er logget automatisk.
+            Prøv å laste siden på nytt, eller gå tilbake til forsiden.
           </p>
 
           {error.digest && (

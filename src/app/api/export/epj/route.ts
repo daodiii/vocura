@@ -76,8 +76,15 @@ export async function POST(req: Request) {
         );
     } catch (error: unknown) {
         console.error('EPJ push error:', error);
+        const errMsg = error instanceof Error ? error.message : '';
+        if (errMsg.includes('timeout') || errMsg.includes('ETIMEDOUT')) {
+            return NextResponse.json(
+                { error: 'EPJ-systemet svarte ikke i tide. Prøv igjen om et øyeblikk, eller bruk PDF-eksport.' },
+                { status: 504 }
+            );
+        }
         return NextResponse.json(
-            { error: 'Kunne ikke sende notat til EPJ. Pr\u00f8v igjen senere.' },
+            { error: 'Kunne ikke sende notat til EPJ. Prøv igjen eller bruk PDF-eksport som alternativ.' },
             { status: 500 }
         );
     }

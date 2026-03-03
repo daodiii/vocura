@@ -27,11 +27,18 @@ export default function PatientSummary() {
                 const data = await res.json();
                 setPatientSummary(data.summary);
             } else {
-                alert('Kunne ikke generere oppsummering. Prøv igjen.');
+                if (res.status === 401) {
+                    alert('Økten din har utløpt. Logg inn på nytt og prøv igjen.');
+                } else if (res.status === 429) {
+                    alert('Du har sendt for mange forespørsler. Vent et minutt og prøv igjen.');
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || 'Kunne ikke generere pasientoppsummering. Prøv igjen eller forenkle notatteksten.');
+                }
             }
         } catch (err) {
             console.error('Summary generation failed:', err);
-            alert('Feil ved generering av oppsummering.');
+            alert('Kunne ikke nå oppsummeringstjenesten. Sjekk internettforbindelsen din og prøv igjen.');
         } finally {
             setIsGenerating(false);
         }

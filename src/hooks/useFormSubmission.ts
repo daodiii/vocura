@@ -48,7 +48,7 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
         } catch {
-            setError('Kunne ikke lagre utkast lokalt');
+            setError('Kunne ikke lagre utkast lokalt. Nettleseren har kanskje ikke nok lagringsplass.');
         } finally {
             setSaving(false);
         }
@@ -76,8 +76,17 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
             });
 
             if (!res.ok) {
-                const text = await res.text().catch(() => '');
-                setError(text || `EPJ-feil (${res.status})`);
+                if (res.status === 401) {
+                    setError('Økten din har utløpt. Logg inn på nytt og prøv igjen.');
+                } else if (res.status === 400) {
+                    const text = await res.text().catch(() => '');
+                    setError(text || 'Skjemadata er ugyldige. Sjekk at alle obligatoriske felt er fylt ut.');
+                } else if (res.status === 502) {
+                    setError('EPJ-systemet er ikke tilgjengelig. Prøv igjen om noen minutter, eller bruk PDF-eksport.');
+                } else {
+                    const text = await res.text().catch(() => '');
+                    setError(text || `Kunne ikke sende skjema til EPJ (feilkode ${res.status}). Prøv igjen.`);
+                }
                 return null;
             }
 
@@ -88,12 +97,12 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
                 setLocalDraft(null);
                 return result;
             } else {
-                setError(result.error || 'Kunne ikke sende til EPJ');
+                setError(result.error || 'Kunne ikke sende skjema til EPJ. Bruk PDF-eksport som alternativ.');
                 return null;
             }
         } catch (err) {
             console.error('EPJ push failed:', err);
-            setError('Nettverksfeil ved sending til EPJ');
+            setError('Kunne ikke nå EPJ-tjenesten. Sjekk internettforbindelsen og prøv igjen, eller bruk PDF-eksport.');
             return null;
         } finally {
             setPushing(false);
@@ -126,9 +135,12 @@ export function useFormSubmission({ formType, patientId }: UseFormSubmissionOpti
                 a.download = `${formType}-${new Date().toISOString().split('T')[0]}.pdf`;
                 a.click();
                 URL.revokeObjectURL(url);
+            } else {
+                setError('Kunne ikke eksportere PDF. Prøv igjen eller kopier skjemadataene manuelt.');
             }
         } catch (err) {
-            console.error('Export failed:', err);
+            console.error('PDF-eksport feilet:', err);
+            setError('Kunne ikke koble til eksporttjenesten. Sjekk internettforbindelsen og prøv igjen.');
         }
     }, [formType]);
 

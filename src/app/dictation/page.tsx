@@ -85,9 +85,18 @@ export default function Dictation() {
 
             // Start waveform animation
             animationRef.current = requestAnimationFrame(updateWaveform);
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Error accessing microphone:', err);
-            alert('Kunne ikke få tilgang til mikrofonen. Vennligst sjekk tillatelser.');
+            const domErr = err as { name?: string };
+            if (domErr.name === 'NotAllowedError') {
+                alert('Mikrofontilgang ble avslått. Gi tillatelse i nettleserinnstillingene og prøv igjen.');
+            } else if (domErr.name === 'NotFoundError') {
+                alert('Ingen mikrofon funnet. Koble til en mikrofon og prøv igjen.');
+            } else if (domErr.name === 'NotReadableError') {
+                alert('Mikrofonen er opptatt av et annet program. Lukk andre apper som bruker mikrofonen.');
+            } else {
+                alert('Kunne ikke starte opptak. Sjekk at mikrofonen er tilkoblet og at nettleseren har tillatelse.');
+            }
         }
     };
 
@@ -117,15 +126,28 @@ export default function Dictation() {
             });
             const data = await response.json();
 
-            if (data.text) {
+            if (!response.ok) {
+                const errorMsg = data.error || '';
+                if (response.status === 401) {
+                    alert('Økten din har utløpt. Logg inn på nytt for å transkribere.');
+                } else if (response.status === 413) {
+                    alert('Opptaket er for stort (maks 25 MB). Prøv et kortere opptak.');
+                } else if (response.status === 415) {
+                    alert('Lydformatet støttes ikke. Bruk et vanlig format (WebM, MP3, WAV).');
+                } else if (response.status === 429) {
+                    alert('For mange forespørsler. Vent litt og prøv igjen.');
+                } else {
+                    alert(errorMsg || 'Transkribering feilet. Prøv igjen senere.');
+                }
+            } else if (data.text) {
                 setTranscript(prev => prev ? prev + ' ' + data.text : data.text);
             } else {
-                alert('Kunne ikke transkribere opptaket. Vennligst prøv igjen.');
+                alert('Ingen tale ble gjenkjent. Snakk tydelig nær mikrofonen og prøv igjen.');
             }
             setIsTranscribing(false);
         } catch (error) {
             console.error('Transcription failed:', error);
-            alert('Transkribering feilet. Vennligst prøv igjen.');
+            alert('Kunne ikke nå transkriberingstjenesten. Sjekk internettforbindelsen din og prøv igjen.');
             setIsTranscribing(false);
         }
     };

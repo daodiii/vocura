@@ -78,12 +78,15 @@ export default function Templates() {
             if (res.ok) {
                 const data: Template[] = await res.json();
                 setTemplates(data);
+            } else if (res.status === 401) {
+                console.error('Økt utløpt ved henting av maler');
+                setTemplates([]);
             } else {
-                console.error('Failed to fetch templates:', res.status);
+                console.error('Kunne ikke hente maler:', res.status);
                 setTemplates([]);
             }
         } catch (err) {
-            console.error('Error fetching templates:', err);
+            console.error('Nettverksfeil ved henting av maler:', err);
             setTemplates([]);
         } finally {
             setLoading(false);
@@ -119,7 +122,8 @@ export default function Templates() {
                 );
             }
         } catch (err) {
-            console.error('Failed to toggle favorite:', err);
+            console.error('Kunne ikke oppdatere favoritt:', err);
+            alert('Kunne ikke oppdatere favoritt. Sjekk internettforbindelsen og prøv igjen.');
         }
     };
 
@@ -133,9 +137,14 @@ export default function Templates() {
             });
             if (res.ok) {
                 setTemplates((prev) => prev.filter((t) => t.id !== template.id));
+            } else if (res.status === 401) {
+                alert('Økten din har utløpt. Logg inn på nytt for å slette malen.');
+            } else {
+                alert('Kunne ikke slette malen. Prøv igjen.');
             }
         } catch (err) {
-            console.error('Failed to delete template:', err);
+            console.error('Kunne ikke slette mal:', err);
+            alert('Kunne ikke slette malen. Sjekk internettforbindelsen og prøv igjen.');
         }
     };
 

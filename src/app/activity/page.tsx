@@ -74,8 +74,12 @@ export default function ActivityPage() {
         try {
             const res = await fetchWithTimeout('/api/activity?limit=50');
             if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || 'Kunne ikke hente aktiviteter');
+                const data = await res.json().catch(() => ({}));
+                if (res.status === 401) {
+                    setError('Økten din har utløpt. Logg inn på nytt for å se aktivitetsloggen.');
+                } else {
+                    setError(data.error || `Kunne ikke hente aktivitetslogg (feilkode ${res.status}). Prøv igjen.`);
+                }
                 return;
             }
             const data = await res.json();
@@ -83,7 +87,7 @@ export default function ActivityPage() {
             setLastRefresh(new Date());
         } catch (err) {
             console.error('Activity fetch error:', err);
-            setError('Nettverksfeil. Prøv igjen senere.');
+            setError('Kunne ikke nå serveren. Sjekk internettforbindelsen din og prøv igjen.');
         } finally {
             setLoading(false);
         }
