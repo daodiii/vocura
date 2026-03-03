@@ -338,12 +338,9 @@ export default function PrivacyPolicyPage() {
             <ArrowLeft className="w-4 h-4" />
             Tilbake til forsiden
           </Link>
-          <Link
-            href="/sikkerhet"
-            className="text-sm text-[#5E6AD2] hover:underline"
-          >
-            Sikkerhet og tillit
-          </Link>
+          <Link href="/sikkerhet" className="text-sm text-[#5E6AD2] hover:underline">Sikkerhet og tillit</Link>
+          <Link href="/dpia" className="text-sm text-[#5E6AD2] hover:underline">DPIA</Link>
+          <Link href="/sikkerhetsdokumentasjon" className="text-sm text-[#5E6AD2] hover:underline">All dokumentasjon</Link>
         </div>
       </main>
     </div>
