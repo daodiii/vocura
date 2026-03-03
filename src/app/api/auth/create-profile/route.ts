@@ -58,9 +58,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, profile });
     } catch (error: unknown) {
         console.error('Profile creation error:', error);
-        const message = error instanceof Error ? error.message : 'Ukjent feil';
         return NextResponse.json(
-            { error: 'Kunne ikke opprette profil', details: message },
+            { error: 'Kunne ikke opprette profil. Prøv igjen senere.' },
             { status: 500 }
         );
     }

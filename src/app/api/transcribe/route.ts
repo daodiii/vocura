@@ -70,8 +70,8 @@ export async function POST(req: Request) {
             );
         }
 
-        // File type validation
-        if (file.type && !ALLOWED_TYPES.includes(file.type)) {
+        // File type validation — reject files with missing or invalid MIME type
+        if (!file.type || !ALLOWED_TYPES.includes(file.type)) {
             return NextResponse.json(
                 { error: 'Ugyldig filtype. Kun lydformater er støttet.' },
                 { status: 415 }
@@ -163,7 +163,7 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json(
-            { error: `Transkribering feilet: ${errorMessage}` },
+            { error: 'Transkribering feilet. Prøv igjen senere.' },
             { status: 500 }
         );
     }

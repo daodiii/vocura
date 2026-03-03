@@ -9,8 +9,19 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import { FileText, Save, CheckCircle, Download, User, PenLine, PlusCircle, Printer, Mic, Shield, Lock, Bold, Italic, UnderlineIcon, List, ListOrdered, Heading2, Undo2, Redo2, Type, Sparkles, Copy, Check, Clock, Tag, Loader2, Bot, X, Send, ExternalLink } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { cn, fetchWithTimeout } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+
+const ALLOWED_HTML_TAGS = ['h2', 'h3', 'p', 'strong', 'em', 'u', 'ul', 'ol', 'li', 'br'];
+const ALLOWED_HTML_ATTRS: string[] = [];
+
+function sanitizeHtml(html: string): string {
+    return DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ALLOWED_HTML_TAGS,
+        ALLOWED_ATTR: ALLOWED_HTML_ATTRS,
+    });
+}
 import Toast from '@/components/Toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
 
@@ -308,7 +319,7 @@ function EditorContent_() {
             if (res.ok) {
                 const data = await res.json();
                 if (data.content) {
-                    editor.commands.setContent(data.content);
+                    editor.commands.setContent(sanitizeHtml(data.content));
                     setTimeout(() => editor.chain().focus('end').run(), 100);
                     setSaved(false);
                     setEpjPushSuccess(false);

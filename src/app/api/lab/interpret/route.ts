@@ -7,6 +7,23 @@ import { LAB_INTERPRET_PROMPT } from '@/lib/ai-prompts';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
 import { labInterpretSchema } from '@/lib/validations';
 import { lookupRange, classifyValue } from '@/lib/lab-reference-ranges';
+import { z } from 'zod';
+
+// Zod schema to validate AI-generated JSON output
+const aiLabResultSchema = z.object({
+  values: z.array(z.object({
+    name: z.string().max(200),
+    rawName: z.string().max(200),
+    value: z.number(),
+    unit: z.string().max(50),
+    referenceKey: z.string().max(50).regex(/^[a-zA-Z0-9_æøåÆØÅ\-]+$/),
+  })).max(100),
+  summary: z.object({
+    funn: z.string().max(5000),
+    kliniskKontekst: z.string().max(5000),
+    oppfolging: z.string().max(5000),
+  }),
+});
 
 export interface ParsedLabValue {
   name: string;
@@ -65,13 +82,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ingen respons fra AI' }, { status: 500 });
     }
 
-    const aiResult = JSON.parse(content) as {
-      values: Array<{ name: string; rawName: string; value: number; unit: string; referenceKey: string }>;
-      summary: { funn: string; kliniskKontekst: string; oppfolging: string };
-    };
+    let aiResult;
+    try {
+      aiResult = aiLabResultSchema.parse(JSON.parse(content));
+    } catch (parseError) {
+      console.error('AI returned invalid lab result format:', parseError);
+      return NextResponse.json(
+        { error: 'AI-tjenesten returnerte et ugyldig format. Prøv igjen.' },
+        { status: 502 }
+      );
+    }
 
     // Enrich values with reference ranges and classification
-    const enrichedValues: ParsedLabValue[] = (aiResult.values || []).map((v) => {
+    const enrichedValues: ParsedLabValue[] = aiResult.values.map((v) => {
       const range = lookupRange(v.referenceKey);
       const status = range ? classifyValue(v.value, range) : 'unknown';
       return {

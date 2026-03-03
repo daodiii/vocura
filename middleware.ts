@@ -9,6 +9,9 @@ const PROTECTED_PREFIXES = [
     '/forms',
     '/summary',
     '/templates',
+    '/admin',
+    '/lab',
+    '/felleskatalogen',
 ];
 
 export async function middleware(request: NextRequest) {

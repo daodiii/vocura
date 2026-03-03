@@ -20,9 +20,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ingen admin-tilgang' }, { status: 403 });
     }
 
-    // Parse optional limit param
+    // Parse and validate optional limit param
     const body = await req.json().catch(() => ({}));
     const limit: number | undefined = body.limit;
+
+    if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 10000)) {
+      return NextResponse.json({ error: 'Ugyldig limit-parameter. Må være et heltall mellom 1 og 10000.' }, { status: 400 });
+    }
 
     // Stream progress back as NDJSON
     const stream = new ReadableStream({

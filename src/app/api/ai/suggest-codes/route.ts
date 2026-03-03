@@ -38,6 +38,10 @@ export async function POST(req: Request) {
 
         const openai = new OpenAI();
 
+        // Validate profession against allowed list to prevent prompt injection
+        const ALLOWED_PROFESSIONS = ['lege', 'tannlege', 'psykolog', 'fysioterapeut'];
+        const safeProfession = profession && ALLOWED_PROFESSIONS.includes(profession) ? profession : undefined;
+
         const model = process.env.AI_MODEL_SUGGEST_CODES || 'gpt-4o';
 
         const completion = await openai.chat.completions.create({
@@ -76,7 +80,7 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'system',
-                    content: getCodeSuggestionPrompt(profession),
+                    content: getCodeSuggestionPrompt(safeProfession),
                 },
                 {
                     role: 'user',
