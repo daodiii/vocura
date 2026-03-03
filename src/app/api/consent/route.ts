@@ -9,6 +9,7 @@ const CONSENT_TYPES = [
   'gdpr_audio_recording',
   'gdpr_ai_processing',
   'gdpr_data_retention',
+  'patient_ai_informed',
 ] as const;
 
 const consentSchema = z.object({

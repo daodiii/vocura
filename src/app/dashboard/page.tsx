@@ -68,6 +68,7 @@ export default function Dashboard() {
     const [patientResults, setPatientResults] = useState<any[]>([]);
     const [showPatientDropdown, setShowPatientDropdown] = useState(false);
     const [patientSearchError, setPatientSearchError] = useState('');
+    const [patientInformed, setPatientInformed] = useState(false);
     const [isEPJConnected, setIsEPJConnected] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
@@ -173,6 +174,7 @@ export default function Dashboard() {
 
     const handlePatientNameChange = (value: string) => {
         setPatientName(value);
+        setPatientInformed(false);
         if (patientSearchTimeoutRef.current) {
             clearTimeout(patientSearchTimeoutRef.current);
         }
@@ -186,12 +188,32 @@ export default function Dashboard() {
         setPatientName(patient.displayName || patient.name || '');
         setShowPatientDropdown(false);
         setPatientResults([]);
+        setPatientInformed(false);
     };
 
     const handleConsentChange = (checked: boolean) => {
         setConsentGiven(checked);
         addConsentLogEntry(checked ? 'granted' : 'withdrawn');
         sessionStorage.setItem('vocura_gdpr_consent', checked.toString());
+    };
+
+    const handlePatientInformedChange = async (checked: boolean) => {
+        setPatientInformed(checked);
+        if (checked) {
+            try {
+                await fetchWithTimeout('/api/consent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        consentType: 'patient_ai_informed',
+                        granted: true,
+                        version: '1.0',
+                    }),
+                });
+            } catch {
+                // Silent fail — consent UI state is primary
+            }
+        }
     };
 
     // Delete all locally stored data (GDPR right to erasure)
@@ -201,6 +223,7 @@ export default function Dashboard() {
         localStorage.removeItem('vocura_accent_theme');
         sessionStorage.removeItem('vocura_gdpr_consent');
         setConsentGiven(false);
+        setPatientInformed(false);
         setTranscript('');
         setPatientId('');
         setPatientName('');
@@ -253,6 +276,10 @@ export default function Dashboard() {
     const startRecording = async () => {
         if (!consentGiven) {
             alert('Du må bekrefte samsvar med personvernregler før opptak kan starte.');
+            return;
+        }
+        if (!patientInformed) {
+            alert('Du må bekrefte at pasienten er informert om AI-behandling før opptak.');
             return;
         }
         try {
@@ -677,6 +704,22 @@ export default function Dashboard() {
                                     {consentGiven && (
                                         <Shield className="w-3.5 h-3.5 text-[var(--color-success)] shrink-0" />
                                     )}
+                                </div>
+                            )}
+
+                            {/* Per-Patient AI Consent Checkbox */}
+                            {!isRecording && !transcript && consentGiven && (
+                                <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 relative z-10">
+                                    <input
+                                        type="checkbox"
+                                        id="patient-informed"
+                                        checked={patientInformed}
+                                        onChange={(e) => handlePatientInformedChange(e.target.checked)}
+                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <label htmlFor="patient-informed" className="text-sm text-amber-800 dark:text-amber-200">
+                                        Pasienten er informert om at AI brukes til journalbehandling
+                                    </label>
                                 </div>
                             )}
                         </div>
