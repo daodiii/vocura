@@ -8,7 +8,7 @@ import type { Editor as TiptapEditor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
-import { FileText, Save, CheckCircle, Download, User, PenLine, PlusCircle, Printer, Mic, Shield, Lock, Bold, Italic, UnderlineIcon, List, ListOrdered, Heading2, Undo2, Redo2, Type, Sparkles, Copy, Check, Clock, Tag, Loader2, Bot, X, Send, ExternalLink } from 'lucide-react';
+import { FileText, Save, CheckCircle, Download, User, PenLine, PlusCircle, Printer, Mic, Shield, Lock, Bold, Italic, UnderlineIcon, List, ListOrdered, Heading2, Undo2, Redo2, Type, Sparkles, Copy, Check, Clock, Tag, Loader2, Bot, X, Send, ExternalLink, AlertTriangle, ShieldCheck, BadgeCheck } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { cn, fetchWithTimeout } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
@@ -54,11 +54,13 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
     if (!editor) return null;
 
     return (
-        <div className="flex items-center gap-1 p-2 border-b border-[rgba(255,255,255,0.06)] bg-[#111111]/80 flex-wrap">
+        <div className="flex items-center gap-1 p-2 border-b border-[rgba(255,255,255,0.06)] bg-[var(--surface-primary)]/80 flex-wrap" role="toolbar" aria-label="Tekstformatering">
             <button
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('bold') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Fet (Ctrl+B)"
+                aria-label="Fet skrift"
+                aria-pressed={editor.isActive('bold')}
             >
                 <Bold className="w-4 h-4" />
             </button>
@@ -66,6 +68,8 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
                 onClick={() => editor.chain().focus().toggleItalic().run()}
                 className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('italic') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Kursiv (Ctrl+I)"
+                aria-label="Kursiv skrift"
+                aria-pressed={editor.isActive('italic')}
             >
                 <Italic className="w-4 h-4" />
             </button>
@@ -73,16 +77,20 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
                 className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('underline') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Understreking (Ctrl+U)"
+                aria-label="Understrek"
+                aria-pressed={editor.isActive('underline')}
             >
                 <UnderlineIcon className="w-4 h-4" />
             </button>
 
-            <div className="w-px h-6 bg-[rgba(255,255,255,0.06)] mx-1" />
+            <div className="w-px h-6 bg-[rgba(255,255,255,0.06)] mx-1" role="separator" />
 
             <button
                 onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                 className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('heading', { level: 2 }) && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Overskrift"
+                aria-label="Overskrift nivå 2"
+                aria-pressed={editor.isActive('heading', { level: 2 })}
             >
                 <Heading2 className="w-4 h-4" />
             </button>
@@ -90,6 +98,8 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
                 className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('bulletList') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Punktliste"
+                aria-label="Punktliste"
+                aria-pressed={editor.isActive('bulletList')}
             >
                 <List className="w-4 h-4" />
             </button>
@@ -97,17 +107,20 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
                 className={cn("p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 cursor-pointer", editor.isActive('orderedList') && "bg-[rgba(94,106,210,0.08)] text-[#7B89DB]")}
                 title="Nummerert liste"
+                aria-label="Nummerert liste"
+                aria-pressed={editor.isActive('orderedList')}
             >
                 <ListOrdered className="w-4 h-4" />
             </button>
 
-            <div className="w-px h-6 bg-[rgba(255,255,255,0.06)] mx-1" />
+            <div className="w-px h-6 bg-[rgba(255,255,255,0.06)] mx-1" role="separator" />
 
             <button
                 onClick={() => editor.chain().focus().undo().run()}
                 disabled={!editor.can().undo()}
                 className="p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 disabled:opacity-30 cursor-pointer"
                 title="Angre (Ctrl+Z)"
+                aria-label="Angre"
             >
                 <Undo2 className="w-4 h-4" />
             </button>
@@ -116,6 +129,7 @@ function MenuBar({ editor }: { editor: TiptapEditor | null }) {
                 disabled={!editor.can().redo()}
                 className="p-2 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150 disabled:opacity-30 cursor-pointer"
                 title="Gjenta (Ctrl+Shift+Z)"
+                aria-label="Gjenta"
             >
                 <Redo2 className="w-4 h-4" />
             </button>
@@ -178,9 +192,24 @@ function EditorContent_() {
     const [fkMessages, setFkMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; sources?: Array<{ drugName: string; section: string; url: string }> }>>([]);
     const [fkLoading, setFkLoading] = useState(false);
 
+    // AI review gate state
+    const [needsReview, setNeedsReview] = useState(false);
+    const [showReviewWarning, setShowReviewWarning] = useState<'save' | 'epj' | null>(null);
+
     // Workflow toast state
     const [showSaveToast, setShowSaveToast] = useState(false);
     const [showTranscriptBanner, setShowTranscriptBanner] = useState(!!transcriptParam);
+
+    // Note signing/finalization state
+    const [noteId, setNoteId] = useState<string | null>(null);
+    const [noteStatus, setNoteStatus] = useState<'draft' | 'final'>('draft');
+    const [signedAt, setSignedAt] = useState<string | null>(null);
+    const [signedByName, setSignedByName] = useState<string | null>(null);
+    const [showSignConfirm, setShowSignConfirm] = useState(false);
+    const [signing, setSigning] = useState(false);
+    const [signError, setSignError] = useState<string | null>(null);
+
+    const isSigned = noteStatus === 'final';
 
     const editor = useEditor({
         immediatelyRender: false,
@@ -194,6 +223,7 @@ function EditorContent_() {
             Underline,
         ],
         content: '',
+        editable: !isSigned,
         editorProps: {
             attributes: {
                 class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] px-6 py-4 text-white leading-relaxed',
@@ -211,6 +241,30 @@ function EditorContent_() {
             })
             .catch(() => setIsEPJConnected(false));
     }, []);
+
+    // Sync editor editability with signed state
+    useEffect(() => {
+        if (editor) {
+            editor.setEditable(!isSigned);
+        }
+    }, [editor, isSigned]);
+
+    // Load note status if noteId is present (from URL param or after save)
+    const noteIdParam = searchParams.get('noteId');
+    useEffect(() => {
+        if (!noteIdParam) return;
+        setNoteId(noteIdParam);
+        fetch(`/api/clinical-notes/${noteIdParam}`)
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data) {
+                    setNoteStatus(data.status || 'draft');
+                    if (data.signedAt) setSignedAt(data.signedAt);
+                    if (data.signedBy) setSignedByName(data.signedBy);
+                }
+            })
+            .catch(() => { /* ignore */ });
+    }, [noteIdParam]);
 
     // Set default template from profession
     useEffect(() => {
@@ -271,9 +325,11 @@ function EditorContent_() {
             if (res.ok) {
                 const data = await res.json();
                 setSuggestedCodes(data.codes || []);
+            } else if (res.status === 401) {
+                console.warn('Økt utløpt ved henting av diagnosekoder');
             }
         } catch (err) {
-            console.error('Failed to fetch codes:', err);
+            console.error('Kunne ikke hente diagnosekoder:', err);
         } finally {
             setLoadingCodes(false);
         }
@@ -323,18 +379,25 @@ function EditorContent_() {
                     setTimeout(() => editor.chain().focus('end').run(), 100);
                     setSaved(false);
                     setEpjPushSuccess(false);
+                    setNeedsReview(true);
                 }
+            } else {
+                console.error('AI-strukturering feilet med status:', res.status);
             }
         } catch (err) {
-            console.error('Failed to structure note:', err);
+            console.error('Kunne ikke strukturere journalnotat:', err);
         } finally {
             setStructuring(false);
         }
     }, [editor, transcriptParam, activeTemplate, professionParam, patientName]);
 
     // Save handler — localStorage only
-    const handleSave = useCallback(() => {
+    const handleSave = useCallback((bypassReviewGate = false) => {
         if (!editor) return;
+        if (needsReview && !bypassReviewGate) {
+            setShowReviewWarning('save');
+            return;
+        }
         try {
             const backup = {
                 content: editor.getHTML(),
@@ -351,7 +414,35 @@ function EditorContent_() {
         } catch {
             // localStorage full or unavailable
         }
-    }, [editor, activeTemplate, patientName, selectedCodes]);
+    }, [editor, activeTemplate, patientName, selectedCodes, needsReview]);
+
+    // Sign/finalize note handler
+    const handleSignNote = useCallback(async () => {
+        if (!noteId || isSigned) return;
+        setShowSignConfirm(false);
+        setSigning(true);
+        setSignError(null);
+        try {
+            const res = await fetchWithTimeout(`/api/clinical-notes/${noteId}/sign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setNoteStatus('final');
+                setSignedAt(data.signedAt);
+                setSignedByName(profile?.name || null);
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                setSignError(errData.error || `Kunne ikke signere notatet (${res.status}).`);
+            }
+        } catch (err) {
+            console.error('Signering feilet:', err);
+            setSignError('Nettverksfeil ved signering. Vennligst prøv igjen.');
+        } finally {
+            setSigning(false);
+        }
+    }, [noteId, isSigned, profile]);
 
     // Push to EPJ handler
     const handlePushToEPJ = useCallback(async () => {
@@ -424,9 +515,12 @@ function EditorContent_() {
                 a.download = `${activeTemplate || 'journalnotat'}-${new Date().toISOString().split('T')[0]}.pdf`;
                 a.click();
                 URL.revokeObjectURL(url);
+            } else {
+                alert('Kunne ikke eksportere PDF. Prøv igjen eller kopier teksten manuelt.');
             }
         } catch (err) {
-            console.error('Export failed:', err);
+            console.error('PDF-eksport feilet:', err);
+            alert('Kunne ikke koble til eksporttjenesten. Sjekk internettforbindelsen og prøv igjen.');
         }
     }, [editor, activeTemplate, profile]);
 
@@ -505,12 +599,18 @@ function EditorContent_() {
             }
             if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
                 e.preventDefault();
-                if (isEPJConnected) setShowEpjConfirmModal(true);
+                if (isEPJConnected) {
+                    if (needsReview) {
+                        setShowReviewWarning('epj');
+                    } else {
+                        setShowEpjConfirmModal(true);
+                    }
+                }
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleSave, isEPJConnected]);
+    }, [handleSave, isEPJConnected, needsReview]);
 
     const sendFkMessage = async (text: string) => {
         if (!text.trim() || fkLoading) return;
@@ -527,11 +627,11 @@ function EditorContent_() {
             const data = await res.json();
             setFkMessages((prev) => [...prev, {
                 role: 'assistant',
-                content: res.ok ? data.answer : (data.error || 'Noe gikk galt.'),
+                content: res.ok ? data.answer : (data.error || 'Kunne ikke hente svar fra Felleskatalogen. Prøv igjen.'),
                 sources: res.ok ? data.sources : undefined,
             }]);
         } catch {
-            setFkMessages((prev) => [...prev, { role: 'assistant', content: 'Nettverksfeil.' }]);
+            setFkMessages((prev) => [...prev, { role: 'assistant', content: 'Kunne ikke nå Felleskatalogen-tjenesten. Sjekk internettforbindelsen og prøv igjen.' }]);
         } finally {
             setFkLoading(false);
         }
@@ -575,12 +675,12 @@ function EditorContent_() {
     const transcriptWordCount = transcriptParam ? transcriptParam.split(/\s+/).filter(Boolean).length : 0;
 
     return (
-        <div className="flex flex-col h-screen bg-[#0A0A0A] overflow-hidden">
+        <div className="flex flex-col h-screen bg-[var(--surface-deep)] overflow-hidden">
             {/* App Header */}
             <AppHeader />
 
             {/* Editor Action Bar */}
-            <div className="h-12 flex items-center justify-between px-6 border-b border-[rgba(255,255,255,0.06)] bg-[#111111]/80 shrink-0">
+            <div className="h-12 flex items-center justify-between px-6 border-b border-[rgba(255,255,255,0.06)] bg-[var(--surface-primary)]/80 shrink-0">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[rgba(16,185,129,0.08)] text-[#10B981] text-xs font-medium">
                     <Lock className="w-3.5 h-3.5" />
                     <span className="text-[11px] font-semibold">Sikker kanal</span>
@@ -596,20 +696,27 @@ function EditorContent_() {
                                 : 'text-[rgba(255,255,255,0.6)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                         )}
                         title="Felleskatalogen (legemiddelassistent)"
+                        aria-label="Felleskatalogen legemiddelassistent"
                     >
                         <Bot className="w-3.5 h-3.5" />
                         FK
                     </button>
-                    <div aria-live="polite" aria-atomic="true">
+                    <div aria-live="polite" aria-atomic="true" className="flex items-center gap-2">
+                        {needsReview && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-[#F59E0B] font-semibold px-2 py-0.5 rounded-md bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.2)]">
+                                <AlertTriangle className="w-3 h-3" />
+                                AI-gjennomgang kreves
+                            </span>
+                        )}
                         {hasUnsavedChanges && (
                             <span className="text-[11px] text-[#F59E0B] font-medium mr-1">Ulagrede endringer</span>
                         )}
                     </div>
                     <button
-                        onClick={handleSave}
-                        disabled={saving}
+                        onClick={() => handleSave()}
+                        disabled={saving || isSigned}
                         className="text-white hover:text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
-                        title="Lagre utkast (Ctrl+S)"
+                        title={isSigned ? "Signerte notater kan ikke redigeres" : "Lagre utkast (Ctrl+S)"}
                     >
                         {saving ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -621,7 +728,13 @@ function EditorContent_() {
                         {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre utkast'}
                     </button>
                     <button
-                        onClick={() => setShowEpjConfirmModal(true)}
+                        onClick={() => {
+                            if (needsReview) {
+                                setShowReviewWarning('epj');
+                            } else {
+                                setShowEpjConfirmModal(true);
+                            }
+                        }}
                         disabled={epjPushing || !isEPJConnected}
                         className={cn(
                             "text-xs py-2 px-4 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer rounded-lg font-medium transition-colors duration-150",
@@ -640,10 +753,34 @@ function EditorContent_() {
                         )}
                         {epjPushing ? 'Sender...' : epjPushSuccess ? 'Sendt til EPJ!' : 'Send til EPJ'}
                     </button>
+                    {/* Sign / Finalize note button */}
+                    {noteId && (
+                        <button
+                            onClick={() => setShowSignConfirm(true)}
+                            disabled={isSigned || signing || !noteId}
+                            className={cn(
+                                "text-xs py-2 px-4 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer rounded-lg font-medium transition-colors duration-150",
+                                isSigned
+                                    ? "bg-[rgba(16,185,129,0.1)] text-[#10B981] border border-[rgba(16,185,129,0.2)]"
+                                    : "bg-[rgba(245,158,11,0.1)] hover:bg-[rgba(245,158,11,0.15)] text-[#F59E0B] border border-[rgba(245,158,11,0.2)]"
+                            )}
+                            title={isSigned ? "Notatet er signert" : "Signer og lås notatet"}
+                        >
+                            {signing ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : isSigned ? (
+                                <BadgeCheck className="w-3.5 h-3.5" />
+                            ) : (
+                                <PenLine className="w-3.5 h-3.5" />
+                            )}
+                            {signing ? 'Signerer...' : isSigned ? 'Signert' : 'Signer notat'}
+                        </button>
+                    )}
                     <button
                         onClick={handleCopy}
                         className="border border-[rgba(255,255,255,0.06)] text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
                         title="Kopier tekst"
+                        aria-label="Kopier tekst til utklippstavle"
                     >
                         {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                         {copied ? 'Kopiert!' : 'Kopier'}
@@ -651,6 +788,7 @@ function EditorContent_() {
                     <button
                         onClick={handleExport}
                         className="border border-[rgba(255,255,255,0.06)] text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
+                        aria-label="Eksporter som PDF"
                     >
                         <Download className="w-3.5 h-3.5" /> Eksport PDF
                     </button>
@@ -660,7 +798,7 @@ function EditorContent_() {
             {/* Main Layout */}
             <main className="flex flex-1 w-full overflow-hidden">
                 {/* Sidebar - Templates */}
-                <aside className="w-60 flex flex-col bg-[#111111] border-r border-[rgba(255,255,255,0.06)] shrink-0">
+                <aside className="w-60 flex flex-col bg-[var(--surface-primary)] border-r border-[rgba(255,255,255,0.06)] shrink-0">
                     <div className="p-5">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-white mb-4">Maler ({professionLabel})</h3>
                         <div className="space-y-1">
@@ -716,7 +854,7 @@ function EditorContent_() {
                                         "w-full text-left p-2.5 rounded-lg border transition-all duration-150 text-xs cursor-pointer",
                                         selectedCodes.includes(item.code)
                                             ? "bg-[rgba(94,106,210,0.08)] border-[#5E6AD2] text-[#7B89DB]"
-                                            : "bg-[#191919] border-[rgba(255,255,255,0.06)] text-white hover:border-[#5E6AD2]"
+                                            : "bg-[var(--surface-elevated)] border-[rgba(255,255,255,0.06)] text-white hover:border-[#5E6AD2]"
                                     )}
                                 >
                                     <div className="flex items-center justify-between mb-0.5">
@@ -752,7 +890,7 @@ function EditorContent_() {
                     </div>
 
                     <div className="mt-auto p-5 border-t border-[rgba(255,255,255,0.06)]">
-                        <div className="p-3 rounded-lg bg-[#191919] border border-[rgba(255,255,255,0.06)]">
+                        <div className="p-3 rounded-lg bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)]">
                             <p className="text-[11px] font-semibold uppercase tracking-wider text-white mb-1.5">Systemstatus</p>
                             <div className="flex items-center gap-2">
                                 <div className="flex-1 h-1.5 bg-[rgba(255,255,255,0.03)] rounded-full overflow-hidden">
@@ -765,7 +903,7 @@ function EditorContent_() {
                 </aside>
 
                 {/* Dictation Panel */}
-                <section className="flex flex-col w-[32%] min-w-[280px] bg-[#111111] border-r border-[rgba(255,255,255,0.06)] shrink-0 animate-fade-in">
+                <section className="flex flex-col w-[32%] min-w-[280px] bg-[var(--surface-primary)] border-r border-[rgba(255,255,255,0.06)] shrink-0 animate-fade-in">
                     <div className="p-5 border-b border-[rgba(255,255,255,0.06)] flex justify-between items-center">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-white">Innspilt diktering</h3>
                         {transcriptParam && (
@@ -776,7 +914,7 @@ function EditorContent_() {
                     <div className="flex-1 overflow-y-auto p-6">
                         {transcriptParam ? (
                             <>
-                                <div className="p-4 bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl">
+                                <div className="p-4 bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl">
                                     <p className="text-sm leading-relaxed text-white border-l-3 border-[#5E6AD2] pl-4">
                                         {transcriptParam}
                                     </p>
@@ -827,7 +965,7 @@ function EditorContent_() {
 
                         {/* Selected diagnosis codes */}
                         {selectedCodes.length > 0 && (
-                            <div className="mt-4 p-3 bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-lg">
+                            <div className="mt-4 p-3 bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-lg">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Tag className="w-3.5 h-3.5 text-[#7B89DB]" />
                                     <span className="text-xs font-semibold text-white uppercase tracking-wider">Valgte diagnosekoder</span>
@@ -853,11 +991,11 @@ function EditorContent_() {
                             <h2 className="text-3xl font-bold text-white">Klinisk journal</h2>
                             <div className="mt-2 flex items-center gap-3 text-sm text-white">
                                 <span className="font-medium text-[#7B89DB]">{activeTemplate}</span>
-                                <span className="w-1 h-1 rounded-full bg-[#5C5C5C]" />
+                                <span className="w-1 h-1 rounded-full bg-[var(--text-muted)]" />
                                 <span>{professionLabel}</span>
                                 {patientName && (
                                     <>
-                                        <span className="w-1 h-1 rounded-full bg-[#5C5C5C]" />
+                                        <span className="w-1 h-1 rounded-full bg-[var(--text-muted)]" />
                                         <span className="text-white font-medium">{patientName}</span>
                                     </>
                                 )}
@@ -906,18 +1044,63 @@ function EditorContent_() {
                         </div>
                     )}
 
+                    {/* AI review gate banner */}
+                    {needsReview && (
+                        <div className="px-6 py-3 bg-[rgba(245,158,11,0.1)] border-b border-[rgba(245,158,11,0.25)] flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <AlertTriangle className="w-4 h-4 text-[#F59E0B] shrink-0" />
+                                <p className="text-sm text-[#F59E0B]">
+                                    AI-generert innhold krever gjennomgang. Bekreft at innholdet er korrekt for lagring.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setNeedsReview(false)}
+                                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[rgba(245,158,11,0.15)] hover:bg-[rgba(245,158,11,0.25)] text-[#F59E0B] text-xs font-semibold transition-colors cursor-pointer border border-[rgba(245,158,11,0.3)]"
+                            >
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                Bekreft gjennomgang
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Signed note banner */}
+                    {isSigned && (
+                        <div className="px-6 py-3 bg-[rgba(16,185,129,0.08)] border-b border-[rgba(16,185,129,0.2)] flex items-center gap-3">
+                            <BadgeCheck className="w-5 h-5 text-[#10B981] shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-[#10B981]">
+                                    Signert notat — skrivebeskyttet
+                                </p>
+                                <p className="text-xs text-[rgba(255,255,255,0.5)] mt-0.5">
+                                    Signert av {signedByName || profile?.name || 'ukjent'}
+                                    {signedAt && (
+                                        <> den {new Date(signedAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</>
+                                    )}
+                                </p>
+                            </div>
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[rgba(16,185,129,0.1)] text-[#10B981] text-xs font-semibold border border-[rgba(16,185,129,0.2)]">
+                                <Lock className="w-3 h-3" />
+                                Låst
+                            </div>
+                        </div>
+                    )}
+
                     {/* Tiptap Toolbar */}
-                    <MenuBar editor={editor} />
+                    {!isSigned && <MenuBar editor={editor} />}
 
                     {/* Rich Text Editor */}
-                    <div className="flex-1 overflow-y-auto bg-[#111111]">
+                    <div className={cn(
+                        "flex-1 overflow-y-auto bg-[var(--surface-primary)] transition-all duration-300",
+                        needsReview && !isSigned && "ring-1 ring-inset ring-[rgba(245,158,11,0.3)]",
+                        isSigned && "opacity-90"
+                    )}>
                         <div className="max-w-none">
                             <EditorContent editor={editor} />
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="px-8 py-4 border-t border-[rgba(255,255,255,0.06)] bg-[#111111]/80 flex justify-between items-center">
+                    <div className="px-8 py-4 border-t border-[rgba(255,255,255,0.06)] bg-[var(--surface-primary)]/80 flex justify-between items-center">
                         <div className="flex items-center gap-6">
                             <div>
                                 <span className="text-[10px] font-semibold uppercase tracking-wider text-white block">Digitalt fingeravtrykk</span>
@@ -940,7 +1123,7 @@ function EditorContent_() {
 
                 {/* Felleskatalogen Panel */}
                 {fkPanelOpen && (
-                    <div className="w-[380px] shrink-0 border-l border-[rgba(255,255,255,0.06)] flex flex-col bg-[#111111]">
+                    <div className="w-[380px] shrink-0 border-l border-[rgba(255,255,255,0.06)] flex flex-col bg-[var(--surface-primary)]">
                         <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.06)]">
                             <div className="flex items-center gap-2">
                                 <Bot className="w-4 h-4 text-[#7B89DB]" />
@@ -966,7 +1149,7 @@ function EditorContent_() {
                                             {msg.content}
                                         </span>
                                     ) : (
-                                        <div className="p-3 rounded-lg bg-[#191919] border border-[rgba(255,255,255,0.06)]">
+                                        <div className="p-3 rounded-lg bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)]">
                                             <p className="text-xs text-white leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                                             {msg.sources && msg.sources.length > 0 && (
                                                 <div className="mt-2 pt-2 border-t border-[rgba(255,255,255,0.06)] flex flex-wrap gap-1">
@@ -1008,7 +1191,7 @@ function EditorContent_() {
                                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFkMessage(fkInput); } }}
                                     placeholder="Spør om et legemiddel..."
                                     rows={1}
-                                    className="flex-1 bg-[#191919] rounded-lg px-3 py-2 text-xs text-white placeholder:text-[rgba(255,255,255,0.3)] border border-[rgba(255,255,255,0.06)] focus:outline-none focus:border-[#5E6AD2] resize-none"
+                                    className="flex-1 bg-[var(--surface-elevated)] rounded-lg px-3 py-2 text-xs text-white placeholder:text-[rgba(255,255,255,0.3)] border border-[rgba(255,255,255,0.06)] focus:outline-none focus:border-[#5E6AD2] resize-none"
                                 />
                                 <button
                                     onClick={() => sendFkMessage(fkInput)}
@@ -1057,6 +1240,88 @@ function EditorContent_() {
                 </div>
             )}
 
+            {/* AI review warning modal */}
+            {showReviewWarning && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center" onClick={() => setShowReviewWarning(null)}>
+                    <div className="bg-[#1A1A1A] border border-[rgba(245,158,11,0.3)] rounded-xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-2.5 mb-3">
+                            <AlertTriangle className="w-5 h-5 text-[#F59E0B]" />
+                            <h3 className="text-base font-semibold text-white">AI-innhold ikke gjennomgatt</h3>
+                        </div>
+                        <p className="text-sm text-[rgba(255,255,255,0.7)] mb-6">
+                            Du har ikke bekreftet gjennomgang av AI-generert innhold. Klinisk validering anbefales sterkt for pasientsikkerhet. Vil du fortsette uten bekreftelse?
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowReviewWarning(null);
+                                    setNeedsReview(false);
+                                    // Scroll to top of editor so banner removal is visible
+                                }}
+                                className="flex-1 text-sm font-medium py-2 px-4 rounded-lg bg-[rgba(245,158,11,0.15)] text-[#F59E0B] hover:bg-[rgba(245,158,11,0.25)] transition-colors cursor-pointer border border-[rgba(245,158,11,0.3)]"
+                            >
+                                Bekreft og fortsett
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const action = showReviewWarning;
+                                    setShowReviewWarning(null);
+                                    if (action === 'save') {
+                                        handleSave(true);
+                                    } else if (action === 'epj') {
+                                        setShowEpjConfirmModal(true);
+                                    }
+                                }}
+                                className="flex-1 text-sm font-medium py-2 px-4 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.6)] hover:bg-[rgba(255,255,255,0.05)] transition-colors cursor-pointer"
+                            >
+                                Fortsett uten bekreftelse
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Sign confirmation modal */}
+            {showSignConfirm && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center" onClick={() => setShowSignConfirm(false)}>
+                    <div className="bg-[#1A1A1A] border border-[rgba(245,158,11,0.3)] rounded-xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-2.5 mb-3">
+                            <PenLine className="w-5 h-5 text-[#F59E0B]" />
+                            <h3 className="text-base font-semibold text-white">Signer notat</h3>
+                        </div>
+                        <p className="text-sm text-[rgba(255,255,255,0.7)] mb-2">
+                            Er du sikker på at du vil signere dette notatet?
+                        </p>
+                        <p className="text-sm text-[#F59E0B] mb-6">
+                            Signerte notater kan ikke redigeres eller slettes. Dette er i henhold til norsk helselovgivning.
+                        </p>
+                        <div className="space-y-2 text-sm text-[rgba(255,255,255,0.7)] mb-6 p-3 bg-[rgba(255,255,255,0.03)] rounded-lg border border-[rgba(255,255,255,0.06)]">
+                            <p><strong className="text-white">Signert av:</strong> {profile?.name || 'Lege'}</p>
+                            <p><strong className="text-white">Mal:</strong> {activeTemplate || 'Journalnotat'}</p>
+                            {patientName && (
+                                <p><strong className="text-white">Pasient:</strong> {patientName}</p>
+                            )}
+                            <p><strong className="text-white">Tidspunkt:</strong> {new Date().toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowSignConfirm(false)}
+                                className="flex-1 text-sm font-medium py-2 px-4 rounded-lg border border-[rgba(255,255,255,0.1)] text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors cursor-pointer"
+                            >
+                                Avbryt
+                            </button>
+                            <button
+                                onClick={handleSignNote}
+                                className="flex-1 bg-[#F59E0B] hover:bg-[#D97706] text-black text-sm font-semibold py-2 px-4 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                                <PenLine className="w-3.5 h-3.5" />
+                                Bekreft signering
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Workflow toasts */}
             {showSaveToast && (
                 <Toast
@@ -1074,6 +1339,14 @@ function EditorContent_() {
                     autoDismissMs={8000}
                 />
             )}
+            {signError && (
+                <Toast
+                    message={signError}
+                    type="error"
+                    onDismiss={() => setSignError(null)}
+                    autoDismissMs={8000}
+                />
+            )}
         </div>
     );
 }
@@ -1081,7 +1354,7 @@ function EditorContent_() {
 export default function Editor() {
     return (
         <Suspense fallback={
-            <div className="flex h-screen items-center justify-center bg-[#0A0A0A]">
+            <div className="flex h-screen items-center justify-center bg-[var(--surface-deep)]">
                 <div className="text-center">
                     <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                     <p className="text-sm text-white">Laster editor...</p>

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
@@ -134,16 +135,17 @@ export default function OpptreningsplanForm() {
     const hjemmeovelser = ovelser.filter(o => o.hjemmeovelse);
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[var(--surface-primary)]">
             <AppHeader />
 
             {/* Action Bar */}
             <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'Opptreningsplan' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
@@ -220,7 +222,7 @@ export default function OpptreningsplanForm() {
                                         type="text"
                                         value={formData.patientNavn}
                                         onChange={(e) => updateField('patientNavn', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         placeholder="Fornavn Etternavn"
                                     />
                                 </div>
@@ -231,7 +233,7 @@ export default function OpptreningsplanForm() {
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
                                         onBlur={() => setFnrError(validateFnr(formData.patientFnr) || '')}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
@@ -243,7 +245,7 @@ export default function OpptreningsplanForm() {
                                         type="date"
                                         value={formData.vurderingsDato}
                                         onChange={(e) => updateField('vurderingsDato', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                     />
                                 </div>
                             </div>
@@ -264,7 +266,7 @@ export default function OpptreningsplanForm() {
                                         type="text"
                                         value={formData.diagnose}
                                         onChange={(e) => updateField('diagnose', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         placeholder="Hoveddiagnose"
                                     />
                                 </div>
@@ -274,7 +276,7 @@ export default function OpptreningsplanForm() {
                                         type="text"
                                         value={formData.diagnoseKode}
                                         onChange={(e) => updateField('diagnoseKode', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] font-mono"
                                         placeholder="L03 / M54.5"
                                     />
                                 </div>
@@ -286,7 +288,7 @@ export default function OpptreningsplanForm() {
                                 <textarea
                                     value={formData.naaverendeFunksjon}
                                     onChange={(e) => updateField('naaverendeFunksjon', e.target.value)}
-                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[100px] resize-y"
+                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] min-h-[100px] resize-y"
                                     placeholder="Beskriv pasientens nåværende funksjonsnivå..."
                                 />
                             </div>
@@ -306,7 +308,7 @@ export default function OpptreningsplanForm() {
                                     <textarea
                                         value={formData.kortsiktigeMaal}
                                         onChange={(e) => updateField('kortsiktigeMaal', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[80px] resize-y"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] min-h-[80px] resize-y"
                                         placeholder="Beskriv kortsiktige mål for rehabiliteringen..."
                                     />
                                 </div>
@@ -315,7 +317,7 @@ export default function OpptreningsplanForm() {
                                     <textarea
                                         value={formData.langsiktigeMaal}
                                         onChange={(e) => updateField('langsiktigeMaal', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[80px] resize-y"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] min-h-[80px] resize-y"
                                         placeholder="Beskriv langsiktige mål for rehabiliteringen..."
                                     />
                                 </div>
@@ -366,7 +368,7 @@ export default function OpptreningsplanForm() {
                                                         type="text"
                                                         value={ovelse.navn}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'navn', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                         placeholder="Øvelsesnavn"
                                                     />
                                                 </div>
@@ -375,7 +377,7 @@ export default function OpptreningsplanForm() {
                                                     <select
                                                         value={ovelse.frekvens}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'frekvens', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                     >
                                                         <option value="">Velg...</option>
                                                         <option value="1x/uke">1x/uke</option>
@@ -396,7 +398,7 @@ export default function OpptreningsplanForm() {
                                                         type="text"
                                                         value={ovelse.sett}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'sett', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                         placeholder="Antall sett"
                                                     />
                                                 </div>
@@ -406,7 +408,7 @@ export default function OpptreningsplanForm() {
                                                         type="text"
                                                         value={ovelse.repetisjoner}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'repetisjoner', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                         placeholder="Antall repetisjoner"
                                                     />
                                                 </div>
@@ -416,7 +418,7 @@ export default function OpptreningsplanForm() {
                                                         type="text"
                                                         value={ovelse.intensitet}
                                                         onChange={(e) => updateOvelse(ovelse.id, 'intensitet', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                         placeholder="Intensitet/belastning"
                                                     />
                                                 </div>
@@ -428,7 +430,7 @@ export default function OpptreningsplanForm() {
                                                 <textarea
                                                     value={ovelse.beskrivelse}
                                                     onChange={(e) => updateOvelse(ovelse.id, 'beskrivelse', e.target.value)}
-                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[40px] resize-y"
+                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] min-h-[40px] resize-y"
                                                     placeholder="Beskrivelse og instruksjoner..."
                                                 />
                                             </div>
@@ -440,7 +442,7 @@ export default function OpptreningsplanForm() {
                                                     type="text"
                                                     value={ovelse.progresjonskriterier}
                                                     onChange={(e) => updateOvelse(ovelse.id, 'progresjonskriterier', e.target.value)}
-                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                     placeholder="Kriterier for progresjon, f.eks. øk med 2kg når 12 reps er oppnådd"
                                                 />
                                             </div>
@@ -483,7 +485,7 @@ export default function OpptreningsplanForm() {
                                     <textarea
                                         value={formData.kontraindikasjoner}
                                         onChange={(e) => updateField('kontraindikasjoner', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[60px] resize-y"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] min-h-[60px] resize-y"
                                         placeholder="Kontraindikasjoner..."
                                     />
                                 </div>
@@ -492,7 +494,7 @@ export default function OpptreningsplanForm() {
                                     <textarea
                                         value={formData.forholdsregler}
                                         onChange={(e) => updateField('forholdsregler', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[60px] resize-y"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] min-h-[60px] resize-y"
                                         placeholder="Forholdsregler under trening..."
                                     />
                                 </div>
@@ -508,7 +510,7 @@ export default function OpptreningsplanForm() {
                             <p className="text-xs text-[#7D7267] mb-4 ml-6">Automatisk generert fra øvelser markert som hjemmeøvelser</p>
 
                             {hjemmeovelser.length === 0 ? (
-                                <div className="p-4 bg-[#F5F2ED] rounded-lg border border-[#DDD7CE]">
+                                <div className="p-4 bg-[var(--surface-primary)] rounded-lg border border-[#DDD7CE]">
                                     <div className="flex items-start gap-3">
                                         <Info className="w-4 h-4 text-[#7D7267] shrink-0 mt-0.5" />
                                         <p className="text-sm text-[#7D7267]">
@@ -575,7 +577,7 @@ export default function OpptreningsplanForm() {
                                                         type="text"
                                                         value={milepel.beskrivelse}
                                                         onChange={(e) => updateMilepel(milepel.id, 'beskrivelse', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                         placeholder="Milepælbeskrivelse"
                                                     />
                                                 </div>
@@ -585,7 +587,7 @@ export default function OpptreningsplanForm() {
                                                         type="date"
                                                         value={milepel.maalDato}
                                                         onChange={(e) => updateMilepel(milepel.id, 'maalDato', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                     />
                                                 </div>
                                             </div>
@@ -596,7 +598,7 @@ export default function OpptreningsplanForm() {
                                                     type="text"
                                                     value={milepel.kriterier}
                                                     onChange={(e) => updateMilepel(milepel.id, 'kriterier', e.target.value)}
-                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                     placeholder="Oppnåelseskriterier"
                                                 />
                                             </div>
@@ -629,7 +631,7 @@ export default function OpptreningsplanForm() {
                                         type="date"
                                         value={formData.revurderingsDato}
                                         onChange={(e) => updateField('revurderingsDato', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                     />
                                 </div>
                                 <div>
@@ -637,7 +639,7 @@ export default function OpptreningsplanForm() {
                                     <input
                                         type="text"
                                         value={formData.terapeutNavn}
-                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-[var(--surface-primary)] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         readOnly
                                     />
                                 </div>
@@ -648,7 +650,7 @@ export default function OpptreningsplanForm() {
                                 <textarea
                                     value={formData.terapeutNotater}
                                     onChange={(e) => updateField('terapeutNotater', e.target.value)}
-                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] min-h-[80px] resize-y"
+                                    className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] min-h-[80px] resize-y"
                                     placeholder="Kliniske notater og observasjoner..."
                                 />
                             </div>

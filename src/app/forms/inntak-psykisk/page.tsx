@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Brain, AlertTriangle, Calendar, Info, Heart, Pill, Wine, Users, ClipboardList, FileText, Loader2 } from 'lucide-react';
 import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
 export default function InntakPsykiskForm() {
@@ -94,16 +95,17 @@ export default function InntakPsykiskForm() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[var(--surface-primary)]">
             <AppHeader />
 
             {/* Action Bar */}
             <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'Inntaksnotat' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}

@@ -1,17 +1,40 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Send, AlertCircle, Info, FileText, Plus, Trash2, Paperclip, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Send, AlertCircle, Info, FileText, Plus, Trash2, Paperclip, Loader2, XCircle } from 'lucide-react';
 import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
+
+// --- Validation types and helpers ---
+
+type FieldErrors = Record<string, string>;
+type TouchedFields = Record<string, boolean>;
+
+interface ValidationRule {
+    field: string;
+    label: string;
+}
+
+const REQUIRED_FIELDS: ValidationRule[] = [
+    { field: 'patientNavn', label: 'Pasientens navn' },
+    { field: 'patientFnr', label: 'Fodselsnummer' },
+    { field: 'spesialistType', label: 'Spesialitet' },
+    { field: 'diagnoseKode', label: 'Diagnosekode' },
+    { field: 'diagnoseBeskrivelse', label: 'Diagnosebeskrivelse' },
+    { field: 'sykehistorie', label: 'Sykehistorie og aktuell problemstilling' },
+];
 
 export default function HenvisningForm() {
     const { profile } = useUserProfile();
     const { submissionId, saving, submitting, saved, submitted, error, saveAsDraft, submitForm, exportPdf } = useFormSubmission({ formType: 'henvisning' });
     const [fnrError, setFnrError] = useState('');
+    const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+    const [touched, setTouched] = useState<TouchedFields>({});
+    const errorSummaryRef = useRef<HTMLDivElement>(null);
     const [formData, setFormData] = useState({
         // Referring doctor (read-only)
         legeNavn: '',
@@ -49,8 +72,65 @@ export default function HenvisningForm() {
 
     const [vedlegg, setVedlegg] = useState<string[]>([]);
     const [nyttVedlegg, setNyttVedlegg] = useState('');
+
     const updateField = (field: string, value: string | string[]) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const markTouched = (field: string) => {
+        setTouched(prev => ({ ...prev, [field]: true }));
+    };
+
+    const handleBlur = (field: string) => {
+        markTouched(field);
+        if (field === 'patientFnr') {
+            setFnrError(validateFnr(formData.patientFnr) || '');
+        }
+    };
+
+    // --- Validation logic ---
+
+    const validateFormData = useCallback((): FieldErrors => {
+        const errors: FieldErrors = {};
+
+        // Required field checks
+        for (const { field, label } of REQUIRED_FIELDS) {
+            const value = formData[field as keyof typeof formData];
+            if (!value || (typeof value === 'string' && !value.trim())) {
+                errors[field] = `${label} er obligatorisk`;
+            }
+        }
+
+        // FNR format check
+        if (formData.patientFnr && formData.patientFnr.trim()) {
+            const fnrValidation = validateFnr(formData.patientFnr);
+            if (fnrValidation) {
+                errors.patientFnr = fnrValidation;
+            }
+        }
+
+        // At least one formaal should be selected (recommended but we make it required)
+        if (formData.formaal.length === 0) {
+            errors.formaal = 'Velg minst ett formal med henvisningen';
+        }
+
+        return errors;
+    }, [formData]);
+
+    const fieldErrors = validateFormData();
+    const hasErrors = Object.keys(fieldErrors).length > 0;
+
+    // Helper: should we show an error for a specific field?
+    const showFieldError = (field: string): boolean => {
+        return (attemptedSubmit || touched[field]) && !!fieldErrors[field];
+    };
+
+    // Helper: get the input border class based on validation state
+    const inputBorderClass = (field: string, extraValid?: string): string => {
+        if (showFieldError(field)) {
+            return 'border-[var(--color-error)] focus:border-[var(--color-error)]';
+        }
+        return extraValid || 'border-[#DDD7CE] focus:border-[#A0714F]';
     };
 
     const handleSave = () => {
@@ -58,6 +138,26 @@ export default function HenvisningForm() {
     };
 
     const handleSubmit = () => {
+        setAttemptedSubmit(true);
+
+        // Mark all required fields as touched
+        const allTouched: TouchedFields = {};
+        for (const { field } of REQUIRED_FIELDS) {
+            allTouched[field] = true;
+        }
+        allTouched.formaal = true;
+        setTouched(prev => ({ ...prev, ...allTouched }));
+
+        // Re-validate
+        const errors = validateFormData();
+        if (Object.keys(errors).length > 0) {
+            setTimeout(() => {
+                errorSummaryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                errorSummaryRef.current?.focus();
+            }, 100);
+            return;
+        }
+
         // Trim diagnosis codes and patient ID to avoid matching issues from trailing spaces
         const trimmedData = {
             ...formData,
@@ -68,6 +168,7 @@ export default function HenvisningForm() {
     };
 
     const toggleFormaal = (item: string) => {
+        markTouched('formaal');
         setFormData(prev => ({
             ...prev,
             formaal: prev.formaal.includes(item)
@@ -107,17 +208,42 @@ export default function HenvisningForm() {
         'Second opinion',
     ];
 
+    // --- Label helpers ---
+    const RequiredLabel = ({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) => (
+        <label htmlFor={htmlFor} className="form-label">
+            {children} <span className="text-[var(--color-error)]" aria-hidden="true">*</span>
+        </label>
+    );
+
+    const OptionalLabel = ({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) => (
+        <label htmlFor={htmlFor} className="form-label">
+            {children}
+        </label>
+    );
+
+    // --- Inline error message component ---
+    const FieldError = ({ field }: { field: string }) => {
+        if (!showFieldError(field)) return null;
+        return (
+            <p className="text-[var(--color-error)] text-xs mt-1 flex items-center gap-1" role="alert">
+                <XCircle className="w-3 h-3 flex-shrink-0" />
+                {fieldErrors[field]}
+            </p>
+        );
+    };
+
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[var(--surface-primary)]">
             <AppHeader />
 
             {/* Action Bar */}
             <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'Henvisning' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
@@ -135,7 +261,7 @@ export default function HenvisningForm() {
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={submitting || !!fnrError}
+                            disabled={submitting}
                             className={cn(
                                 "text-xs !py-2 !px-4 flex items-center gap-1.5",
                                 submitted ? "bg-[#3D8B6E] text-white rounded-lg font-semibold" : "btn-primary"
@@ -183,6 +309,43 @@ export default function HenvisningForm() {
                     </div>
                 ) : (
                     <div className="space-y-6">
+                        {/* Validation Error Summary */}
+                        {attemptedSubmit && hasErrors && (
+                            <div
+                                ref={errorSummaryRef}
+                                tabIndex={-1}
+                                role="alert"
+                                aria-live="assertive"
+                                className="bg-[rgba(239,68,68,0.06)] border border-[rgba(239,68,68,0.25)] rounded-xl p-5 outline-none"
+                            >
+                                <div className="flex items-center gap-2 mb-3">
+                                    <AlertCircle className="w-5 h-5 text-[var(--color-error)]" />
+                                    <h2 className="text-sm font-semibold text-[var(--color-error)]">
+                                        Skjemaet inneholder {Object.keys(fieldErrors).length} feil som ma rettes
+                                    </h2>
+                                </div>
+                                <ul className="space-y-1 ml-7">
+                                    {Object.entries(fieldErrors).map(([field, message]) => (
+                                        <li key={field} className="text-xs text-[var(--color-error)]">
+                                            <button
+                                                type="button"
+                                                className="underline hover:no-underline text-left cursor-pointer"
+                                                onClick={() => {
+                                                    const el = document.querySelector(`[data-field="${field}"]`) as HTMLElement;
+                                                    if (el) {
+                                                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                        el.focus();
+                                                    }
+                                                }}
+                                            >
+                                                {message}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
                         {/* Section 1: Referring Doctor */}
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
@@ -193,38 +356,38 @@ export default function HenvisningForm() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="form-label">Legens navn</label>
+                                    <OptionalLabel>Legens navn</OptionalLabel>
                                     <input
                                         type="text"
                                         value={formData.legeNavn}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">HPR-nummer</label>
+                                    <OptionalLabel>HPR-nummer</OptionalLabel>
                                     <input
                                         type="text"
                                         value={formData.legeHPR}
-                                        className="input-field !text-sm bg-[#F5F2ED] font-mono"
+                                        className="input-field !text-sm bg-[var(--surface-primary)] font-mono"
                                         readOnly
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Adresse</label>
+                                    <OptionalLabel>Adresse</OptionalLabel>
                                     <input
                                         type="text"
                                         value={formData.legeAdresse}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Telefon</label>
+                                    <OptionalLabel>Telefon</OptionalLabel>
                                     <input
                                         type="text"
                                         value={formData.legeTelefon}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -241,30 +404,36 @@ export default function HenvisningForm() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="form-label form-required">Fullt navn</label>
+                                    <RequiredLabel>Fullt navn</RequiredLabel>
                                     <input
                                         type="text"
+                                        data-field="patientNavn"
                                         value={formData.patientNavn}
                                         onChange={(e) => updateField('patientNavn', e.target.value)}
-                                        className="input-field !text-sm"
+                                        onBlur={() => handleBlur('patientNavn')}
+                                        className={cn("input-field !text-sm", showFieldError('patientNavn') && "!border-[var(--color-error)] focus:!border-[var(--color-error)]")}
                                         placeholder="Ola Nordmann"
+                                        aria-invalid={showFieldError('patientNavn')}
                                     />
+                                    <FieldError field="patientNavn" />
                                 </div>
                                 <div>
-                                    <label className="form-label form-required">Fodselsnummer (11 siffer)</label>
+                                    <RequiredLabel>Fodselsnummer (11 siffer)</RequiredLabel>
                                     <input
                                         type="text"
+                                        data-field="patientFnr"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
-                                        onBlur={() => setFnrError(validateFnr(formData.patientFnr) || '')}
-                                        className="input-field !text-sm font-mono"
+                                        onBlur={() => handleBlur('patientFnr')}
+                                        className={cn("input-field !text-sm font-mono", showFieldError('patientFnr') && "!border-[var(--color-error)] focus:!border-[var(--color-error)]")}
                                         placeholder="01019012345"
                                         maxLength={11}
+                                        aria-invalid={showFieldError('patientFnr')}
                                     />
-                                    {fnrError && <p className="text-[#EF4444] text-xs mt-1">{fnrError}</p>}
+                                    <FieldError field="patientFnr" />
                                 </div>
                                 <div>
-                                    <label className="form-label">Adresse</label>
+                                    <OptionalLabel>Adresse</OptionalLabel>
                                     <input
                                         type="text"
                                         value={formData.patientAdresse}
@@ -274,7 +443,7 @@ export default function HenvisningForm() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Telefon</label>
+                                    <OptionalLabel>Telefon</OptionalLabel>
                                     <input
                                         type="tel"
                                         value={formData.patientTelefon}
@@ -367,11 +536,14 @@ export default function HenvisningForm() {
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label form-required">Spesialitet</label>
+                                    <RequiredLabel>Spesialitet</RequiredLabel>
                                     <select
+                                        data-field="spesialistType"
                                         value={formData.spesialistType}
-                                        onChange={(e) => updateField('spesialistType', e.target.value)}
-                                        className="input-field !text-sm"
+                                        onChange={(e) => { updateField('spesialistType', e.target.value); markTouched('spesialistType'); }}
+                                        onBlur={() => handleBlur('spesialistType')}
+                                        className={cn("input-field !text-sm", showFieldError('spesialistType') && "!border-[var(--color-error)] focus:!border-[var(--color-error)]")}
+                                        aria-invalid={showFieldError('spesialistType')}
                                     >
                                         <option value="">Velg spesialitet...</option>
                                         <option value="Ortoped">Ortoped</option>
@@ -388,10 +560,11 @@ export default function HenvisningForm() {
                                         <option value="Hudlege">Hudlege</option>
                                         <option value="Annen">Annen</option>
                                     </select>
+                                    <FieldError field="spesialistType" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="form-label">Institusjon / sykehus</label>
+                                        <OptionalLabel>Institusjon / sykehus</OptionalLabel>
                                         <input
                                             type="text"
                                             value={formData.institusjon}
@@ -401,13 +574,13 @@ export default function HenvisningForm() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="form-label">Spesifikk lege (valgfritt)</label>
+                                        <OptionalLabel>Spesifikk lege (valgfritt)</OptionalLabel>
                                         <input
                                             type="text"
                                             value={formData.spesifikkLege}
                                             onChange={(e) => updateField('spesifikkLege', e.target.value)}
                                             className="input-field !text-sm"
-                                            placeholder="Navn på spesialist"
+                                            placeholder="Navn pa spesialist"
                                         />
                                     </div>
                                 </div>
@@ -424,7 +597,7 @@ export default function HenvisningForm() {
 
                             {/* Diagnosis code system toggle */}
                             <div className="mb-4">
-                                <label className="form-label">Kodesystem</label>
+                                <OptionalLabel>Kodesystem</OptionalLabel>
                                 <div className="flex gap-4">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -454,24 +627,32 @@ export default function HenvisningForm() {
                             {/* Diagnosis code and description */}
                             <div className="grid grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label className="form-label form-required">Diagnosekode</label>
+                                    <RequiredLabel>Diagnosekode</RequiredLabel>
                                     <input
                                         type="text"
+                                        data-field="diagnoseKode"
                                         value={formData.diagnoseKode}
                                         onChange={(e) => updateField('diagnoseKode', e.target.value)}
-                                        className="input-field !text-sm font-mono"
+                                        onBlur={() => handleBlur('diagnoseKode')}
+                                        className={cn("input-field !text-sm font-mono", showFieldError('diagnoseKode') && "!border-[var(--color-error)] focus:!border-[var(--color-error)]")}
                                         placeholder="L03"
+                                        aria-invalid={showFieldError('diagnoseKode')}
                                     />
+                                    <FieldError field="diagnoseKode" />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="form-label form-required">Diagnosebeskrivelse</label>
+                                    <RequiredLabel>Diagnosebeskrivelse</RequiredLabel>
                                     <input
                                         type="text"
+                                        data-field="diagnoseBeskrivelse"
                                         value={formData.diagnoseBeskrivelse}
                                         onChange={(e) => updateField('diagnoseBeskrivelse', e.target.value)}
-                                        className="input-field !text-sm"
+                                        onBlur={() => handleBlur('diagnoseBeskrivelse')}
+                                        className={cn("input-field !text-sm", showFieldError('diagnoseBeskrivelse') && "!border-[var(--color-error)] focus:!border-[var(--color-error)]")}
                                         placeholder="Korsryggsymptomer"
+                                        aria-invalid={showFieldError('diagnoseBeskrivelse')}
                                     />
+                                    <FieldError field="diagnoseBeskrivelse" />
                                 </div>
                             </div>
 
@@ -485,6 +666,7 @@ export default function HenvisningForm() {
                                     {commonCodes.map((item) => (
                                         <button
                                             key={item.code}
+                                            type="button"
                                             onClick={() => {
                                                 updateField('diagnoseKode', item.code);
                                                 updateField('diagnoseBeskrivelse', item.label);
@@ -505,30 +687,34 @@ export default function HenvisningForm() {
                             {/* Clinical text fields */}
                             <div className="space-y-4">
                                 <div>
-                                    <label className="form-label form-required">Sykehistorie og aktuell problemstilling</label>
+                                    <RequiredLabel>Sykehistorie og aktuell problemstilling</RequiredLabel>
                                     <textarea
+                                        data-field="sykehistorie"
                                         value={formData.sykehistorie}
                                         onChange={(e) => updateField('sykehistorie', e.target.value)}
-                                        className="input-field !text-sm min-h-[100px] resize-y"
-                                        placeholder="Relevant sykehistorie og nåværende problemstilling..."
+                                        onBlur={() => handleBlur('sykehistorie')}
+                                        className={cn("input-field !text-sm min-h-[100px] resize-y", showFieldError('sykehistorie') && "!border-[var(--color-error)] focus:!border-[var(--color-error)]")}
+                                        placeholder="Relevant sykehistorie og navarende problemstilling..."
+                                        aria-invalid={showFieldError('sykehistorie')}
                                     />
+                                    <FieldError field="sykehistorie" />
                                 </div>
                                 <div>
-                                    <label className="form-label">Nåværende medikamenter</label>
+                                    <OptionalLabel>Navarende medikamenter</OptionalLabel>
                                     <textarea
                                         value={formData.medisiner}
                                         onChange={(e) => updateField('medisiner', e.target.value)}
                                         className="input-field !text-sm min-h-[60px] resize-y"
-                                        placeholder="Nåværende medikamenter og dosering..."
+                                        placeholder="Navarende medikamenter og dosering..."
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label">Undersøkelsesfunn</label>
+                                    <OptionalLabel>Undersokelsesfunn</OptionalLabel>
                                     <textarea
                                         value={formData.undersokelseFunn}
                                         onChange={(e) => updateField('undersokelseFunn', e.target.value)}
                                         className="input-field !text-sm min-h-[80px] resize-y"
-                                        placeholder="Relevante funn fra undersøkelse..."
+                                        placeholder="Relevante funn fra undersokelse..."
                                     />
                                 </div>
                             </div>
@@ -538,11 +724,11 @@ export default function HenvisningForm() {
                         <div className="form-section">
                             <div className="flex items-center gap-2 mb-1">
                                 <Info className="w-4 h-4 text-[#A0714F]" />
-                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Formål med henvisningen</h2>
+                                <h2 className="form-section-title !mb-0 !pb-0 !border-0">6. Formal med henvisningen <span className="text-[var(--color-error)]" aria-hidden="true">*</span></h2>
                             </div>
-                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Hva ønskes utført av spesialisten</p>
+                            <p className="text-xs text-[#9E958C] mb-4 ml-6">Hva onskes utfort av spesialisten</p>
 
-                            <div className="space-y-3 mb-4">
+                            <div className="space-y-3 mb-4" data-field="formaal">
                                 {formaalOptions.map((option) => (
                                     <label
                                         key={option}
@@ -550,7 +736,9 @@ export default function HenvisningForm() {
                                             "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
                                             formData.formaal.includes(option)
                                                 ? "border-[#A0714F] bg-[#F5FAFF]"
-                                                : "border-[#DDD7CE] hover:border-[#A0714F]/30"
+                                                : showFieldError('formaal')
+                                                    ? "border-[var(--color-error)]/40 hover:border-[var(--color-error)]/60"
+                                                    : "border-[#DDD7CE] hover:border-[#A0714F]/30"
                                         )}
                                     >
                                         <input
@@ -563,14 +751,15 @@ export default function HenvisningForm() {
                                     </label>
                                 ))}
                             </div>
+                            <FieldError field="formaal" />
 
-                            <div>
-                                <label className="form-label">Spesifikke spørsmål til spesialisten</label>
+                            <div className="mt-4">
+                                <OptionalLabel>Spesifikke sporsmal til spesialisten</OptionalLabel>
                                 <textarea
                                     value={formData.spesifikkeSporsmal}
                                     onChange={(e) => updateField('spesifikkeSporsmal', e.target.value)}
                                     className="input-field !text-sm min-h-[100px] resize-y"
-                                    placeholder="Spesifikke spørsmål til spesialisten..."
+                                    placeholder="Spesifikke sporsmal til spesialisten..."
                                 />
                             </div>
                         </div>
@@ -596,6 +785,7 @@ export default function HenvisningForm() {
                                                 <span className="text-sm text-[#3E4C59]">{item}</span>
                                             </div>
                                             <button
+                                                type="button"
                                                 onClick={() => removeVedlegg(index)}
                                                 className="p-1 text-[#9E958C] hover:text-[#C44536] transition-colors rounded"
                                             >
@@ -619,9 +809,10 @@ export default function HenvisningForm() {
                                         }
                                     }}
                                     className="input-field !text-sm flex-1"
-                                    placeholder="F.eks. Blodprøvesvar, røntgenbilde, EKG..."
+                                    placeholder="F.eks. Blodprovesvar, rontgenbilde, EKG..."
                                 />
                                 <button
+                                    type="button"
                                     onClick={addVedlegg}
                                     disabled={!nyttVedlegg.trim()}
                                     className={cn(
@@ -651,11 +842,11 @@ export default function HenvisningForm() {
                                 <span className="text-xs font-semibold text-[#3D8B6E]">GDPR-kompatibel innsending</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button onClick={handleSave} disabled={saving} className="btn-secondary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button type="button" onClick={handleSave} disabled={saving} className="btn-secondary !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                     {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre utkast'}
                                 </button>
-                                <button onClick={handleSubmit} disabled={submitting || !!fnrError} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button type="button" onClick={handleSubmit} disabled={submitting} className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                     {submitting ? 'Sender...' : 'Send henvisning'}
                                 </button>

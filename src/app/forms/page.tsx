@@ -92,13 +92,15 @@ export default function Forms() {
                     <h2 className="text-sm font-semibold text-[var(--text-primary)]">Kategorier</h2>
                 </div>
 
-                <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+                <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5" aria-label="Skjemakategorier">
                     {FORM_CATEGORIES.map((category) => {
                         const Icon = category.icon;
                         return (
                             <button
                                 key={category.id}
                                 onClick={() => setActiveCategory(category.id)}
+                                aria-current={activeCategory === category.id ? 'true' : undefined}
+                                aria-label={`Filtrer: ${category.name}`}
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 w-full cursor-pointer",
                                     activeCategory === category.id
@@ -115,7 +117,7 @@ export default function Forms() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden">
+            <main id="main-content" className="flex-1 flex flex-col overflow-hidden">
                 <header className="px-8 py-5 border-b border-[var(--border-default)] bg-[var(--surface-primary)]/80 flex items-center justify-between">
                     <div className="flex items-center gap-6 flex-1">
                         <h2 className="text-2xl font-bold text-[var(--text-primary)]">
@@ -128,7 +130,7 @@ export default function Forms() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="bg-[var(--surface-hover)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] placeholder:text-[var(--text-muted)] pl-10 py-2.5 w-full"
-                                placeholder="Søk i skjemaer..."
+                                placeholder="Søk i skjemaer..." aria-label="Søk i skjemaer"
                             />
                         </div>
                     </div>

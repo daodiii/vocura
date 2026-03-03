@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, FileText, Plus, Trash2, Info, Calendar, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
 interface ToothData {
@@ -50,11 +51,11 @@ const PRIORITIES = ['Lav', 'Middels', 'Høy', 'Akutt'];
 
 const getPriorityColor = (priority: string) => {
     switch (priority) {
-        case 'Lav': return { bg: '#F5F2ED', text: '#5E5549' };
+        case 'Lav': return { bg: 'var(--surface-primary)', text: '#5E5549' };
         case 'Middels': return { bg: '#FEF3C7', text: '#C8842B' };
         case 'Høy': return { bg: '#FAEAE8', text: '#C44536' };
         case 'Akutt': return { bg: '#FAEAE8', text: '#DC2626' };
-        default: return { bg: '#F5F2ED', text: '#5E5549' };
+        default: return { bg: 'var(--surface-primary)', text: '#5E5549' };
     }
 };
 
@@ -147,7 +148,7 @@ export default function TannkartForm() {
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-[#F5F2ED]">
+            <div className="min-h-screen bg-[var(--surface-primary)]">
                 <AppHeader />
                 <main className="max-w-6xl mx-auto px-6 py-16">
                     <div className="card-base p-12 text-center max-w-lg mx-auto">
@@ -176,16 +177,17 @@ export default function TannkartForm() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[var(--surface-primary)]">
             <AppHeader />
 
             {/* Action Bar */}
             <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
                 <div className="max-w-6xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'Tannkart' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
@@ -307,8 +309,8 @@ export default function TannkartForm() {
                                                             key={tooth.id}
                                                             onClick={() => setSelectedTooth(tooth.id)}
                                                             className={cn(
-                                                                "border-b border-[#F5F2ED] cursor-pointer transition-colors",
-                                                                selectedTooth === tooth.id ? "bg-[#F5FAFF]" : "hover:bg-[#F5F2ED]"
+                                                                "border-b border-[var(--border-default)] cursor-pointer transition-colors",
+                                                                selectedTooth === tooth.id ? "bg-[#F5FAFF]" : "hover:bg-[var(--surface-primary)]"
                                                             )}
                                                         >
                                                             <td className="py-2.5 px-3 font-mono font-semibold text-[#1E1914]">{tooth.id}</td>
@@ -352,7 +354,7 @@ export default function TannkartForm() {
                             ) : (
                                 <div className="space-y-2">
                                     {Object.entries(treatmentCounts).map(([treatment, count]) => (
-                                        <div key={treatment} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#F5F2ED]">
+                                        <div key={treatment} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[var(--surface-primary)]">
                                             <div className="flex items-center gap-2">
                                                 <span className="w-2 h-2 rounded-full bg-[#0D9488]" />
                                                 <span className="text-sm text-[#1E1914]">{treatment}</span>

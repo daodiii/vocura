@@ -79,6 +79,8 @@ export default function Dashboard() {
     const patientDropdownRef = useRef<HTMLDivElement | null>(null);
     const [waveformBars, setWaveformBars] = useState<number[]>(new Array(28).fill(4));
     const [showTranscriptToast, setShowTranscriptToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState<{ text: string; type: 'error' | 'info' | 'success' } | null>(null);
+    const [recoveredRecording, setRecoveredRecording] = useState<Blob | null>(null);
     const [sessionId] = useState(() => generateSessionId());
 
     // Persist GDPR consent with audit trail in localStorage
@@ -130,6 +132,27 @@ export default function Dashboard() {
             }
         }
         checkEPJConnection();
+    }, []);
+
+    // Recover saved recording backup from localStorage on mount
+    useEffect(() => {
+        try {
+            const backup = localStorage.getItem('vocura_recording_backup');
+            if (backup) {
+                const byteString = atob(backup.split(',')[1]);
+                const mimeType = backup.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                const blob = new Blob([ab], { type: mimeType });
+                setRecoveredRecording(blob);
+            }
+        } catch {
+            // Corrupted backup — remove it
+            localStorage.removeItem('vocura_recording_backup');
+        }
     }, []);
 
     // Close patient dropdown when clicking outside
@@ -194,7 +217,7 @@ export default function Dashboard() {
     const handleConsentChange = (checked: boolean) => {
         setConsentGiven(checked);
         addConsentLogEntry(checked ? 'granted' : 'withdrawn');
-        sessionStorage.setItem('vocura_gdpr_consent', checked.toString());
+        localStorage.setItem('vocura_gdpr_consent', checked.toString());
     };
 
     const handlePatientInformedChange = async (checked: boolean) => {
@@ -221,7 +244,7 @@ export default function Dashboard() {
         localStorage.removeItem('vocura_consent_log');
         localStorage.removeItem('vocura_dark_mode');
         localStorage.removeItem('vocura_accent_theme');
-        sessionStorage.removeItem('vocura_gdpr_consent');
+        localStorage.removeItem('vocura_gdpr_consent');
         setConsentGiven(false);
         setPatientInformed(false);
         setTranscript('');
@@ -273,13 +296,44 @@ export default function Dashboard() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isRecording, transcript, profession, patientName, patientId]);
 
+    const RECORDING_BACKUP_KEY = 'vocura_recording_backup';
+    const RECORDING_BACKUP_MAX_BYTES = 5 * 1024 * 1024; // 5 MB limit
+
+    const showToast = useCallback((text: string, type: 'error' | 'info' | 'success' = 'error') => {
+        setToastMessage({ text, type });
+    }, []);
+
+    const saveRecordingBackup = useCallback((blob: Blob) => {
+        if (blob.size > RECORDING_BACKUP_MAX_BYTES) {
+            console.warn('Recording too large for localStorage backup, skipping.');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            try {
+                localStorage.setItem(RECORDING_BACKUP_KEY, reader.result as string);
+            } catch (e) {
+                console.warn('Failed to save recording backup to localStorage:', e);
+            }
+        };
+        reader.readAsDataURL(blob);
+    }, []);
+
+    const clearRecordingBackup = useCallback(() => {
+        try {
+            localStorage.removeItem(RECORDING_BACKUP_KEY);
+        } catch {
+            // Ignore
+        }
+    }, []);
+
     const startRecording = async () => {
         if (!consentGiven) {
-            alert('Du må bekrefte samsvar med personvernregler før opptak kan starte.');
+            showToast('Du må bekrefte samsvar med personvernregler før opptak kan starte.');
             return;
         }
         if (!patientInformed) {
-            alert('Du må bekrefte at pasienten er informert om AI-behandling før opptak.');
+            showToast('Du må bekrefte at pasienten er informert om AI-behandling før opptak.');
             return;
         }
         try {
@@ -304,6 +358,7 @@ export default function Dashboard() {
 
             mediaRecorder.onstop = async () => {
                 const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+                saveRecordingBackup(audioBlob);
                 await handleTranscription(audioBlob);
                 audioContext.close();
             };
@@ -317,9 +372,18 @@ export default function Dashboard() {
             timerRef.current = setInterval(() => {
                 setRecordingTime(prev => prev + 1);
             }, 1000);
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Error accessing microphone:', err);
-            alert('Kunne ikke få tilgang til mikrofonen. Vennligst sjekk tillatelser.');
+            const domErr = err as { name?: string };
+            if (domErr.name === 'NotAllowedError') {
+                showToast('Mikrofontilgang ble avslått. Gi tillatelse i nettleserinnstillingene og prøv igjen.');
+            } else if (domErr.name === 'NotFoundError') {
+                showToast('Ingen mikrofon funnet. Koble til en mikrofon og prøv igjen.');
+            } else if (domErr.name === 'NotReadableError') {
+                showToast('Mikrofonen er opptatt av et annet program. Lukk andre apper som bruker mikrofonen.');
+            } else {
+                showToast('Kunne ikke starte opptak. Sjekk at mikrofonen er tilkoblet og at nettleseren har tillatelse.');
+            }
         }
     };
 
@@ -357,10 +421,21 @@ export default function Dashboard() {
                 const errorMsg = data.error || 'Ukjent feil';
                 console.error(`Transcription API error [${response.status}]:`, errorMsg);
                 setTranscript('');
-                alert(`Transkribering feilet: ${errorMsg}`);
+                if (response.status === 401) {
+                    showToast('Økten din har utløpt. Logg inn på nytt for å transkribere.');
+                } else if (response.status === 413) {
+                    showToast('Opptaket er for stort (maks 25 MB). Prøv et kortere opptak.');
+                } else if (response.status === 415) {
+                    showToast('Lydformatet støttes ikke. Bruk et vanlig format (WebM, MP3, WAV).');
+                } else if (response.status === 429) {
+                    showToast('For mange forespørsler. Vent litt og prøv igjen.');
+                } else {
+                    showToast(`Transkribering feilet: ${errorMsg}`);
+                }
             } else if (data.text) {
                 setTranscript(data.text);
                 setShowTranscriptToast(true);
+                clearRecordingBackup();
 
                 // Update session stats in sessionStorage
                 try {
@@ -378,13 +453,13 @@ export default function Dashboard() {
             } else {
                 console.error('Transcription returned empty text:', data);
                 setTranscript('');
-                alert('Transkribering returnerte ingen tekst. Vennligst prøv igjen.');
+                showToast('Ingen tale ble gjenkjent. Snakk tydelig nær mikrofonen og prøv igjen.');
             }
             setIsTranscribing(false);
         } catch (error) {
             console.error('Transcription failed:', error);
             setTranscript('');
-            alert('Transkribering feilet. Vennligst prøv igjen.');
+            showToast('Kunne ikke nå transkriberingstjenesten. Sjekk internettforbindelsen din og prøv igjen.');
             setIsTranscribing(false);
         }
     };
@@ -461,7 +536,7 @@ export default function Dashboard() {
             </AppSidebar>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden bg-[var(--surface-deep)]">
+            <main id="main-content" className="flex-1 flex flex-col overflow-hidden bg-[var(--surface-deep)]">
                 {/* Session Header Bar */}
                 <header className="bg-[var(--surface-primary)]/80 backdrop-blur-sm border-b border-[var(--border-default)] h-12 flex items-center justify-between px-5 shrink-0">
                     <div className="flex items-center gap-3">
@@ -495,7 +570,7 @@ export default function Dashboard() {
                             onClick={() => setShowShortcuts(prev => !prev)}
                             className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer px-2 py-1 rounded-md hover:bg-[var(--surface-overlay)]"
                             title="Hurtigtaster (?)"
-                        >
+                            aria-label="Vis hurtigtaster"                        >
                             <Keyboard className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">Hurtigtaster</span>
                         </button>
@@ -651,6 +726,7 @@ export default function Dashboard() {
                             <button
                                 onClick={isRecording ? stopRecording : startRecording}
                                 disabled={isTranscribing}
+                                aria-label={isRecording ? "Stopp opptak" : isTranscribing ? "Transkriberer" : "Start opptak"}
                                 className={cn(
                                     "relative flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer z-10",
                                     isRecording
@@ -878,6 +954,50 @@ export default function Dashboard() {
                     onDismiss={() => setShowTranscriptToast(false)}
                     autoDismissMs={10000}
                 />
+            )}
+
+            {/* General error/info toast */}
+            {toastMessage && (
+                <Toast
+                    message={toastMessage.text}
+                    type={toastMessage.type}
+                    onDismiss={() => setToastMessage(null)}
+                    autoDismissMs={7000}
+                />
+            )}
+
+            {/* Recovered recording banner */}
+            {recoveredRecording && !isRecording && !isTranscribing && !transcript && (
+                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-full">
+                    <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg p-4 shadow-lg border-l-4 border-l-[#F59E0B]" style={{ boxShadow: 'var(--shadow-overlay)' }}>
+                        <div className="flex items-start gap-3">
+                            <AlertTriangle className="w-5 h-5 text-[#F59E0B] shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-[var(--text-primary)]">Et usendt opptak ble funnet fra forrige økt.</p>
+                                <div className="flex gap-2 mt-3">
+                                    <button
+                                        onClick={async () => {
+                                            setRecoveredRecording(null);
+                                            await handleTranscription(recoveredRecording);
+                                        }}
+                                        className="btn-primary text-xs px-3 py-1.5 cursor-pointer"
+                                    >
+                                        Transkriber nå
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setRecoveredRecording(null);
+                                            clearRecordingBackup();
+                                        }}
+                                        className="btn-ghost text-xs px-3 py-1.5 cursor-pointer"
+                                    >
+                                        Forkast
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Inline keyframes for pulse-ring animation */}

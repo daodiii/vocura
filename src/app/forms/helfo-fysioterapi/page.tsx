@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Building2, AlertCircle, Calendar, Info, Plus, Trash2, FileCheck, FileText, Activity, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
@@ -131,16 +132,17 @@ export default function HELFOFysioterapiForm() {
     const totalBeloep = takstRader.reduce((sum, r) => sum + (r.antall * r.sats), 0);
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[var(--surface-primary)]">
             <AppHeader />
 
             {/* Action Bar */}
             <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'HELFO fysioterapirefusjon' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
@@ -227,7 +229,7 @@ export default function HELFOFysioterapiForm() {
                                     <input
                                         type="text"
                                         value={formData.fysioterapeutNavn}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -236,7 +238,7 @@ export default function HELFOFysioterapiForm() {
                                     <input
                                         type="text"
                                         value={formData.fysioterapeutHPR}
-                                        className="input-field !text-sm bg-[#F5F2ED] font-mono"
+                                        className="input-field !text-sm bg-[var(--surface-primary)] font-mono"
                                         readOnly
                                     />
                                 </div>
@@ -256,7 +258,7 @@ export default function HELFOFysioterapiForm() {
                                     <input
                                         type="text"
                                         value={formData.praksisNavn}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -267,7 +269,7 @@ export default function HELFOFysioterapiForm() {
                                     <input
                                         type="text"
                                         value={formData.kommune}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -276,7 +278,7 @@ export default function HELFOFysioterapiForm() {
                                     <input
                                         type="text"
                                         value={formData.orgNummer}
-                                        className="input-field !text-sm bg-[#F5F2ED] font-mono"
+                                        className="input-field !text-sm bg-[var(--surface-primary)] font-mono"
                                         readOnly
                                     />
                                 </div>
@@ -489,7 +491,7 @@ export default function HELFOFysioterapiForm() {
                             {/* Dynamic fee table */}
                             <div className="border border-[#DDD7CE] rounded-lg overflow-hidden">
                                 {/* Table header */}
-                                <div className="grid grid-cols-[100px_1fr_80px_100px_60px] gap-2 px-4 py-2.5 bg-[#F5F2ED] border-b border-[#DDD7CE]">
+                                <div className="grid grid-cols-[100px_1fr_80px_100px_60px] gap-2 px-4 py-2.5 bg-[var(--surface-primary)] border-b border-[#DDD7CE]">
                                     <span className="text-xs font-semibold text-[#7D7267] uppercase tracking-wider">Kode</span>
                                     <span className="text-xs font-semibold text-[#7D7267] uppercase tracking-wider">Beskrivelse</span>
                                     <span className="text-xs font-semibold text-[#7D7267] uppercase tracking-wider">Antall</span>
@@ -540,7 +542,7 @@ export default function HELFOFysioterapiForm() {
                                 ))}
 
                                 {/* Add row button */}
-                                <div className="px-4 py-2 bg-[#F5F2ED]">
+                                <div className="px-4 py-2 bg-[var(--surface-primary)]">
                                     <button
                                         onClick={addTakstRad}
                                         className="text-xs text-[#4F5ABF] hover:text-[#6D28D9] font-medium flex items-center gap-1.5 transition-colors"
@@ -701,7 +703,7 @@ export default function HELFOFysioterapiForm() {
                                     <input
                                         type="text"
                                         value={formData.fysioterapeutNavn}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -710,7 +712,7 @@ export default function HELFOFysioterapiForm() {
                                     <input
                                         type="text"
                                         value={new Date().toLocaleDateString('nb-NO')}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>

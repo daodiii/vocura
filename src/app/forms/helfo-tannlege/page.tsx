@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
@@ -150,16 +151,17 @@ export default function HelfoTannlegeForm() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[var(--surface-primary)]">
             <AppHeader />
 
             {/* Action Bar */}
             <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'HELFO tannlegerefusjon' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
@@ -246,7 +248,7 @@ export default function HelfoTannlegeForm() {
                                     <input
                                         type="text"
                                         value={formData.tannlegeNavn}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -255,7 +257,7 @@ export default function HelfoTannlegeForm() {
                                     <input
                                         type="text"
                                         value={formData.tannlegeHPR}
-                                        className="input-field !text-sm bg-[#F5F2ED] font-mono"
+                                        className="input-field !text-sm bg-[var(--surface-primary)] font-mono"
                                         readOnly
                                     />
                                 </div>
@@ -266,7 +268,7 @@ export default function HelfoTannlegeForm() {
                                     <input
                                         type="text"
                                         value={formData.praksisNavn}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -275,7 +277,7 @@ export default function HelfoTannlegeForm() {
                                     <input
                                         type="text"
                                         value={formData.orgNummer}
-                                        className="input-field !text-sm bg-[#F5F2ED] font-mono"
+                                        className="input-field !text-sm bg-[var(--surface-primary)] font-mono"
                                         readOnly
                                     />
                                 </div>
@@ -284,7 +286,7 @@ export default function HelfoTannlegeForm() {
                                     <input
                                         type="text"
                                         value={formData.praksisAdresse}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -667,7 +669,7 @@ export default function HelfoTannlegeForm() {
                                     <input
                                         type="text"
                                         value={formData.tannlegeNavn}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>
@@ -676,7 +678,7 @@ export default function HelfoTannlegeForm() {
                                     <input
                                         type="text"
                                         value={new Date().toLocaleDateString('nb-NO', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                        className="input-field !text-sm bg-[#F5F2ED]"
+                                        className="input-field !text-sm bg-[var(--surface-primary)]"
                                         readOnly
                                     />
                                 </div>

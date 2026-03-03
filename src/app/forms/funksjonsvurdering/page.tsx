@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Activity, AlertCircle, Info, Target, Users, BarChart3, Loader2 } from 'lucide-react';
 import { cn, validateFnr } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
 const ICF_SCALE = [
@@ -122,16 +123,17 @@ export default function FunksjonsvurderingICF() {
     })();
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[var(--surface-primary)]">
             <AppHeader />
 
             {/* Action Bar */}
             <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'Funksjonsvurdering' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
@@ -442,7 +444,7 @@ export default function FunksjonsvurderingICF() {
                                     return (
                                         <div key={cat.name} className="flex items-center gap-4 py-3 border-b border-[#DDD7CE] last:border-0">
                                             <span className="text-sm font-medium text-[#1E1914] w-40">{cat.name}</span>
-                                            <div className="flex-1 h-4 bg-[#F5F2ED] rounded-full overflow-hidden">
+                                            <div className="flex-1 h-4 bg-[var(--surface-primary)] rounded-full overflow-hidden">
                                                 <div className="h-full rounded-full transition-all" style={{ width: `${(avg / 4) * 100}%`, backgroundColor: getScoreColor(avg) }} />
                                             </div>
                                             <span className="text-sm font-bold w-20 text-right" style={{ color: getScoreColor(avg) }}>

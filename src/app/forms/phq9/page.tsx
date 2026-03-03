@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, Download, Shield, CheckCircle, AlertTriangle, Info, Brain, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
 const PHQ9_QUESTIONS = [
@@ -55,34 +56,61 @@ export default function PHQ9Assessment() {
         setAnswers(newAnswers);
     };
 
+    const handleRadioKeyDown = useCallback((e: React.KeyboardEvent, questionIndex: number, currentValue: number) => {
+        let newValue: number | null = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            newValue = Math.min(currentValue + 1, 3);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            newValue = Math.max(currentValue - 1, 0);
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            newValue = 0;
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            newValue = 3;
+        }
+        if (newValue !== null) {
+            setAnswer(questionIndex, newValue);
+            // Move focus to the newly selected radio button
+            const container = (e.target as HTMLElement).closest('[role="radiogroup"]');
+            if (container) {
+                const buttons = container.querySelectorAll<HTMLElement>('[role="radio"]');
+                buttons[newValue]?.focus();
+            }
+        }
+    }, []);
+
     const totalScore = answers.reduce((sum: number, a) => sum + (a ?? 0), 0);
     const allAnswered = answers.every(a => a !== null);
     const interpretation = getScoreInterpretation(totalScore);
     const question9Score = answers[8] ?? 0;
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A]">
+        <div className="min-h-screen bg-[var(--surface-deep)]">
             <AppHeader />
 
             {/* Action Bar */}
-            <div className="sticky top-14 z-40 bg-[#111111]/80 border-b border-[rgba(255,255,255,0.06)]">
+            <div className="sticky top-14 z-40 bg-[var(--surface-primary)]/80 border-b border-[rgba(255,255,255,0.06)]">
                 <div className="max-w-3xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#8B8B8B] hover:text-[#EDEDED] transition-colors cursor-pointer">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'PHQ-9' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => saveAsDraft({ answers, difficulty, patientNavn, patientId, totalScore, interpretation: getScoreInterpretation(totalScore).label }, totalScore)}
                             disabled={saving}
-                            className="text-[#8B8B8B] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
+                            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
                         >
                             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" /> : <Save className="w-3.5 h-3.5" />}
                             {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre i journal'}
                         </button>
                         <button
                             onClick={() => exportPdf({ answers, difficulty, patientNavn, patientId, totalScore, interpretation: getScoreInterpretation(totalScore).label }, 'PHQ-9 Depresjonsskala', 'Behandler')}
-                            className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
+                            className="border border-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs flex items-center gap-1.5 cursor-pointer"
                         >
                             <Download className="w-3.5 h-3.5" /> Last ned PDF
                         </button>
@@ -90,7 +118,7 @@ export default function PHQ9Assessment() {
                 </div>
             </div>
 
-            <main className="max-w-3xl mx-auto px-6 py-8">
+            <main id="main-content" className="max-w-3xl mx-auto px-6 py-8">
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 bg-[rgba(94,106,210,0.08)] rounded-xl flex items-center justify-center">
@@ -98,32 +126,34 @@ export default function PHQ9Assessment() {
                         </div>
                         <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-[rgba(94,106,210,0.1)] text-[#7B89DB]">Standardisert verktøy</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#EDEDED]">
+                    <h1 className="text-3xl font-bold text-[var(--text-primary)]">
                         PHQ-9 Depresjonsskala
                     </h1>
-                    <p className="text-[#8B8B8B] mt-1">Patient Health Questionnaire - Vurdering av depresjonsgrad</p>
+                    <p className="text-[var(--text-secondary)] mt-1">Patient Health Questionnaire - Vurdering av depresjonsgrad</p>
                 </div>
 
                 {/* Patient Info */}
-                <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-5 mb-6">
+                <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-5 mb-6">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-medium text-[#8B8B8B] mb-1.5">Pasientnavn</label>
+                            <label htmlFor="phq9-pasientnavn" className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Pasientnavn</label>
                             <input
+                                id="phq9-pasientnavn"
                                 type="text"
                                 value={patientNavn}
                                 onChange={(e) => setPatientNavn(e.target.value)}
-                                className="w-full bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] text-sm px-3 py-2"
+                                className="w-full bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] text-sm px-3 py-2"
                                 placeholder="Fornavn Etternavn"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-[#8B8B8B] mb-1.5">Pasient-ID</label>
+                            <label htmlFor="phq9-pasientid" className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Pasient-ID</label>
                             <input
+                                id="phq9-pasientid"
                                 type="text"
                                 value={patientId}
                                 onChange={(e) => setPatientId(e.target.value)}
-                                className="w-full bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] text-sm font-mono px-3 py-2"
+                                className="w-full bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] text-sm font-mono px-3 py-2"
                                 placeholder="P-2024-0000"
                             />
                         </div>
@@ -134,7 +164,7 @@ export default function PHQ9Assessment() {
                 <div className="bg-[rgba(94,106,210,0.08)] border border-[rgba(94,106,210,0.15)] rounded-xl p-4 mb-6">
                     <div className="flex items-start gap-3">
                         <Info className="w-5 h-5 text-[#7B89DB] shrink-0 mt-0.5" />
-                        <p className="text-sm text-[#8B8B8B]">
+                        <p className="text-sm text-[var(--text-secondary)]">
                             <strong>Instruksjon:</strong> I løpet av de siste 2 ukene, hvor ofte har du vært plaget av noen av de følgende problemene?
                         </p>
                     </div>
@@ -144,26 +174,31 @@ export default function PHQ9Assessment() {
                 <div className="space-y-4 mb-6">
                     {PHQ9_QUESTIONS.map((question, index) => (
                         <div key={index} className={cn(
-                            "bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-5",
+                            "bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-5",
                             index === 8 && question9Score >= 1 && "!border-[#EF4444] !bg-[rgba(239,68,68,0.08)]"
                         )}>
                             <div className="flex items-start gap-3 mb-4">
-                                <span className="w-7 h-7 bg-[rgba(255,255,255,0.03)] rounded-lg flex items-center justify-center text-xs font-bold text-[#8B8B8B] shrink-0">
+                                <span className="w-7 h-7 bg-[rgba(255,255,255,0.03)] rounded-lg flex items-center justify-center text-xs font-bold text-[var(--text-secondary)] shrink-0">
                                     {index + 1}
                                 </span>
-                                <p className="text-sm text-[#EDEDED] font-medium leading-relaxed pt-1">{question}</p>
+                                <p className="text-sm text-[var(--text-primary)] font-medium leading-relaxed pt-1">{question}</p>
                             </div>
 
-                            <div className="grid grid-cols-4 gap-2 ml-10">
+                            <div className="grid grid-cols-4 gap-2 ml-10" role="radiogroup" aria-label={`Spørsmål ${index + 1}: ${question}`}>
                                 {RESPONSE_OPTIONS.map((option) => (
                                     <button
                                         key={option.value}
+                                        role="radio"
+                                        aria-checked={answers[index] === option.value}
+                                        aria-label={`${option.value} - ${option.label}`}
+                                        tabIndex={answers[index] === option.value || (answers[index] === null && option.value === 0) ? 0 : -1}
                                         onClick={() => setAnswer(index, option.value)}
+                                        onKeyDown={(e) => handleRadioKeyDown(e, index, option.value)}
                                         className={cn(
                                             "p-2.5 rounded-lg border-2 text-center transition-all text-xs font-medium cursor-pointer",
                                             answers[index] === option.value
-                                                ? "border-[#5E6AD2] bg-[rgba(94,106,210,0.08)] text-[#EDEDED]"
-                                                : "border-[rgba(255,255,255,0.06)] bg-[#191919] text-[#8B8B8B] hover:border-[rgba(94,106,210,0.3)]"
+                                                ? "border-[#5E6AD2] bg-[rgba(94,106,210,0.08)] text-[var(--text-primary)]"
+                                                : "border-[rgba(255,255,255,0.06)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:border-[rgba(94,106,210,0.3)]"
                                         )}
                                     >
                                         <span className="text-lg font-bold block mb-0.5">{option.value}</span>
@@ -187,20 +222,41 @@ export default function PHQ9Assessment() {
                 </div>
 
                 {/* Difficulty question */}
-                <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-5 mb-6">
-                    <p className="text-sm text-[#EDEDED] font-medium mb-3">
+                <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-5 mb-6">
+                    <p className="text-sm text-[var(--text-primary)] font-medium mb-3">
                         Hvor vanskelig har disse problemene gjort det å utføre arbeidet ditt, ta deg av ting hjemme eller komme overens med andre?
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
-                        {DIFFICULTY_OPTIONS.map((option) => (
+                    <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Vanskelighetsgrad">
+                        {DIFFICULTY_OPTIONS.map((option, idx) => (
                             <button
                                 key={option}
+                                role="radio"
+                                aria-checked={difficulty === option}
+                                tabIndex={difficulty === option || (difficulty === '' && idx === 0) ? 0 : -1}
                                 onClick={() => setDifficulty(option)}
+                                onKeyDown={(e) => {
+                                    let newIdx: number | null = null;
+                                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                                        e.preventDefault();
+                                        newIdx = Math.min(idx + 1, DIFFICULTY_OPTIONS.length - 1);
+                                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                                        e.preventDefault();
+                                        newIdx = Math.max(idx - 1, 0);
+                                    }
+                                    if (newIdx !== null) {
+                                        setDifficulty(DIFFICULTY_OPTIONS[newIdx]);
+                                        const container = (e.target as HTMLElement).closest('[role="radiogroup"]');
+                                        if (container) {
+                                            const buttons = container.querySelectorAll<HTMLElement>('[role="radio"]');
+                                            buttons[newIdx]?.focus();
+                                        }
+                                    }
+                                }}
                                 className={cn(
                                     "p-3 rounded-lg border-2 text-center transition-all text-xs font-medium cursor-pointer",
                                     difficulty === option
-                                        ? "border-[#5E6AD2] bg-[rgba(94,106,210,0.08)] text-[#EDEDED]"
-                                        : "border-[rgba(255,255,255,0.06)] bg-[#191919] text-[#8B8B8B] hover:border-[rgba(94,106,210,0.3)]"
+                                        ? "border-[#5E6AD2] bg-[rgba(94,106,210,0.08)] text-[var(--text-primary)]"
+                                        : "border-[rgba(255,255,255,0.06)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:border-[rgba(94,106,210,0.3)]"
                                 )}
                             >
                                 {option}
@@ -210,11 +266,11 @@ export default function PHQ9Assessment() {
                 </div>
 
                 {/* Running Score */}
-                <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl shadow-lg p-6 mb-6">
+                <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl shadow-lg p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-[#EDEDED]">Resultat</h3>
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Resultat</h3>
                         {!allAnswered && (
-                            <span className="text-xs text-[#5C5C5C]">{answers.filter(a => a !== null).length}/9 besvart</span>
+                            <span className="text-xs text-[var(--text-muted)]">{answers.filter(a => a !== null).length}/9 besvart</span>
                         )}
                     </div>
 
@@ -224,16 +280,16 @@ export default function PHQ9Assessment() {
                             <span className="text-4xl font-bold" style={{ color: interpretation.color }}>
                                 {totalScore}
                             </span>
-                            <span className="text-sm text-[#8B8B8B]">av 27 mulige</span>
+                            <span className="text-sm text-[var(--text-secondary)]">av 27 mulige</span>
                         </div>
-                        <div className="h-3 bg-[#222222] rounded-full overflow-hidden">
+                        <div className="h-3 bg-[var(--surface-hover)] rounded-full overflow-hidden">
                             <div
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{ width: `${(totalScore / 27) * 100}%`, backgroundColor: interpretation.color }}
                             />
                         </div>
                         {/* Scale markers */}
-                        <div className="flex justify-between mt-1 text-[10px] text-[#5C5C5C]">
+                        <div className="flex justify-between mt-1 text-[10px] text-[var(--text-muted)]">
                             <span>0</span>
                             <span>5</span>
                             <span>10</span>
@@ -264,8 +320,8 @@ export default function PHQ9Assessment() {
                         ].map((level) => (
                             <div key={level.label} className="text-center">
                                 <div className="h-2 rounded-full mb-1" style={{ backgroundColor: level.color }} />
-                                <span className="text-[10px] text-[#8B8B8B] block">{level.label}</span>
-                                <span className="text-[10px] text-[#5C5C5C] block">{level.range}</span>
+                                <span className="text-[10px] text-[var(--text-secondary)] block">{level.label}</span>
+                                <span className="text-[10px] text-[var(--text-muted)] block">{level.range}</span>
                             </div>
                         ))}
                     </div>
@@ -277,7 +333,7 @@ export default function PHQ9Assessment() {
                         <Shield className="w-4 h-4" />
                         <span className="text-xs font-semibold">GDPR-kompatibel</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-[#5C5C5C]">
+                    <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                         Dato: {new Date().toLocaleDateString('nb-NO')}
                     </div>
                 </div>

@@ -72,9 +72,17 @@ export default function LabPage() {
       if (!res.ok) {
         try {
           const data = await res.json();
-          setError(data.error || `Serverfeil (${res.status}). Prøv igjen.`);
+          if (res.status === 401) {
+            setError('Økten din har utløpt. Logg inn på nytt og prøv igjen.');
+          } else if (res.status === 429) {
+            setError('Du har sendt for mange forespørsler. Vent et minutt og prøv igjen.');
+          } else if (res.status === 502) {
+            setError('AI-tjenesten returnerte et ugyldig svar. Prøv å reformulere labverdiene og analyser på nytt.');
+          } else {
+            setError(data.error || `Kunne ikke tolke labverdier (feilkode ${res.status}). Prøv igjen eller kontakt support.`);
+          }
         } catch {
-          setError(`Serverfeil (${res.status}). Prøv igjen.`);
+          setError(`Kunne ikke tolke labverdier (feilkode ${res.status}). Prøv igjen eller kontakt support.`);
         }
         return;
       }
@@ -83,7 +91,7 @@ export default function LabPage() {
       setSummaryOpen(false);
     } catch (err) {
       console.error('Lab interpret error:', err);
-      setError('Nettverksfeil. Sjekk tilkoblingen og prøv igjen.');
+      setError('Kunne ikke nå serveren. Sjekk internettforbindelsen din og prøv igjen.');
     } finally {
       setLoading(false);
     }
@@ -111,7 +119,7 @@ export default function LabPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--surface-primary)]">
       <AppSidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main id="main-content" className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 py-8">
 
           {/* Header */}
@@ -255,7 +263,7 @@ export default function LabPage() {
               <div className="card-base overflow-hidden">
                 <button
                   onClick={() => setSummaryOpen((o) => !o)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--surface-overlay)] transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--surface-overlay)] transition-colors" aria-label="Klinisk vurdering" aria-expanded={summaryOpen}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-[var(--text-primary)]">Klinisk vurdering</span>
@@ -286,7 +294,7 @@ export default function LabPage() {
                     <div className="flex justify-end mt-4">
                       <button
                         onClick={handleCopySummary}
-                        className="btn-ghost flex items-center gap-2 text-sm"
+                        className="btn-ghost flex items-center gap-2 text-sm" aria-label="Kopier vurdering til journal"
                       >
                         {copied ? <><Check className="w-4 h-4 text-[#10B981]" /> Kopiert!</> : <><Copy className="w-4 h-4" /> Kopier til journal</>}
                       </button>

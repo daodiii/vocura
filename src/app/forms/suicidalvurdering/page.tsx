@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, AlertTriangle, Calendar, Phone, Plus, Trash2, Info, ShieldCheck, Heart, Brain, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
 export default function SuicidalvurderingForm() {
@@ -108,28 +109,29 @@ export default function SuicidalvurderingForm() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A]">
+        <div className="min-h-screen bg-[var(--surface-deep)]">
             <AppHeader />
 
             {/* Action Bar */}
-            <div className="sticky top-14 z-40 bg-[#111111]/80 border-b border-[rgba(255,255,255,0.06)]">
+            <div className="sticky top-14 z-40 bg-[var(--surface-primary)]/80 border-b border-[rgba(255,255,255,0.06)]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#8B8B8B] hover:text-[#EDEDED] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'Suicidalvurdering' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="text-[#8B8B8B] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-xs flex items-center gap-1.5 !py-2"
+                            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-3 py-1.5 transition-colors duration-150 text-xs flex items-center gap-1.5 !py-2"
                         >
                             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" /> : <Save className="w-3.5 h-3.5" />}
                             {saving ? 'Lagrer...' : saved ? 'Lagret!' : 'Lagre utkast'}
                         </button>
                         <button
                             onClick={() => exportPdf(getAllFormData(), 'Suicidalvurdering', 'Lege')}
-                            className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs !py-2 !px-4 flex items-center gap-1.5"
+                            className="border border-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 text-xs !py-2 !px-4 flex items-center gap-1.5"
                         >
                             <Download className="w-3.5 h-3.5" /> Last ned PDF
                         </button>
@@ -159,25 +161,25 @@ export default function SuicidalvurderingForm() {
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[rgba(16,185,129,0.1)] text-[#10B981] uppercase tracking-wider">Helsedirektoratet</span>
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#EDEDED]" style={{ fontFamily: "'Georgia', serif" }}>
+                    <h1 className="text-3xl font-bold text-[var(--text-primary)]" style={{ fontFamily: "'Georgia', serif" }}>
                         Suicidalvurdering
                     </h1>
-                    <p className="text-[#8B8B8B] mt-1">Strukturert vurdering av suicidalrisiko med handlingsplan</p>
+                    <p className="text-[var(--text-secondary)] mt-1">Strukturert vurdering av suicidalrisiko med handlingsplan</p>
                 </div>
 
                 {submitted ? (
-                    <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-12 text-center">
+                    <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-12 text-center">
                         <div className="w-16 h-16 bg-[rgba(16,185,129,0.1)] rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-[#10B981]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#EDEDED] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
+                        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-3" style={{ fontFamily: "'Georgia', serif" }}>
                             Suicidalvurdering lagret
                         </h2>
-                        <p className="text-[#8B8B8B] mb-6">Vurderingen er lagret i pasientjournalen.</p>
+                        <p className="text-[var(--text-secondary)] mb-6">Vurderingen er lagret i pasientjournalen.</p>
                         {error && <p className="text-sm text-[#EF4444] mb-4">{error}</p>}
-                        <p className="text-sm font-mono text-[#5C5C5C] mb-8">Referanse: SUI-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
+                        <p className="text-sm font-mono text-[var(--text-muted)] mb-8">Referanse: SUI-{Math.random().toString(36).substr(2, 8).toUpperCase()}</p>
                         <div className="flex items-center justify-center gap-4">
-                            <Link href="/forms" className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
+                            <Link href="/forms" className="border border-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
                                 <ArrowLeft className="w-4 h-4" /> Tilbake til skjemaer
                             </Link>
                             <Link href="/dashboard" className="bg-[#5E6AD2] hover:bg-[#4F5ABF] text-white font-medium rounded-lg px-4 py-2 transition-colors duration-150 inline-flex items-center gap-2">
@@ -188,31 +190,31 @@ export default function SuicidalvurderingForm() {
                 ) : (
                     <div className="space-y-6">
                         {/* Section 1: Pasient og vurderer */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <User className="w-4 h-4 text-[#EF4444]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">1. Pasient og vurderer</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">1. Pasient og vurderer</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Informasjon om pasienten og den som gjennomforer vurderingen</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Informasjon om pasienten og den som gjennomforer vurderingen</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Pasientens navn <span className="text-[#EF4444]">*</span></label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Pasientens navn <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.patientNavn}
                                         onChange={(e) => updateField('patientNavn', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                         placeholder="Fornavn Etternavn"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Fodselsnummer (11 siffer) <span className="text-[#EF4444]">*</span></label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Fodselsnummer (11 siffer) <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] font-mono"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
@@ -221,21 +223,21 @@ export default function SuicidalvurderingForm() {
 
                             <div className="grid grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Vurderers navn <span className="text-[#EF4444]">*</span></label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Vurderers navn <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.vurdererNavn}
                                         onChange={(e) => updateField('vurdererNavn', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                         placeholder="Fornavn Etternavn"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Rolle <span className="text-[#EF4444]">*</span></label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Rolle <span className="text-[#EF4444]">*</span></label>
                                     <select
                                         value={formData.vurdererRolle}
                                         onChange={(e) => updateField('vurdererRolle', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                     >
                                         <option value="">Velg...</option>
                                         <option value="Psykolog">Psykolog</option>
@@ -246,12 +248,12 @@ export default function SuicidalvurderingForm() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Sted <span className="text-[#EF4444]">*</span></label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Sted <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.sted}
                                         onChange={(e) => updateField('sted', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                         placeholder="Avdeling / lokasjon"
                                     />
                                 </div>
@@ -259,50 +261,50 @@ export default function SuicidalvurderingForm() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Dato <span className="text-[#EF4444]">*</span></label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Dato <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="date"
                                         value={formData.vurderingsDato}
                                         onChange={(e) => updateField('vurderingsDato', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tidspunkt <span className="text-[#EF4444]">*</span></label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Tidspunkt <span className="text-[#EF4444]">*</span></label>
                                     <input
                                         type="time"
                                         value={formData.vurderingsTid}
                                         onChange={(e) => updateField('vurderingsTid', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Section 2: Aktuell situasjon */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">2. Aktuell situasjon</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">2. Aktuell situasjon</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Bakgrunn for vurderingen og navaerende krise</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Bakgrunn for vurderingen og navaerende krise</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Arsak til vurdering <span className="text-[#EF4444]">*</span></label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Arsak til vurdering <span className="text-[#EF4444]">*</span></label>
                                     <textarea
                                         value={formData.arsakTilVurdering}
                                         onChange={(e) => updateField('arsakTilVurdering', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[100px] resize-y"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] min-h-[100px] resize-y"
                                         placeholder="Hva er arsaken til at suicidalvurdering gjennomfores?"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Aktuell krisesituasjon</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Aktuell krisesituasjon</label>
                                     <textarea
                                         value={formData.aktuellKrise}
                                         onChange={(e) => updateField('aktuellKrise', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] min-h-[80px] resize-y"
                                         placeholder="Beskriv den aktuelle krisesituasjonen..."
                                     />
                                 </div>
@@ -310,12 +312,12 @@ export default function SuicidalvurderingForm() {
                         </div>
 
                         {/* Section 3: Statiske risikofaktorer */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">3. Statiske risikofaktorer</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">3. Statiske risikofaktorer</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Historiske faktorer som oker risiko</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Historiske faktorer som oker risiko</p>
 
                             <div className="space-y-3">
                                 {/* Tidligere selvmordsforsok */}
@@ -330,27 +332,27 @@ export default function SuicidalvurderingForm() {
                                             onChange={(e) => updateField('tidligereForsok', e.target.checked)}
                                             className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#EDEDED]">Tidligere selvmordsforsok</span>
+                                        <span className="text-sm text-[var(--text-primary)]">Tidligere selvmordsforsok</span>
                                     </label>
                                     {formData.tidligereForsok && (
                                         <div className="grid grid-cols-2 gap-4 mt-3 ml-7">
                                             <div>
-                                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Antall forsok</label>
+                                                <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Antall forsok</label>
                                                 <input
                                                     type="text"
                                                     value={formData.tidligereForsokAntall}
                                                     onChange={(e) => updateField('tidligereForsokAntall', e.target.value)}
-                                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                                    className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                                     placeholder="Antall"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Datoer / tidspunkt</label>
+                                                <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Datoer / tidspunkt</label>
                                                 <input
                                                     type="text"
                                                     value={formData.tidligereForsokDatoer}
                                                     onChange={(e) => updateField('tidligereForsokDatoer', e.target.value)}
-                                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                                    className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                                     placeholder="Omtrentlige datoer"
                                                 />
                                             </div>
@@ -369,7 +371,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('familiehistorieSuicid', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Familiehistorie med selvmord</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Familiehistorie med selvmord</span>
                                 </label>
 
                                 {/* Kronisk sykdom */}
@@ -383,7 +385,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('kroniskSykdom', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Kronisk sykdom</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Kronisk sykdom</span>
                                 </label>
 
                                 {/* Tidligere psykiatrisk innleggelse */}
@@ -397,7 +399,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('tidligereInnleggelse', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Tidligere psykiatrisk innleggelse</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Tidligere psykiatrisk innleggelse</span>
                                 </label>
 
                                 {/* Historikk med rusmisbruk */}
@@ -411,7 +413,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('rusmisbrukHistorie', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Historikk med rusmisbruk</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Historikk med rusmisbruk</span>
                                 </label>
 
                                 {/* Barndomstraumer */}
@@ -425,22 +427,22 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('barndomstraumer', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Barndomstraumer</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Barndomstraumer</span>
                                 </label>
                             </div>
                         </div>
 
                         {/* Section 4: Dynamiske risikofaktorer */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <Brain className="w-4 h-4 text-[#EF4444]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">4. Dynamiske risikofaktorer</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">4. Dynamiske risikofaktorer</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Navaerende faktorer som kan endres over tid</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Navaerende faktorer som kan endres over tid</p>
 
                             {/* Aktuell suicidal ideering */}
                             <div className="mb-4">
-                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Aktuell suicidal ideering? <span className="text-[#EF4444]">*</span></label>
+                                <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Aktuell suicidal ideering? <span className="text-[#EF4444]">*</span></label>
                                 <div className="flex gap-6 mt-2">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -451,7 +453,7 @@ export default function SuicidalvurderingForm() {
                                             onChange={() => updateField('aktuellSuicidalIdeering', 'ja')}
                                             className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#8B8B8B]">Ja</span>
+                                        <span className="text-sm text-[var(--text-secondary)]">Ja</span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -462,19 +464,19 @@ export default function SuicidalvurderingForm() {
                                             onChange={() => updateField('aktuellSuicidalIdeering', 'nei')}
                                             className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#8B8B8B]">Nei</span>
+                                        <span className="text-sm text-[var(--text-secondary)]">Nei</span>
                                     </label>
                                 </div>
                             </div>
 
                             {formData.aktuellSuicidalIdeering === 'ja' && (
                                 <div className="mb-4">
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Frekvens</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Frekvens</label>
                                     <input
                                         type="text"
                                         value={formData.ideaSjonFrekvens}
                                         onChange={(e) => updateField('ideaSjonFrekvens', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                         placeholder="Beskriv frekvens av suicidale tanker..."
                                     />
                                 </div>
@@ -482,11 +484,11 @@ export default function SuicidalvurderingForm() {
 
                             {/* Haploshet */}
                             <div className="mb-4">
-                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Haploshet</label>
+                                <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Haploshet</label>
                                 <select
                                     value={formData.haaploshet}
                                     onChange={(e) => updateField('haaploshet', e.target.value)}
-                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                    className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                 >
                                     <option value="">Velg...</option>
                                     <option value="Ingen">Ingen</option>
@@ -508,7 +510,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('aktueltRusmiddelbruk', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Aktuelt rusmiddelbruk</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Aktuelt rusmiddelbruk</span>
                                 </label>
 
                                 <label className={cn(
@@ -521,7 +523,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('nyligeTap', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Nylige signifikante tap</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Nylige signifikante tap</span>
                                 </label>
 
                                 <label className={cn(
@@ -534,7 +536,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('sovnforstyrrelse', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Sovnforstyrrelser</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Sovnforstyrrelser</span>
                                 </label>
 
                                 <label className={cn(
@@ -547,7 +549,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('agitasjon', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Agitasjon/uro</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Agitasjon/uro</span>
                                 </label>
 
                                 <label className={cn(
@@ -560,18 +562,18 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('tilgangTilMidler', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#EF4444] focus:ring-[#EF4444]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Tilgang til midler</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Tilgang til midler</span>
                                 </label>
                             </div>
                         </div>
 
                         {/* Section 5: Beskyttende faktorer */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">5. Beskyttende faktorer</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">5. Beskyttende faktorer</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Faktorer som reduserer risiko</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Faktorer som reduserer risiko</p>
 
                             <div className="space-y-3">
                                 <label className={cn(
@@ -584,7 +586,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('sosialtNettverk', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Sosialt stottenettverk</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Sosialt stottenettverk</span>
                                 </label>
 
                                 <label className={cn(
@@ -597,7 +599,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('barnFamilieansvar', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Barn/familieansvar</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Barn/familieansvar</span>
                                 </label>
 
                                 <label className={cn(
@@ -610,7 +612,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('behandlingsengasjement', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Behandlingsengasjement</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Behandlingsengasjement</span>
                                 </label>
 
                                 <label className={cn(
@@ -623,7 +625,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('religioseVerdier', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Religiose/kulturelle verdier</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Religiose/kulturelle verdier</span>
                                 </label>
 
                                 <label className={cn(
@@ -636,7 +638,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('fremtidsplaner', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Fremtidsplaner/grunner til a leve</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Fremtidsplaner/grunner til a leve</span>
                                 </label>
 
                                 <label className={cn(
@@ -649,26 +651,26 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('terapeutiskRelasjon', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#10B981] focus:ring-[#10B981]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Terapeutisk relasjon</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Terapeutisk relasjon</span>
                                 </label>
                             </div>
                         </div>
 
                         {/* Section 6: Selvmordstankevurdering */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">6. Selvmordstankevurdering</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">6. Selvmordstankevurdering</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Detaljert vurdering av selvmordstanker og plan</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Detaljert vurdering av selvmordstanker og plan</p>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tankefrekvens</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Tankefrekvens</label>
                                     <select
                                         value={formData.tankeFrekvens}
                                         onChange={(e) => updateField('tankeFrekvens', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                     >
                                         <option value="">Velg...</option>
                                         <option value="Sjelden">Sjelden</option>
@@ -678,11 +680,11 @@ export default function SuicidalvurderingForm() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tankeintensitet</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Tankeintensitet</label>
                                     <select
                                         value={formData.tankeIntensitet}
                                         onChange={(e) => updateField('tankeIntensitet', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                     >
                                         <option value="">Velg...</option>
                                         <option value="1">1 - Svaert lav</option>
@@ -701,7 +703,7 @@ export default function SuicidalvurderingForm() {
 
                             {/* Har pasienten en plan? */}
                             <div className="mb-4">
-                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Har pasienten en plan? <span className="text-[#EF4444]">*</span></label>
+                                <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Har pasienten en plan? <span className="text-[#EF4444]">*</span></label>
                                 <div className="flex gap-6 mt-2">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -712,7 +714,7 @@ export default function SuicidalvurderingForm() {
                                             onChange={() => updateField('harPlan', 'ja')}
                                             className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#8B8B8B]">Ja</span>
+                                        <span className="text-sm text-[var(--text-secondary)]">Ja</span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -723,18 +725,18 @@ export default function SuicidalvurderingForm() {
                                             onChange={() => updateField('harPlan', 'nei')}
                                             className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#8B8B8B]">Nei</span>
+                                        <span className="text-sm text-[var(--text-secondary)]">Nei</span>
                                     </label>
                                 </div>
                             </div>
 
                             {formData.harPlan === 'ja' && (
                                 <div className="mb-4">
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Plandetaljer</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Plandetaljer</label>
                                     <textarea
                                         value={formData.planDetaljer}
                                         onChange={(e) => updateField('planDetaljer', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] min-h-[80px] resize-y"
                                         placeholder="Beskriv planen i detalj..."
                                     />
                                 </div>
@@ -742,7 +744,7 @@ export default function SuicidalvurderingForm() {
 
                             {/* Tilgang til midler? */}
                             <div className="mb-4">
-                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tilgang til midler? <span className="text-[#EF4444]">*</span></label>
+                                <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Tilgang til midler? <span className="text-[#EF4444]">*</span></label>
                                 <div className="flex gap-6 mt-2">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -753,7 +755,7 @@ export default function SuicidalvurderingForm() {
                                             onChange={() => updateField('tilgangMidler', 'ja')}
                                             className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#8B8B8B]">Ja</span>
+                                        <span className="text-sm text-[var(--text-secondary)]">Ja</span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -764,19 +766,19 @@ export default function SuicidalvurderingForm() {
                                             onChange={() => updateField('tilgangMidler', 'nei')}
                                             className="text-[#EF4444]"
                                         />
-                                        <span className="text-sm text-[#8B8B8B]">Nei</span>
+                                        <span className="text-sm text-[var(--text-secondary)]">Nei</span>
                                     </label>
                                 </div>
                             </div>
 
                             {formData.tilgangMidler === 'ja' && (
                                 <div className="mb-4">
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Type midler</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Type midler</label>
                                     <input
                                         type="text"
                                         value={formData.midlerType}
                                         onChange={(e) => updateField('midlerType', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                         placeholder="Beskriv type midler pasienten har tilgang til..."
                                     />
                                 </div>
@@ -784,11 +786,11 @@ export default function SuicidalvurderingForm() {
 
                             {/* Intensjon */}
                             <div className="mb-4">
-                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Intensjon</label>
+                                <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Intensjon</label>
                                 <select
                                     value={formData.intensjon}
                                     onChange={(e) => updateField('intensjon', e.target.value)}
-                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                    className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                 >
                                     <option value="">Velg...</option>
                                     <option value="Ingen intensjon">Ingen intensjon</option>
@@ -799,24 +801,24 @@ export default function SuicidalvurderingForm() {
 
                             {/* Tidslinje */}
                             <div>
-                                <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Tidslinje/tidsramme</label>
+                                <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Tidslinje/tidsramme</label>
                                 <input
                                     type="text"
                                     value={formData.tidslinje}
                                     onChange={(e) => updateField('tidslinje', e.target.value)}
-                                    className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                    className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                     placeholder="Tidslinje/tidsramme"
                                 />
                             </div>
                         </div>
 
                         {/* Section 7: Risikoniva */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">7. Risikoniva</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">7. Risikoniva</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Samlet vurdering av risikoniva med anbefalte tiltak</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Samlet vurdering av risikoniva med anbefalte tiltak</p>
 
                             <div className="space-y-3">
                                 {/* Lavt */}
@@ -839,7 +841,7 @@ export default function SuicidalvurderingForm() {
                                             <ShieldCheck className="w-4 h-4 text-[#10B981]" />
                                             <span className="text-sm font-bold text-[#10B981]">Lavt</span>
                                         </div>
-                                        <p className="text-xs text-[#8B8B8B] mb-2">Lav umiddelbar risiko. Pasienten har beskyttende faktorer og ingen aktiv plan.</p>
+                                        <p className="text-xs text-[var(--text-secondary)] mb-2">Lav umiddelbar risiko. Pasienten har beskyttende faktorer og ingen aktiv plan.</p>
                                         <div className="p-2 bg-[rgba(16,185,129,0.1)] rounded text-xs text-[#10B981]">
                                             <strong>Anbefalte tiltak:</strong> Oppfolging i poliklinikk. Sikkerhetsplan. Neste vurdering om 2-4 uker.
                                         </div>
@@ -866,7 +868,7 @@ export default function SuicidalvurderingForm() {
                                             <AlertTriangle className="w-4 h-4 text-[#F59E0B]" />
                                             <span className="text-sm font-bold text-[#F59E0B]">Moderat</span>
                                         </div>
-                                        <p className="text-xs text-[#8B8B8B] mb-2">Forhoyede risikofaktorer. Suicidale tanker til stede, men ambivalent.</p>
+                                        <p className="text-xs text-[var(--text-secondary)] mb-2">Forhoyede risikofaktorer. Suicidale tanker til stede, men ambivalent.</p>
                                         <div className="p-2 bg-[rgba(245,158,11,0.1)] rounded text-xs text-[#F59E0B]">
                                             <strong>Anbefalte tiltak:</strong> Hyppig oppfolging (ukentlig). Vurder medisinendring. Sikkerhetsplan obligatorisk.
                                         </div>
@@ -893,7 +895,7 @@ export default function SuicidalvurderingForm() {
                                             <AlertTriangle className="w-4 h-4 text-[#F97316]" />
                                             <span className="text-sm font-bold text-[#F97316]">Hoyt</span>
                                         </div>
-                                        <p className="text-xs text-[#8B8B8B] mb-2">Signifikant risiko. Aktive suicidale tanker med mulig plan.</p>
+                                        <p className="text-xs text-[var(--text-secondary)] mb-2">Signifikant risiko. Aktive suicidale tanker med mulig plan.</p>
                                         <div className="p-2 bg-[rgba(249,115,22,0.1)] rounded text-xs text-[#F97316]">
                                             <strong>Anbefalte tiltak:</strong> Daglig oppfolging. Vurder innleggelse. Varsle parorende. Fjern tilgang til midler.
                                         </div>
@@ -920,7 +922,7 @@ export default function SuicidalvurderingForm() {
                                             <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
                                             <span className="text-sm font-bold text-[#EF4444]">Akutt</span>
                                         </div>
-                                        <p className="text-xs text-[#8B8B8B] mb-2">Umiddelbar fare. Klar intensjon og/eller aktiv plan med tilgang til midler.</p>
+                                        <p className="text-xs text-[var(--text-secondary)] mb-2">Umiddelbar fare. Klar intensjon og/eller aktiv plan med tilgang til midler.</p>
                                         <div className="p-2 bg-[rgba(239,68,68,0.1)] rounded text-xs text-[#EF4444]">
                                             <strong>Anbefalte tiltak:</strong> Umiddelbar innleggelse eller tvangsvurdering. Kontinuerlig tilsyn. Varsle nodkontakter.
                                         </div>
@@ -930,37 +932,37 @@ export default function SuicidalvurderingForm() {
                         </div>
 
                         {/* Section 8: Sikkerhetsplan */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <Shield className="w-4 h-4 text-[#5E6AD2]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">8. Sikkerhetsplan</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">8. Sikkerhetsplan</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Individuell sikkerhetsplan for pasienten</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Individuell sikkerhetsplan for pasienten</p>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Varseltegn</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Varseltegn</label>
                                     <textarea
                                         value={formData.varseltegn}
                                         onChange={(e) => updateField('varseltegn', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] min-h-[80px] resize-y"
                                         placeholder="Varseltegn pasienten skal vaere oppmerksom pa..."
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Mestringsstrategier</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Mestringsstrategier</label>
                                     <textarea
                                         value={formData.mestringsstrategier}
                                         onChange={(e) => updateField('mestringsstrategier', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] min-h-[80px] resize-y"
                                         placeholder="Mestringsstrategier pasienten kan bruke..."
                                     />
                                 </div>
 
                                 {/* Kontaktpersoner */}
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Kontaktpersoner</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Kontaktpersoner</label>
 
                                     {kontakter.length > 0 && (
                                         <div className="space-y-2 mb-3">
@@ -972,16 +974,16 @@ export default function SuicidalvurderingForm() {
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex items-center gap-2">
                                                             <User className="w-3.5 h-3.5 text-[#7B89DB]" />
-                                                            <span className="text-sm text-[#EDEDED]">{kontakt.navn}</span>
+                                                            <span className="text-sm text-[var(--text-primary)]">{kontakt.navn}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <Phone className="w-3.5 h-3.5 text-[#7B89DB]" />
-                                                            <span className="text-sm text-[#EDEDED] font-mono">{kontakt.telefon}</span>
+                                                            <span className="text-sm text-[var(--text-primary)] font-mono">{kontakt.telefon}</span>
                                                         </div>
                                                     </div>
                                                     <button
                                                         onClick={() => removeKontakt(index)}
-                                                        className="p-1 text-[#5C5C5C] hover:text-[#EF4444] transition-colors rounded"
+                                                        className="p-1 text-[var(--text-muted)] hover:text-[#EF4444] transition-colors rounded"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -1002,7 +1004,7 @@ export default function SuicidalvurderingForm() {
                                                         addKontakt();
                                                     }
                                                 }}
-                                                className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                                className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                                 placeholder="Navn"
                                             />
                                             <input
@@ -1015,7 +1017,7 @@ export default function SuicidalvurderingForm() {
                                                         addKontakt();
                                                     }
                                                 }}
-                                                className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                                className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                                 placeholder="Telefon"
                                             />
                                         </div>
@@ -1026,7 +1028,7 @@ export default function SuicidalvurderingForm() {
                                                 "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                                                 nyKontaktNavn.trim() && nyKontaktTelefon.trim()
                                                     ? "bg-[#5E6AD2] text-white hover:bg-[#4F5ABF]"
-                                                    : "bg-[rgba(255,255,255,0.05)] text-[#5C5C5C] cursor-not-allowed"
+                                                    : "bg-[rgba(255,255,255,0.05)] text-[var(--text-muted)] cursor-not-allowed"
                                             )}
                                         >
                                             <Plus className="w-4 h-4" />
@@ -1036,22 +1038,22 @@ export default function SuicidalvurderingForm() {
                                 </div>
 
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Profesjonell kontakt (navn og telefon)</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Profesjonell kontakt (navn og telefon)</label>
                                     <input
                                         type="text"
                                         value={formData.fagligKontakt}
                                         onChange={(e) => updateField('fagligKontakt', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                         placeholder="Profesjonell kontakt (navn og telefon)"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Trygge omgivelser</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Trygge omgivelser</label>
                                     <textarea
                                         value={formData.tryggeOmgivelser}
                                         onChange={(e) => updateField('tryggeOmgivelser', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[60px] resize-y"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] min-h-[60px] resize-y"
                                         placeholder="Tiltak for a sikre trygge omgivelser..."
                                     />
                                 </div>
@@ -1059,12 +1061,12 @@ export default function SuicidalvurderingForm() {
                         </div>
 
                         {/* Section 9: Kliniske tiltak og oppfolging */}
-                        <div className="bg-[#191919] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
+                        <div className="bg-[var(--surface-elevated)] border border-[rgba(255,255,255,0.06)] rounded-xl p-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <Info className="w-4 h-4 text-[#5E6AD2]" />
-                                <h2 className="text-sm font-semibold text-[#EDEDED]">9. Kliniske tiltak og oppfolging</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-primary)]">9. Kliniske tiltak og oppfolging</h2>
                             </div>
-                            <p className="text-xs text-[#5C5C5C] mb-4 ml-6">Besluttede tiltak og plan for videre oppfolging</p>
+                            <p className="text-xs text-[var(--text-muted)] mb-4 ml-6">Besluttede tiltak og plan for videre oppfolging</p>
 
                             <div className="space-y-3 mb-4">
                                 <label className={cn(
@@ -1077,7 +1079,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('sikkerhetsplanOpprettet', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Sikkerhetsplan opprettet</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Sikkerhetsplan opprettet</span>
                                 </label>
 
                                 <label className={cn(
@@ -1090,7 +1092,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('medisingjennomgang', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Medisingjennomgang utfort</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Medisingjennomgang utfort</span>
                                 </label>
 
                                 <label className={cn(
@@ -1103,7 +1105,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('parorendeVarslet', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Parorende varslet</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Parorende varslet</span>
                                 </label>
 
                                 <label className={cn(
@@ -1116,7 +1118,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('tvangsVurdert', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Tvangsvurdering vurdert</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Tvangsvurdering vurdert</span>
                                 </label>
 
                                 <label className={cn(
@@ -1129,7 +1131,7 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('innleggelse', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Innleggelse</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Innleggelse</span>
                                 </label>
 
                                 <label className={cn(
@@ -1142,26 +1144,26 @@ export default function SuicidalvurderingForm() {
                                         onChange={(e) => updateField('polikliniskOppfolging', e.target.checked)}
                                         className="mt-0.5 w-4 h-4 rounded border-[rgba(255,255,255,0.10)] text-[#5E6AD2] focus:ring-[#5E6AD2]"
                                     />
-                                    <span className="text-sm text-[#EDEDED]">Poliklinisk oppfolging</span>
+                                    <span className="text-sm text-[var(--text-primary)]">Poliklinisk oppfolging</span>
                                 </label>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Oppfolgingsdato</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Oppfolgingsdato</label>
                                     <input
                                         type="date"
                                         value={formData.oppfolgingsDato}
                                         onChange={(e) => updateField('oppfolgingsDato', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C]"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[#8B8B8B] text-sm font-medium block mb-1.5">Oppfolgingsplan</label>
+                                    <label className="text-[var(--text-secondary)] text-sm font-medium block mb-1.5">Oppfolgingsplan</label>
                                     <textarea
                                         value={formData.oppfolgingsplan}
                                         onChange={(e) => updateField('oppfolgingsplan', e.target.value)}
-                                        className="bg-[#222222] border border-[rgba(255,255,255,0.06)] rounded-lg text-[#EDEDED] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#5C5C5C] min-h-[80px] resize-y"
+                                        className="bg-[var(--surface-hover)] border border-[rgba(255,255,255,0.06)] rounded-lg text-[var(--text-primary)] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#5E6AD2] placeholder:text-[var(--text-muted)] min-h-[80px] resize-y"
                                         placeholder="Beskriv plan for videre oppfolging..."
                                     />
                                 </div>
@@ -1176,7 +1178,7 @@ export default function SuicidalvurderingForm() {
                             </div>
                             <div className="flex items-center gap-3">
                                 {error && <p className="text-sm text-[#EF4444]">{error}</p>}
-                                <button onClick={handleSave} disabled={saving} className="border border-[rgba(255,255,255,0.06)] text-[#8B8B8B] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 !py-2.5 !px-6 text-sm flex items-center gap-2">
+                                <button onClick={handleSave} disabled={saving} className="border border-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2 transition-colors duration-150 !py-2.5 !px-6 text-sm flex items-center gap-2">
                                     {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {saving ? 'Lagrer...' : 'Lagre utkast'}
                                 </button>

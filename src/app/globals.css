@@ -279,6 +279,11 @@ html {
   border-color: var(--border-strong);
 }
 
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
 .btn-primary {
   background: var(--accent-primary);
   color: #FFFFFF;
@@ -299,6 +304,11 @@ html {
   transform: scale(0.98);
 }
 
+.btn-primary:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 2px;
+}
+
 .btn-secondary {
   background: transparent;
   border: 1px solid var(--accent-border);
@@ -317,6 +327,33 @@ html {
 
 .btn-secondary:active {
   transform: scale(0.98);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* =============================================
+   Skip to Content (Accessibility)
+   ============================================= */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-primary);
+  color: #FFFFFF;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  transition: top 150ms ease;
+}
+
+.skip-to-content:focus {
+  top: 8px;
 }
 
 /* =============================================

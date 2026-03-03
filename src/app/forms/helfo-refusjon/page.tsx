@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, CheckCircle, Download, Shield, User, Building2, AlertCircle, Calendar, Info, Plus, Trash2, FileCheck, FileText, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/AppHeader';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
@@ -115,16 +116,17 @@ export default function HelfoRefusjonForm() {
     const totalBeloep = takstRader.reduce((sum, r) => sum + (r.antall * r.sats), 0);
 
     return (
-        <div className="min-h-screen bg-[#F5F2ED]">
+        <div className="min-h-screen bg-[var(--surface-primary)]">
             <AppHeader />
 
             {/* Action Bar */}
             <div className="sticky top-14 z-40 bg-[#FFFDF9] border-b border-[#DDD7CE]">
                 <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between">
-                    <Link href="/forms" className="flex items-center gap-2 text-[#5E5549] hover:text-[#1E1914] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="text-sm font-medium">Tilbake til skjemaer</span>
-                    </Link>
+                    <Breadcrumbs items={[
+                        { label: 'Hjem', href: '/dashboard' },
+                        { label: 'Skjemaer', href: '/forms' },
+                        { label: 'HELFO Refusjonskrav' },
+                    ]} />
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
@@ -211,7 +213,7 @@ export default function HelfoRefusjonForm() {
                                     <input
                                         type="text"
                                         value={formData.behandlerNavn}
-                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-[var(--surface-primary)] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         readOnly
                                     />
                                 </div>
@@ -220,7 +222,7 @@ export default function HelfoRefusjonForm() {
                                     <input
                                         type="text"
                                         value={formData.behandlerHPR}
-                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
+                                        className="bg-[var(--surface-primary)] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] font-mono"
                                         readOnly
                                     />
                                 </div>
@@ -231,7 +233,7 @@ export default function HelfoRefusjonForm() {
                                     <input
                                         type="text"
                                         value={formData.praksisNavn}
-                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-[var(--surface-primary)] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         readOnly
                                     />
                                 </div>
@@ -240,7 +242,7 @@ export default function HelfoRefusjonForm() {
                                     <input
                                         type="text"
                                         value={formData.orgNummer}
-                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
+                                        className="bg-[var(--surface-primary)] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] font-mono"
                                         readOnly
                                     />
                                 </div>
@@ -249,7 +251,7 @@ export default function HelfoRefusjonForm() {
                                     <input
                                         type="text"
                                         value={formData.praksisAdresse}
-                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-[var(--surface-primary)] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         readOnly
                                     />
                                 </div>
@@ -271,7 +273,7 @@ export default function HelfoRefusjonForm() {
                                         type="text"
                                         value={formData.patientNavn}
                                         onChange={(e) => updateField('patientNavn', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         placeholder="Ola Nordmann"
                                     />
                                 </div>
@@ -281,7 +283,7 @@ export default function HelfoRefusjonForm() {
                                         type="text"
                                         value={formData.patientFnr}
                                         onChange={(e) => updateField('patientFnr', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] font-mono"
                                         placeholder="01019012345"
                                         maxLength={11}
                                     />
@@ -292,7 +294,7 @@ export default function HelfoRefusjonForm() {
                                         type="text"
                                         value={formData.helfoNummer}
                                         onChange={(e) => updateField('helfoNummer', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] font-mono"
                                         placeholder="Valgfritt"
                                     />
                                 </div>
@@ -314,7 +316,7 @@ export default function HelfoRefusjonForm() {
                                         type="date"
                                         value={formData.behandlingFra}
                                         onChange={(e) => updateField('behandlingFra', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                     />
                                 </div>
                                 <div>
@@ -323,7 +325,7 @@ export default function HelfoRefusjonForm() {
                                         type="date"
                                         value={formData.behandlingTil}
                                         onChange={(e) => updateField('behandlingTil', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                     />
                                 </div>
                                 <div>
@@ -331,7 +333,7 @@ export default function HelfoRefusjonForm() {
                                     <select
                                         value={formData.konsultasjonstype}
                                         onChange={(e) => updateField('konsultasjonstype', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                     >
                                         <option value="">Velg...</option>
                                         <option value="ordinaer">Ordinær konsultasjon</option>
@@ -387,7 +389,7 @@ export default function HelfoRefusjonForm() {
                                         type="text"
                                         value={formData.diagnoseKode}
                                         onChange={(e) => updateField('diagnoseKode', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] font-mono"
                                         placeholder="L03"
                                     />
                                 </div>
@@ -397,7 +399,7 @@ export default function HelfoRefusjonForm() {
                                         type="text"
                                         value={formData.diagnoseBeskrivelse}
                                         onChange={(e) => updateField('diagnoseBeskrivelse', e.target.value)}
-                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         placeholder="Korsryggsymptomer"
                                     />
                                 </div>
@@ -475,13 +477,13 @@ export default function HelfoRefusjonForm() {
                                     </thead>
                                     <tbody>
                                         {takstRader.map(row => (
-                                            <tr key={row.id} className="border-b border-[#F5F2ED]">
+                                            <tr key={row.id} className="border-b border-[var(--border-default)]">
                                                 <td className="py-2 px-2">
                                                     <input
                                                         type="text"
                                                         value={row.kode}
                                                         onChange={e => updateTakstRow(row.id, 'kode', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-1.5 text-sm w-20 focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] font-mono"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-1.5 text-sm w-20 focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] font-mono"
                                                         placeholder="2ad"
                                                     />
                                                 </td>
@@ -490,7 +492,7 @@ export default function HelfoRefusjonForm() {
                                                         type="text"
                                                         value={row.beskrivelse}
                                                         onChange={e => updateTakstRow(row.id, 'beskrivelse', e.target.value)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-1.5 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-1.5 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                                         placeholder="Beskrivelse"
                                                     />
                                                 </td>
@@ -500,7 +502,7 @@ export default function HelfoRefusjonForm() {
                                                         min="1"
                                                         value={row.antall}
                                                         onChange={e => updateTakstRow(row.id, 'antall', parseInt(e.target.value) || 0)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-1.5 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] text-center"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-1.5 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] text-center"
                                                     />
                                                 </td>
                                                 <td className="py-2 px-2">
@@ -509,7 +511,7 @@ export default function HelfoRefusjonForm() {
                                                         min="0"
                                                         value={row.sats}
                                                         onChange={e => updateTakstRow(row.id, 'sats', parseFloat(e.target.value) || 0)}
-                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-1.5 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B] text-right font-mono"
+                                                        className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-1.5 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)] text-right font-mono"
                                                     />
                                                 </td>
                                                 <td className="py-2 px-2 text-right font-mono font-semibold text-[#1E1914]">
@@ -603,7 +605,7 @@ export default function HelfoRefusjonForm() {
                                             type="text"
                                             value={formData.annenDokBeskrivelse}
                                             onChange={(e) => updateField('annenDokBeskrivelse', e.target.value)}
-                                            className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                            className="bg-white border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                             placeholder="Beskriv vedlagt dokumentasjon..."
                                         />
                                     </div>
@@ -652,7 +654,7 @@ export default function HelfoRefusjonForm() {
                                     <input
                                         type="text"
                                         value={formData.behandlerNavn}
-                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-[var(--surface-primary)] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         readOnly
                                     />
                                 </div>
@@ -661,7 +663,7 @@ export default function HelfoRefusjonForm() {
                                     <input
                                         type="text"
                                         value={new Date().toLocaleDateString('nb-NO')}
-                                        className="bg-[#F5F2ED] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[#8B8B8B]"
+                                        className="bg-[var(--surface-primary)] border border-[#DDD7CE] rounded-lg text-[#1E1914] px-3 py-2 text-sm w-full focus:outline-none focus:border-[#4F5ABF] placeholder:text-[var(--text-secondary)]"
                                         readOnly
                                     />
                                 </div>
