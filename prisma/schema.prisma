@@ -23,6 +23,7 @@ model User {
   templates         Template[]
   epjIntegration    EpjIntegration?
   auditLogs         AuditLog[]
+  authEvents        AuthEvent[]
   clinicalNotes     ClinicalNote[]
   retentionSettings RetentionSettings?
   consentLogs       ConsentLog[]
@@ -64,6 +65,25 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([userId])
   @@map("audit_logs")
+}
+
+model AuthEvent {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  eventType String   @map("event_type")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  success   Boolean  @default(true)
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([ipAddress, eventType])
+  @@map("auth_events")
 }
 
 model EpjIntegration {

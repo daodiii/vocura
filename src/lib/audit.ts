@@ -5,7 +5,7 @@ interface AuditLogParams {
     userId: string;
     entityType: 'journal_entry' | 'form_submission' | 'patient' | 'recording' | 'epj_push' | 'patient_context_import' | 'epj_integration' | 'clinical_note' | 'retention_settings' | 'auto_delete';
     entityId: string;
-    action: 'create' | 'update' | 'delete' | 'approve' | 'push' | 'search' | 'auto_delete' | 'encrypt' | 'decrypt';
+    action: 'create' | 'update' | 'delete' | 'approve' | 'push' | 'search' | 'auto_delete' | 'encrypt' | 'decrypt' | 'view';
     changes?: Record<string, unknown>;
     content?: string;
     ipAddress?: string;

@@ -172,11 +172,14 @@ export default function TermsPage() {
           </section>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-[rgba(255,255,255,0.06)]">
+        <div className="mt-16 pt-8 border-t border-[rgba(255,255,255,0.06)] flex flex-wrap gap-4">
           <Link href="/" className="text-sm inline-flex items-center gap-1 cursor-pointer text-[#7B89DB]">
             <ArrowLeft className="w-4 h-4" />
             Tilbake til forsiden
           </Link>
+          <Link href="/ai-styring" className="text-sm text-[#5E6AD2] hover:underline">AI-styring</Link>
+          <Link href="/sikkerhet" className="text-sm text-[#5E6AD2] hover:underline">Sikkerhet</Link>
+          <Link href="/sikkerhetsdokumentasjon" className="text-sm text-[#5E6AD2] hover:underline">All dokumentasjon</Link>
         </div>
       </main>
     </div>

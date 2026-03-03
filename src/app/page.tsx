@@ -798,6 +798,30 @@ export default function LandingPage() {
                     Databehandleravtale
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/sikkerhetsdokumentasjon"
+                    className="text-sm footer-link"
+                  >
+                    Sikkerhetsdokumentasjon
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/pasientinformasjon"
+                    className="text-sm footer-link"
+                  >
+                    Pasientinformasjon
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/universell-utforming"
+                    className="text-sm footer-link"
+                  >
+                    Universell utforming
+                  </Link>
+                </li>
               </ul>
             </div>
 

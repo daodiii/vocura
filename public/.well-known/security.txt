@@ -1,0 +1,6 @@
+Contact: mailto:sikkerhet@vocura.no
+Contact: mailto:personvern@vocura.no
+Preferred-Languages: no, en
+Canonical: https://vocura.no/.well-known/security.txt
+Policy: https://vocura.no/sikkerhet
+Expires: 2027-03-03T00:00:00.000Z

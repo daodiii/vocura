@@ -57,6 +57,18 @@ export default function SessionTimeout() {
 
         lockTimerRef.current = setTimeout(() => {
             setShowWarning(false);
+
+            // Fire timeout event to server before session is cleared
+            // sendBeacon is reliable even during page unload
+            try {
+                navigator.sendBeacon(
+                    '/api/auth/timeout-event',
+                    JSON.stringify({ reason: 'session_timeout' })
+                );
+            } catch {
+                // Silently ignore — best-effort logging
+            }
+
             clearSessionKey();
             setShowLock(true);
         }, IDLE_TIMEOUT);

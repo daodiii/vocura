@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse, type NextRequest } from 'next/server';
 import { extractIdentityLevel, hashNationalId, parseCriiptoClaims } from '@/lib/auth/bankid';
 import { prisma } from '@/lib/prisma';
+import { createAuthEvent, AuthEventType } from '@/lib/auth-events';
+import { getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
     const requestUrl = new URL(request.url);
@@ -17,6 +19,14 @@ export async function GET(request: NextRequest) {
         if (!error && data?.user) {
             const metadata = data.user.user_metadata || {};
             const identityLevel = extractIdentityLevel(metadata);
+
+            // Log successful login event (fire-and-forget — createAuthEvent has internal try/catch)
+            createAuthEvent({
+                userId: data.user.id,
+                eventType: AuthEventType.LOGIN,
+                ipAddress: getClientIp(request),
+                userAgent: request.headers.get('user-agent'),
+            });
 
             // If this is a BankID/Buypass login, update user profile
             if (identityLevel) {
@@ -45,6 +55,16 @@ export async function GET(request: NextRequest) {
                     console.error('Failed to update user profile after BankID auth:', err);
                 }
             }
+        } else if (error) {
+            // Log failed login attempt (fire-and-forget)
+            createAuthEvent({
+                userId: null,
+                eventType: AuthEventType.LOGIN_FAILED,
+                ipAddress: getClientIp(request),
+                userAgent: request.headers.get('user-agent'),
+                success: false,
+                metadata: { error: error.message || 'unknown' },
+            });
         }
     }
 
