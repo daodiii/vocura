@@ -871,6 +871,9 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
+          <div className="mt-6 text-center text-[11px] footer-copyright opacity-60">
+            Nettsiden er laget av <a href="https://www.idweb.no" target="_blank" rel="noopener noreferrer" className="text-[#5E6AD2] hover:text-[#7B83EB] transition-colors">IDweb</a>
+          </div>
         </div>
       </footer>
     </div>
